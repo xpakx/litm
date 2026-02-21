@@ -8,6 +8,11 @@
         :root {
             --bg-color: #2c3e50;
             --accent: #3498db;
+            --win-bg: #ecf0f1;
+            --header-bg: #34495e;
+            --header-text: #fff;
+            --accent: #3498db;
+
         }
 
         body, html {
@@ -27,6 +32,56 @@
             background-image: radial-gradient(#3a536b 1px, transparent 1px);
             background-size: 20px 20px;
         }
+
+        .app-window {
+            position: absolute;
+            background: var(--win-bg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            min-height: 100px;
+            border: 1px solid #000;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .app-header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 8px 12px;
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .app-header:active {
+            cursor: grabbing;
+            background: var(--accent);
+        }
+
+        .app-controls button {
+            background: #e74c3c;
+            border: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .app-body {
+            flex: 1;
+            padding: 15px;
+            overflow: auto;
+            color: #333;
+            font-size: 14px;
+            position: relative;
+        }
+
     </style>
 </head>
 <body>
