@@ -1,4 +1,14 @@
-import { App } from "./app.js";
+import { App, type WindowContext } from "./app.js";
+
+
+const clockService = (ctx: WindowContext) => {
+	setInterval(() => {
+		if(ctx.root.parentNode) {
+			ctx.body.innerText = new Date()
+				.toLocaleTimeString();
+		}
+	}, 1000);
+}
 
 
 (() => {
@@ -31,4 +41,15 @@ import { App } from "./app.js";
         `,
         services: []
     });
+
+    app.register({
+	    title: 'Clock',
+	    x: 10,
+	    y: 200,
+	    width: 200,
+	    height: 100,
+	    template: `<div id="clock-${Date.now()}" style="font-size:20px; text-align:center">...</div>`,
+	    services: [clockService]
+    });
+
 })();
