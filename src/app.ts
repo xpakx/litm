@@ -1,3 +1,10 @@
+export interface WindowContext {
+	root: HTMLElement,
+	body: HTMLElement,
+	setTitle: (t: string) => void,
+	close: () => void,
+}
+
 export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
 
@@ -65,7 +72,7 @@ export class App { zIndexCounter: number = 100;
 		this.enableActions(winEl, header);
 
 
-		const context = {
+		const context: WindowContext = {
 			root: winEl,
 			body: body,
 			setTitle: (t: string) => header.querySelector('span')!.innerText = t,
