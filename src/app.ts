@@ -1,5 +1,4 @@
-export class App {
-	zIndexCounter: number = 100;
+export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
 
 	constructor(appElement: string) {
@@ -70,7 +69,7 @@ export class App {
 			root: winEl,
 			body: body,
 			setTitle: (t: string) => header.querySelector('span')!.innerText = t,
-				close: () => winEl.remove()
+			close: () => winEl.remove()
 		};
 		services.forEach((serviceFn: any) => serviceFn(context));
 
@@ -90,7 +89,7 @@ export class App {
 	}
 
 
-	enableDrag(element: HTMLElement, handle: any) {
+	enableDrag(element: HTMLElement, handle: HTMLElement) {
 		let lastClientX = 0, lastClientY = 0;
 
 		let elementDrag = (e: MouseEvent) => {
