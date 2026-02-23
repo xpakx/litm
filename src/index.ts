@@ -1,4 +1,5 @@
 import { App, type WindowContext } from "./app.js";
+import { diceWindow } from "./dice-window.js";
 import { EventBus } from "./event-bus.js";
 
 
@@ -51,6 +52,7 @@ const tagWindowService = (ctx: WindowContext) => {
 		});
 	});
 }
+
 function characterWindow(x: number, y: number, character: Character): any {
 	return {
 		title: `Character: ${character.name}`,
@@ -62,7 +64,6 @@ function characterWindow(x: number, y: number, character: Character): any {
 		services: [tagWindowService]
     }
 }
-
 
 function musicWindow(x: number, y: number, id: string): any {
 	return {
@@ -144,9 +145,5 @@ const character: Character = {
     app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
     app.register(clockWindow(10, 200));
     app.register(characterWindow(50, 50, character));
-
-    EventBus.instance.on("TAGS_UPDATED", (tags: any[]) => {
-	    console.log(tags);
-    });
-
+    app.register(diceWindow(100, 150));
 })();
