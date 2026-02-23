@@ -2,30 +2,24 @@ import { type WindowContext, type Service } from "./app.js";
 import { EventBus } from "./event-bus.js";
 
 class DiceService implements Service {
+	currentPower: number = 0;
 
-    init(ctx: WindowContext): void {
-	let currentPower = 0;
-	const activeTagsDiv = ctx.body.querySelector('#active-tags')!;
-	const totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
-	const rollBtn = ctx.body.querySelector('#roll-btn')!;
-	const resultDiv = ctx.body.querySelector('#roll-result')!;
-
-	EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => {
+	private onTags(tags: any[], activeTagsDiv: HTMLElement, totalPowerSpan: HTMLElement) {
 		activeTagsDiv.innerHTML = tags.map(t => 
 		   `<div style="font-size: 0.9em; margin-bottom: 3px; color: ${t.type === 'power' ? '#a6e3a1' : '#f38ba8'}">
 		   ${t.value > 0 ? '+' : ''}${t.value} ${t.name}
 		   </div>`
 		  ).join('');
 
-		  currentPower = tags.reduce((sum, tag) => sum + tag.value, 0);
-		  totalPowerSpan.innerText = currentPower.toString();
-		  totalPowerSpan.style.color = currentPower < 0 ? '#f38ba8' : '#a6e3a1';
-	});
+		  this.currentPower = tags.reduce((sum, tag) => sum + tag.value, 0);
+		  totalPowerSpan.innerText = this.currentPower.toString();
+		  totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+	}
 
-	rollBtn.addEventListener('click', () => {
+	private onClick(resultDiv: HTMLElement) {
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
-		const total = d1 + d2 + currentPower;
+		const total = d1 + d2 + this.currentPower;
 
 		let outcome = "";
 		let color = "";
@@ -36,12 +30,21 @@ class DiceService implements Service {
 
 		resultDiv.innerHTML = `
 		<div style="font-size: 2rem; color: #cdd6f4;">[${d1}] + [${d2}]</div>
-		<div style="font-size: 0.9rem; color: #a6adc8;">Power: ${currentPower}</div>
+		<div style="font-size: 0.9rem; color: #a6adc8;">Power: ${this.currentPower}</div>
 		<div style="font-size: 2.5rem; font-weight: bold; color: ${color}; margin: 10px 0;">${total}</div>
 		<div style="font-size: 1.1rem; color: ${color};">${outcome}</div>
 		`;
-	});
-    }
+	}
+
+	init(ctx: WindowContext): void {
+		const activeTagsDiv = ctx.body.querySelector('#active-tags')! as HTMLElement;
+		const totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
+		const rollBtn = ctx.body.querySelector('#roll-btn')!;
+		const resultDiv = ctx.body.querySelector('#roll-result')! as HTMLElement;
+
+		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags, activeTagsDiv, totalPowerSpan));
+		rollBtn.addEventListener('click', () => this.onClick(resultDiv));
+	}
 }
 
 export function diceWindow(x: number, y: number): any {

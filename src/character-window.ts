@@ -20,43 +20,48 @@ class TagWindowService implements Service {
 		this.character = character;
 	}
 
-	init(ctx: WindowContext): void {
-		const container = ctx.body.querySelector('#char-sheet')!;
+	private appendTheme(theme: Theme, container: HTMLElement) {
+		const themeEl = document.createElement('div');
+		themeEl.style.marginBottom = '15px';
 
-		this.character.themes.forEach(theme => {
-			const themeEl = document.createElement('div');
-			themeEl.style.marginBottom = '15px';
+		let html = `<h4 style="margin: 0 0 5px 0; color: #cdd6f4;">${theme.name}</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">`;
 
-			let html = `<h4 style="margin: 0 0 5px 0; color: #cdd6f4;">${theme.name}</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">`;
-
-			theme.powerTags.forEach(tag => {
-				html += `<button class="tag-btn power-tag" data-type="power" data-name="${tag}">${tag}</button>`;
-			});
-
-			theme.weaknessTags.forEach(tag => {
-				html += `<button class="tag-btn weakness-tag" data-type="weakness" data-name="${tag}">${tag}</button>`;
-			});
-
-			html += `</div>`;
-			themeEl.innerHTML = html;
-			container.appendChild(themeEl);
+		theme.powerTags.forEach(tag => {
+			html += `<button class="tag-btn power-tag" data-type="power" data-name="${tag}">${tag}</button>`;
 		});
+
+		theme.weaknessTags.forEach(tag => {
+			html += `<button class="tag-btn weakness-tag" data-type="weakness" data-name="${tag}">${tag}</button>`;
+		});
+
+		html += `</div>`;
+		themeEl.innerHTML = html;
+		container.appendChild(themeEl);
+	}
+
+	onClick(container: HTMLElement, e: MouseEvent) {
+		const target = e.target as HTMLElement;
+		target.classList.toggle('selected');
+
+		const selectedTags = Array.from(container.querySelectorAll('.tag-btn.selected')).map((el: any) => ({
+			name: el.getAttribute('data-name'),
+			type: el.getAttribute('data-type'),
+			value: el.getAttribute('data-type') === 'power' ? 1 : -1
+		}));
+
+		// TODO: probably better to split in TAGS_ADD, and TAGS_REMOVE if we want more components
+		EventBus.instance.emit('TAGS_UPDATED', selectedTags);
+	}
+
+	init(ctx: WindowContext): void {
+		const container = ctx.body.querySelector('#char-sheet')! as HTMLElement;
+
+		this.character.themes.forEach(theme => this.appendTheme(theme, container));
 
 		const buttons = container.querySelectorAll('.tag-btn');
 		buttons.forEach((elem: Element) => {
 			const btn = elem as HTMLButtonElement;
-			btn.addEventListener('click', (e: MouseEvent) => {
-				const target = e.target as HTMLElement;
-				target.classList.toggle('selected');
-
-				const selectedTags = Array.from(container.querySelectorAll('.tag-btn.selected')).map((el: any) => ({
-					name: el.getAttribute('data-name'),
-					type: el.getAttribute('data-type'),
-					value: el.getAttribute('data-type') === 'power' ? 1 : -1
-				}));
-
-				EventBus.instance.emit('TAGS_UPDATED', selectedTags);
-			});
+			btn.addEventListener('click', (e: MouseEvent) => this.onClick(container, e));
 		});
 	}
 }
