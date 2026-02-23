@@ -5,6 +5,10 @@ export interface WindowContext {
 	close: () => void,
 }
 
+export interface Service {
+	init(ctx: WindowContext): void;
+}
+
 export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
 
@@ -78,7 +82,10 @@ export class App { zIndexCounter: number = 100;
 			setTitle: (t: string) => header.querySelector('span')!.innerText = t,
 			close: () => winEl.remove()
 		};
-		services.forEach((serviceFn: any) => serviceFn(context));
+		services.forEach((serviceFn: any) => {
+			if ('init' in serviceFn) serviceFn.init(context);
+			else serviceFn(context);
+		});
 
 		return context;
 	}

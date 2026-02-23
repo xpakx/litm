@@ -1,8 +1,9 @@
-import { type WindowContext } from "./app.js";
+import { type WindowContext, type Service } from "./app.js";
 import { EventBus } from "./event-bus.js";
 
+class DiceService implements Service {
 
-const diceService = (ctx: WindowContext) => {
+    init(ctx: WindowContext): void {
 	let currentPower = 0;
 	const activeTagsDiv = ctx.body.querySelector('#active-tags')!;
 	const totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
@@ -40,6 +41,7 @@ const diceService = (ctx: WindowContext) => {
 		<div style="font-size: 1.1rem; color: ${color};">${outcome}</div>
 		`;
 	});
+    }
 }
 
 export function diceWindow(x: number, y: number): any {
@@ -64,6 +66,6 @@ export function diceWindow(x: number, y: number): any {
 		<div id="roll-result" style="margin-top: 15px; text-align: center; flex-grow: 1;"></div>
 		</div>
 		`,
-		services: [diceService]
+		services: [new DiceService()]
 	}
 }
