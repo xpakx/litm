@@ -1,5 +1,6 @@
 import { type WindowContext, type Service } from "./app.js";
 import { EventBus } from "./event-bus.js";
+import diceTemplate from './dice.html.js'; 
 
 class DiceService implements Service {
 	currentPower: number = 0;
@@ -60,22 +61,7 @@ export function diceWindow(x: number, y: number): any {
 		x: x,
 		y: y,
 		width: 300, height: 450,
-		template: `
-		<div style="padding: 10px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-		<h4 style="margin: 0 0 10px 0; color: #cdd6f4;">Active Tags</h4>
-		<div id="active-tags" style="min-height: 80px; background: #313244; padding: 5px; border-radius: 4px; margin-bottom: 10px;"></div>
-
-		<div style="font-size: 1.2rem; margin-bottom: 10px; color: #cdd6f4;">
-		Total Power: <strong id="total-power" style="color: #a6e3a1;">0</strong>
-		</div>
-
-		<button id="roll-btn" style="padding: 10px; background: #89b4fa; color: #11111b; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-		ROLL 2d6
-		</button>
-
-		<div id="roll-result" style="margin-top: 15px; text-align: center; flex-grow: 1;"></div>
-		</div>
-		`,
+		template: diceTemplate,
 		services: [new DiceService()]
 	}
 }
