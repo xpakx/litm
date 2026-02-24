@@ -4,16 +4,28 @@ import { EventBus } from "./event-bus.js";
 class DiceService implements Service {
 	currentPower: number = 0;
 
-	private onTags(tags: any[], activeTagsDiv: HTMLElement, totalPowerSpan: HTMLElement) {
-		activeTagsDiv.innerHTML = tags.map(t => 
-		   `<div style="font-size: 0.9em; margin-bottom: 3px; color: ${t.type === 'power' ? '#a6e3a1' : '#f38ba8'}">
-		   ${t.value > 0 ? '+' : ''}${t.value} ${t.name}
-		   </div>`
-		  ).join('');
+	private tagComponent(tag: any): string {
+		const color = tag.type === 'power' ? '#a6e3a1' : '#f38ba8';
+		const style = `font-size: 0.9em; margin-bottom: 3px; color: ${color}`;
+		const value = `${tag.value > 0 ? '+' : ''}${tag.value} ${tag.name}`
+		return `<div style="${style}">${value}</div>`
+	}
 
-		  this.currentPower = tags.reduce((sum, tag) => sum + tag.value, 0);
-		  totalPowerSpan.innerText = this.currentPower.toString();
-		  totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+
+	private onTags(tags: any[], activeTagsDiv: HTMLElement, totalPowerSpan: HTMLElement) {
+		activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
+		this.currentPower = tags.reduce((sum, tag) => sum + tag.value, 0);
+		totalPowerSpan.innerText = this.currentPower.toString();
+		totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+	}
+
+	private resultComponent(d1: number, d2: number, color: string, total: number, outcome: string) {
+		return`
+		<div style="font-size: 2rem; color: #cdd6f4;">[${d1}] + [${d2}]</div>
+		<div style="font-size: 0.9rem; color: #a6adc8;">Power: ${this.currentPower}</div>
+		<div style="font-size: 2.5rem; font-weight: bold; color: ${color}; margin: 10px 0;">${total}</div>
+		<div style="font-size: 1.1rem; color: ${color};">${outcome}</div>
+		`
 	}
 
 	private onClick(resultDiv: HTMLElement) {
@@ -28,12 +40,7 @@ class DiceService implements Service {
 		else if (total <= 9) { outcome = "Weak Hit (Mixed Success)"; color = "#f9e2af"; }
 		else { outcome = "Strong Hit (Full Success)"; color = "#a6e3a1"; }
 
-		resultDiv.innerHTML = `
-		<div style="font-size: 2rem; color: #cdd6f4;">[${d1}] + [${d2}]</div>
-		<div style="font-size: 0.9rem; color: #a6adc8;">Power: ${this.currentPower}</div>
-		<div style="font-size: 2.5rem; font-weight: bold; color: ${color}; margin: 10px 0;">${total}</div>
-		<div style="font-size: 1.1rem; color: ${color};">${outcome}</div>
-		`;
+		resultDiv.innerHTML = this.resultComponent(d1, d2, color, total, outcome);
 	}
 
 	init(ctx: WindowContext): void {

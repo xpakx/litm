@@ -5,6 +5,10 @@ export interface WindowContext {
 	close: () => void,
 }
 
+// target is probably to have a Service with logic, some kind of 
+// template in a form of Web Component (?) and maybe load
+// html/css from file (?) that would make it easy to connect
+// events in html to service and vice versa
 export interface Service {
 	init(ctx: WindowContext): void;
 }
