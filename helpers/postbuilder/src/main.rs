@@ -8,6 +8,7 @@ use swc_core::common::{sync::Lrc, SourceMap};
 use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
 
 use swc_core::ecma::ast::{ExportAll, ImportDecl, NamedExport};
+use swc_core::ecma::codegen::{text_writer::JsWriter, Emitter};
 use swc_core::ecma::visit::{VisitMut, VisitMutWith};
 
 fn main() {
@@ -15,36 +16,41 @@ fn main() {
     let dist_dir = "dist";
     let verbose = true;
 
-    js_scan(src_dir, dist_dir, verbose);
+    let mut html_files_to_process: HashSet<(PathBuf, PathBuf)> = HashSet::new();
+    js_scan(src_dir, dist_dir, verbose, &mut html_files_to_process);
 
     if verbose {
         println!("Compiling HTML files from '{}' to '{}'...", src_dir, dist_dir);
     }
 
-    for entry in WalkDir::new(src_dir).into_iter().filter_map(|e| e.ok()) {
-        let path = entry.path();
 
-        if path.extension().map_or(false, |ext| ext == "html") {
-            process_html(path, src_dir, dist_dir, verbose);
-        }
+    for (src_path, dest_path) in html_files_to_process {
+        process_html(&src_path, &dest_path, verbose);
     }
+
+    // TODO: transform to component with even hooks
+    // and variables
     
     println!("Done!");
 }
 
-fn js_scan(src_dir: &str, dist_dir: &str, verbose: bool) {
+fn js_scan(
+    src_dir: &str,
+    dist_dir: &str,
+    verbose: bool,
+    html_files: &mut HashSet<(PathBuf, PathBuf)>,
+    ) {
     if verbose {
         println!("Scanning JS files in '{}' for HTML imports...", dist_dir);
     }
 
-    let mut html_files_to_process: HashSet<(PathBuf, PathBuf)> = HashSet::new();
 
     for entry in WalkDir::new(dist_dir).into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
         
         if path.extension().map_or(false, |ext| ext == "js") {
             println!("Found {:?}", path);
-            process_js_file(path, src_dir, dist_dir, &mut html_files_to_process, verbose);
+            process_js_file(path, src_dir, dist_dir, html_files, verbose);
         }
     }
 
@@ -97,11 +103,30 @@ fn process_js_file(
     module.visit_mut_with(&mut rewriter);
 
     if rewriter.modified {
+        let mut buf = vec![];
+        {
+            let mut emitter = Emitter {
+                cfg: swc_core::ecma::codegen::Config::default(),
+                cm: cm.clone(),
+                comments: None,
+                wr: JsWriter::new(cm.clone(), "\n", &mut buf, None),
+            };
+            if let Err(e) = emitter.emit_module(&module) {
+                eprintln!("Failed to emit code for {:?}: {:?}", js_path, e);
+                return;
+            }
+        }
+
+        fs::write(js_path, String::from_utf8(buf).unwrap()).unwrap();
+        
+        if verbose {
+            println!("Updated imports in: {:?}", js_path);
+        }
+
 
         for task in rewriter.discovered_html {
             html_files.insert(task);
         }
-        println!("{:?}", html_files);
     }
 
 }
@@ -152,7 +177,7 @@ impl VisitMut for HtmlImportRewriter {
     }
 }
 
-fn process_html(src_path: &Path, src_root: &str, dist_root: &str, verbose: bool) {
+fn process_html(src_path: &Path, dist_path: &Path, verbose: bool) {
     let html_content = match fs::read_to_string(src_path) {
         Ok(content) => content,
         Err(e) => {
@@ -168,16 +193,13 @@ fn process_html(src_path: &Path, src_root: &str, dist_root: &str, verbose: bool)
 
     let js_content = format!("export default `{}`;", escaped_html);
 
-    let relative_path = src_path.strip_prefix(src_root).unwrap();
-    let dest_path = Path::new(dist_root).join(relative_path).with_extension("html.js");
-
-    if let Some(parent) = dest_path.parent() {
+    if let Some(parent) = dist_path.parent() {
         fs::create_dir_all(parent).unwrap();
     }
 
-    fs::write(&dest_path, js_content).unwrap();
+    fs::write(&dist_path, js_content).unwrap();
     
     if verbose {
-        println!("HTML -> JS: {:?}", dest_path);
+        println!("HTML -> JS: {:?}", dist_path);
     }
 }
