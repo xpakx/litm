@@ -5,7 +5,9 @@ use walkdir::WalkDir;
 fn main() {
     let src_dir = "src";
     let dist_dir = "dist";
-    let verbose = false;
+    let verbose = true;
+
+    js_scan(src_dir, dist_dir, verbose);
 
     if verbose {
         println!("Compiling HTML files from '{}' to '{}'...", src_dir, dist_dir);
@@ -20,6 +22,21 @@ fn main() {
     }
     
     println!("Done!");
+}
+
+fn js_scan(src_dir: &str, dist_dir: &str, verbose: bool) {
+    if verbose {
+        println!("Scanning JS files in '{}' for HTML imports...", dist_dir);
+    }
+
+    for entry in WalkDir::new(dist_dir).into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        
+        if path.extension().map_or(false, |ext| ext == "js") {
+            println!("Found {:?}", path)
+        }
+    }
+
 }
 
 fn process_html(src_path: &Path, src_root: &str, dist_root: &str, verbose: bool) {
