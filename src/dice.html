@@ -1,14 +1,165 @@
-<div style="padding: 10px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-	<h4 style="margin: 0 0 10px 0; color: #cdd6f4;">Active Tags</h4>
-	<div id="active-tags" style="min-height: 80px; background: #313244; padding: 5px; border-radius: 4px; margin-bottom: 10px;"></div>
+<style>
 
-	<div style="font-size: 1.2rem; margin-bottom: 10px; color: #cdd6f4;">
-		Total Power: <strong id="total-power" style="color: #a6e3a1;">0</strong>
+#roll-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	margin-bottom: 15px;
+	transition: transform 0.1s;
+}
+
+#roll-btn:active {
+	transform: scale(0.95);
+}
+
+#total-power {
+	color: #a6e3a1;
+}
+
+.power-container {
+	font-size: 1.2rem;
+	margin-bottom: 10px;
+	color: #cdd6f4;
+}
+
+#active-tags {
+	display: none;
+	min-height: 80px;
+	background: #313244;
+	padding: 5px;
+	border-radius: 4px;
+	margin-bottom: 10px;
+}
+
+h4.tags-header {
+	margin: 0 0 10px 0;
+	color: #cdd6f4;
+}
+
+.dice-container {
+	height: 100%;
+	box-sizing: border-box;
+	flex-grow: 1;
+	padding: 15px 20px 25px;
+            background-color: var(--card-bg);
+
+	background-image: repeating-linear-gradient(
+		transparent, 
+		transparent 33px, 
+		var(--line-color) 33px, 
+		var(--line-color) 34px
+	);
+	background-position: 0 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.handwritten {
+	font-family: 'Caveat', cursive;
+	color: var(--text-dark);
+}
+
+.roll-text {
+	font-size: 32px;
+	font-weight: 700;
+}
+
+.marker-yellow, .marker-peach, .marker-blue {
+	position: relative;
+	display: inline-block;
+	padding: 0 10px;
+	z-index: 1;
+}
+.marker-yellow::before, .marker-peach::before, .marker-blue::before {
+	content: '';
+	position: absolute;
+	top: 15%;
+	bottom: 10%;
+	left: 0;
+	right: 0;
+	z-index: -1;
+	border-radius: 3px 8px 4px 6px / 5px 3px 8px 4px; 
+	opacity: 0.9;
+	transition: background-color 0.3s ease;
+}
+
+.marker-yellow::before {
+	background-color: var(--highlight-yellow);
+	transform: skewX(-4deg) rotate(-0.5deg);
+}
+
+.marker-peach::before {
+	background-color: var(--highlight-peach);
+	transform: skewX(-2deg) rotate(0.5deg);
+}
+
+.marker-blue::before {
+	background-color: var(--highlight-blue);
+	transform: skewX(2deg) rotate(-1deg);
+}
+
+#roll-btn:hover .marker-yellow::before {
+	filter: brightness(1.05);
+}
+
+.result-row {
+	display: flex;
+	align-items: baseline;
+	gap: 15px;
+	margin-bottom: 5px;
+}
+
+.total-number {
+	font-size: 42px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.outcome-text {
+	font-size: 28px;
+	font-weight: 600;
+	min-height: 35px;
+}
+
+.label-text {
+	font-family: 'Cinzel', serif;
+	color: #8c8072;
+	font-size: 10px;
+	letter-spacing: 1.5px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.result-row .label-text {
+	font-size: 14px;
+}
+
+
+</style>
+
+<div class="dice-container">
+	<div id="active-tags"></div>
+
+	<div class="power-container">
+		Total Power: <strong id="total-power">0</strong>
 	</div>
 
-	<button id="roll-btn" style="padding: 10px; background: #89b4fa; color: #11111b; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-		ROLL 2d6
+	<button id="roll-btn">
+                <span class="handwritten roll-text marker-yellow">Cast the Bones</span>
 	</button>
 
-	<div id="roll-result" style="margin-top: 15px; text-align: center; flex-grow: 1;"></div>
+
+	<!-- Dices -->
+
+
+	<div class="result-row">
+		<span class="label-text" style="">TOTAL:</span>
+		<span class="handwritten total-number" id="total-score">-</span>
+	</div>
+
+	<div>
+		<span class="handwritten outcome-text" id="outcome-text"></span>
+	</div>
+
 </div>

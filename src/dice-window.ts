@@ -29,29 +29,43 @@ class DiceService implements Service {
 		`
 	}
 
-	private onClick(resultDiv: HTMLElement) {
+	private onClick(totalScoreDiv: HTMLElement, outcomeDiv: HTMLElement) {
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower;
 
-		let outcome = "";
-		let color = "";
+		if (total <= 6) {
+			outcomeDiv.innerHTML = "Miss...";
+			outcomeDiv.classList.remove("marker-yellow")
+			outcomeDiv.classList.remove("marker-blue")
+			outcomeDiv.classList.add("marker-peach")
+		} else if (total <= 9) { 
+			outcomeDiv.innerHTML = "Mixed Success";
+			outcomeDiv.classList.remove("marker-yellow")
+			outcomeDiv.classList.remove("marker-peach")
+			outcomeDiv.classList.add("marker-blue")
+		}
+		else {
+			outcomeDiv.innerHTML = "Success!";
+			outcomeDiv.classList.remove("marker-blue")
+			outcomeDiv.classList.remove("marker-peach")
+			outcomeDiv.classList.add("marker-yellow")
+		}
 
-		if (total <= 6) { outcome = "Miss (Complication)"; color = "#f38ba8"; }
-		else if (total <= 9) { outcome = "Weak Hit (Mixed Success)"; color = "#f9e2af"; }
-		else { outcome = "Strong Hit (Full Success)"; color = "#a6e3a1"; }
 
-		resultDiv.innerHTML = this.resultComponent(d1, d2, color, total, outcome);
+		totalScoreDiv.innerHTML = `${total}`;
 	}
 
 	init(ctx: WindowContext): void {
 		const activeTagsDiv = ctx.body.querySelector('#active-tags')! as HTMLElement;
 		const totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
 		const rollBtn = ctx.body.querySelector('#roll-btn')!;
-		const resultDiv = ctx.body.querySelector('#roll-result')! as HTMLElement;
+
+		const totalScore = ctx.body.querySelector('#total-score')! as HTMLElement;
+		const outcome = ctx.body.querySelector('#outcome-text')! as HTMLElement;
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags, activeTagsDiv, totalPowerSpan));
-		rollBtn.addEventListener('click', () => this.onClick(resultDiv));
+		rollBtn.addEventListener('click', () => this.onClick(totalScore, outcome));
 	}
 }
 
