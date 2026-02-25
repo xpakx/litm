@@ -7,6 +7,7 @@ interface Theme {
 	name: string;
 	powerTags: string[];
 	weaknessTags: string[];
+	quest: string;
 }
 
 export interface Character {
@@ -43,7 +44,7 @@ class TagWindowService implements Service {
 	}
 
 
-	private appendTheme(theme: Theme, container: HTMLElement) {
+	private appendTheme(theme: Theme, container: HTMLElement, quest: HTMLElement) {
 		let html = '';
 		theme.powerTags.forEach((tag, index) => {
 			html += this.makeTag(tag, index == 0);
@@ -54,6 +55,7 @@ class TagWindowService implements Service {
 		});
 
 		container.innerHTML = html;
+		quest.textContent = theme.quest;
 	}
 
 	onClick(container: HTMLElement, e: MouseEvent) {
@@ -72,8 +74,9 @@ class TagWindowService implements Service {
 
 	init(ctx: WindowContext): void {
 		const container = ctx.body.querySelector('#items')! as HTMLElement;
+		const quest = ctx.body.querySelector('#quest-content')! as HTMLElement;
 
-		this.appendTheme(this.character.themes[0]!, container);
+		this.appendTheme(this.character.themes[0]!, container, quest);
 
 		const buttons = container.querySelectorAll('.tag-btn');
 		buttons.forEach((elem: Element) => {
