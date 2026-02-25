@@ -28,8 +28,8 @@ fn main() {
         process_html(&src_path, &dest_path, verbose);
     }
 
-    // TODO: transform to component with even hooks
-    // and variables
+    // TODO: current idea is to transform this to web component with event hooks
+    // and easily updatable variables
     
     println!("Done!");
 }

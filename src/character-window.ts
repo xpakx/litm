@@ -1,5 +1,6 @@
 import { type Service, type WindowContext } from "./app.js";
 import { EventBus } from "./event-bus.js";
+import characterTemplate from './character.html'; 
 
 
 interface Theme {
@@ -23,8 +24,10 @@ class TagWindowService implements Service {
 	private appendTheme(theme: Theme, container: HTMLElement) {
 		const themeEl = document.createElement('div');
 		themeEl.style.marginBottom = '15px';
+		themeEl.classList.add('character-theme');
 
-		let html = `<h4 style="margin: 0 0 5px 0; color: #cdd6f4;">${theme.name}</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">`;
+		let html = `<h4>${theme.name}</h4>
+		<div class="theme-content">`;
 
 		theme.powerTags.forEach(tag => {
 			html += `<button class="tag-btn power-tag" data-type="power" data-name="${tag}">${tag}</button>`;
@@ -73,7 +76,7 @@ export function characterWindow(x: number, y: number, character: Character): any
 		y: y,
 		width: 320, 
 		height: 450,
-		template: `<div id="char-sheet" style="padding: 10px; overflow-y: auto; height: 100%; box-sizing: border-box;"></div>`,
+		template: characterTemplate,
 		services: [new TagWindowService(character)]
     }
 }
