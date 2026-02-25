@@ -21,25 +21,40 @@ class TagWindowService implements Service {
 		this.character = character;
 	}
 
+	private makeTag(tag: string): string {
+		return `<div class="item-row item-sub">
+			<span class="handwritten marker-yellow tag-btn"
+			data-type="power" data-name="${tag}">
+			${tag}
+			</span>
+			<svg class="scratch-icon" viewBox="0 0 24 24">
+			<path d="M7,18 L11,4 M12,19 L16,5 M17,20 L21,6" stroke="#4a4239" stroke-width="1.8" stroke-linecap="round"/>
+			</svg>
+			</div>` 
+	}
+
+	private makeWeakness(tag: string): string {
+		return `<div class="item-row item-sub">
+			<span class="handwritten marker-peach tag-btn"
+			data-type="weakness" data-name="${tag}">
+			${tag}
+			</span>
+			</div>` 
+	}
+
+
 	private appendTheme(theme: Theme, container: HTMLElement) {
-		const themeEl = document.createElement('div');
-		themeEl.style.marginBottom = '15px';
-		themeEl.classList.add('character-theme');
 
-		let html = `<h4>${theme.name}</h4>
-		<div class="theme-content">`;
-
+		let html = '';
 		theme.powerTags.forEach(tag => {
-			html += `<button class="tag-btn power-tag" data-type="power" data-name="${tag}">${tag}</button>`;
+			html += this.makeTag(tag);
 		});
 
 		theme.weaknessTags.forEach(tag => {
-			html += `<button class="tag-btn weakness-tag" data-type="weakness" data-name="${tag}">${tag}</button>`;
+			html += this.makeWeakness(tag);
 		});
 
-		html += `</div>`;
-		themeEl.innerHTML = html;
-		container.appendChild(themeEl);
+		container.innerHTML = html;
 	}
 
 	onClick(container: HTMLElement, e: MouseEvent) {
@@ -57,9 +72,9 @@ class TagWindowService implements Service {
 	}
 
 	init(ctx: WindowContext): void {
-		const container = ctx.body.querySelector('#char-sheet')! as HTMLElement;
+		const container = ctx.body.querySelector('#items')! as HTMLElement;
 
-		this.character.themes.forEach(theme => this.appendTheme(theme, container));
+		this.appendTheme(this.character.themes[0]!, container);
 
 		const buttons = container.querySelectorAll('.tag-btn');
 		buttons.forEach((elem: Element) => {
