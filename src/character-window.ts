@@ -21,8 +21,8 @@ class TagWindowService implements Service {
 		this.character = character;
 	}
 
-	private makeTag(tag: string): string {
-		return `<div class="item-row item-sub">
+	private makeTag(tag: string, main: boolean = false): string {
+		return `<div class="item-row ${main ? 'item-main' : 'item-sub'}">
 			<span class="handwritten marker-yellow tag-btn"
 			data-type="power" data-name="${tag}">
 			${tag}
@@ -44,10 +44,9 @@ class TagWindowService implements Service {
 
 
 	private appendTheme(theme: Theme, container: HTMLElement) {
-
 		let html = '';
-		theme.powerTags.forEach(tag => {
-			html += this.makeTag(tag);
+		theme.powerTags.forEach((tag, index) => {
+			html += this.makeTag(tag, index == 0);
 		});
 
 		theme.weaknessTags.forEach(tag => {
