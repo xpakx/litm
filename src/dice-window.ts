@@ -4,12 +4,18 @@ import diceTemplate from './dice.html';
 
 class DiceService implements Service {
 	currentPower: number = 0;
+        diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
+
 
 	private tagComponent(tag: any): string {
 		const color = tag.type === 'power' ? '#a6e3a1' : '#f38ba8';
 		const style = `font-size: 0.9em; margin-bottom: 3px; color: ${color}`;
 		const value = `${tag.value > 0 ? '+' : ''}${tag.value} ${tag.name}`
 		return `<div style="${style}">${value}</div>`
+	}
+
+	private diceToClass(result: number): string {
+		return this.diceClasses[result - 1]!;
 	}
 
 
@@ -20,16 +26,7 @@ class DiceService implements Service {
 		totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
 	}
 
-	private resultComponent(d1: number, d2: number, color: string, total: number, outcome: string) {
-		return`
-		<div style="font-size: 2rem; color: #cdd6f4;">[${d1}] + [${d2}]</div>
-		<div style="font-size: 0.9rem; color: #a6adc8;">Power: ${this.currentPower}</div>
-		<div style="font-size: 2.5rem; font-weight: bold; color: ${color}; margin: 10px 0;">${total}</div>
-		<div style="font-size: 1.1rem; color: ${color};">${outcome}</div>
-		`
-	}
-
-	private onClick(totalScoreDiv: HTMLElement, outcomeDiv: HTMLElement) {
+	private onClick(totalScoreDiv: HTMLElement, outcomeDiv: HTMLElement, die1: HTMLElement, die2: HTMLElement) {
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower;
@@ -51,6 +48,9 @@ class DiceService implements Service {
 			outcomeDiv.classList.remove("marker-peach")
 			outcomeDiv.classList.add("marker-yellow")
 		}
+                die1.className = `fa-solid ${this.diceToClass(d1)}`;
+                die2.className = `fa-solid ${this.diceToClass(d2)}`;
+
 
 
 		totalScoreDiv.innerHTML = `${total}`;
@@ -63,9 +63,11 @@ class DiceService implements Service {
 
 		const totalScore = ctx.body.querySelector('#total-score')! as HTMLElement;
 		const outcome = ctx.body.querySelector('#outcome-text')! as HTMLElement;
+		const die1 = ctx.body.querySelector('#die1')! as HTMLElement;
+		const die2 = ctx.body.querySelector('#die2')! as HTMLElement;
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags, activeTagsDiv, totalPowerSpan));
-		rollBtn.addEventListener('click', () => this.onClick(totalScore, outcome));
+		rollBtn.addEventListener('click', () => this.onClick(totalScore, outcome, die1, die2));
 	}
 }
 
