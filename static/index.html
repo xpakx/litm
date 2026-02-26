@@ -48,20 +48,25 @@
 
         .app-window {
             position: absolute;
-            background: var(--win-bg);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            background-color: var(--card-bg);
+            border-radius: 4px;
+            box-shadow: 
+                0 10px 25px rgba(0,0,0,0.15),
+                inset 0 0 20px rgba(150, 130, 100, 0.1);
+            border: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
             min-width: 200px;
             min-height: 100px;
-            border: 1px solid #000;
             user-select: none;
             transition: transform 0.1s;
+            overflow: hidden;
         }
 
         .app-header {
             background: var(--header-bg);
             color: var(--header-text);
+            font-family: 'Cinzel', serif;
             padding: 8px 12px;
             cursor: grab;
             display: flex;
@@ -69,6 +74,9 @@
             align-items: center;
             font-weight: bold;
             font-size: 14px;
+            letter-spacing: 2.5px;
+            font-weight: 600;
+            border-bottom: 2px solid #5a4638;
         }
 
         .app-header:active {
