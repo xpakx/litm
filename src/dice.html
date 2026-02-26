@@ -13,7 +13,14 @@
 }
 
 #total-power {
-	color: #a6e3a1;
+	font-family: 'Caveat', cursive;
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--text-dark);
+	background: transparent;
+	border: none;
+	width: 40px;
+	text-align: center;
 }
 
 .power-container {
@@ -135,15 +142,50 @@ h4.tags-header {
 	font-size: 14px;
 }
 
+.modifier-row {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 20px;
+	margin-top: 5px;
+}
+
+.input-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.mod-btn {
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	font-size: 16px;
+	cursor: pointer;
+	transition: color 0.2s;
+	padding: 5px;
+}
+
+.mod-btn:hover {
+	color: var(--text-dark);
+}
 
 </style>
 
 <div class="dice-container">
+	<!-- TODO: use as tooltip -->
 	<div id="active-tags"></div>
 
-	<div class="power-container">
-		Total Power: <strong id="total-power">0</strong>
+	<div class="modifier-row">
+		<span class="label-text">POWER / STATUSES</span>
+		<div class="input-wrapper">
+			<button class="mod-btn" id="sub-power-btn"><i class="fa-solid fa-minus"></i></button>
+			<strong id="total-power">0</strong>
+
+			<button class="mod-btn" id="add-power-btn"><i class="fa-solid fa-plus"></i></button>
+		</div>
 	</div>
+
 
 	<button id="roll-btn">
                 <span class="handwritten roll-text marker-yellow">Cast the Bones</span>
