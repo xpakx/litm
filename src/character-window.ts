@@ -24,6 +24,8 @@ class TagWindowService implements Service {
 
 	private makeTag(tag: string, main: boolean = false): string {
 		return `<div class="item-row ${main ? 'item-main' : 'item-sub'}">
+			<div></div>
+
 			<span class="handwritten marker-yellow tag-btn"
 			data-type="power" data-name="${tag}">
 			${tag}
@@ -35,11 +37,15 @@ class TagWindowService implements Service {
 	}
 
 	private makeWeakness(tag: string): string {
-		return `<div class="item-row item-sub">
+		return `<div class="item-row item-sub item-weakness">
+			<div></div>
 			<span class="handwritten marker-peach tag-btn"
 			data-type="weakness" data-name="${tag}">
 			${tag}
 			</span>
+			<svg class="scratch-icon" viewBox="0 0 24 24">
+			<path d="M7,18 L11,4 M12,19 L16,5 M17,20 L21,6" stroke="#4a4239" stroke-width="1.8" stroke-linecap="round"/>
+			</svg>
 			</div>` 
 	}
 
