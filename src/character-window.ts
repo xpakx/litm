@@ -18,6 +18,9 @@ export interface Character {
 class TagWindowService implements Service {
 	character: Character;
 
+	container?: HTMLElement;
+	quest?: HTMLElement;
+
 	constructor(character: Character) {
 		this.character = character;
 	}
@@ -50,7 +53,7 @@ class TagWindowService implements Service {
 	}
 
 
-	private appendTheme(theme: Theme, container: HTMLElement, quest: HTMLElement) {
+	private appendTheme(theme: Theme) {
 		let html = '';
 		theme.powerTags.forEach((tag, index) => {
 			html += this.makeTag(tag, index == 0);
@@ -60,15 +63,16 @@ class TagWindowService implements Service {
 			html += this.makeWeakness(tag);
 		});
 
-		container.innerHTML = html;
-		quest.textContent = theme.quest;
+		if (this.container) this.container.innerHTML = html;
+		if (this.quest) this.quest.textContent = theme.quest;
 	}
 
-	onClick(container: HTMLElement, e: MouseEvent) {
+	onClick(e: MouseEvent) {
 		const target = e.target as HTMLElement;
 		target.classList.toggle('selected');
+		if (!this.container) return;
 
-		const selectedTags = Array.from(container.querySelectorAll('.tag-btn.selected')).map((el: any) => ({
+		const selectedTags = Array.from(this.container.querySelectorAll('.tag-btn.selected')).map((el: any) => ({
 			name: el.getAttribute('data-name'),
 			type: el.getAttribute('data-type'),
 			value: el.getAttribute('data-type') === 'power' ? 1 : -1
@@ -79,15 +83,15 @@ class TagWindowService implements Service {
 	}
 
 	init(ctx: WindowContext): void {
-		const container = ctx.body.querySelector('#items')! as HTMLElement;
-		const quest = ctx.body.querySelector('#quest-content')! as HTMLElement;
+		this.container = ctx.body.querySelector('#items') as HTMLElement;
+		this.quest = ctx.body.querySelector('#quest-content') as HTMLElement;
 
-		this.appendTheme(this.character.themes[0]!, container, quest);
+		this.appendTheme(this.character.themes[0]!);
 
-		const buttons = container.querySelectorAll('.tag-btn');
+		const buttons = this.container.querySelectorAll('.tag-btn');
 		buttons.forEach((elem: Element) => {
 			const btn = elem as HTMLButtonElement;
-			btn.addEventListener('click', (e: MouseEvent) => this.onClick(container, e));
+			btn.addEventListener('click', (e: MouseEvent) => this.onClick(e));
 		});
 	}
 }
