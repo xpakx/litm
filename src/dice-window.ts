@@ -26,34 +26,34 @@ class DiceService implements Service {
 		totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
 	}
 
-	private onClick(totalScoreDiv: HTMLElement, outcomeDiv: HTMLElement, die1: HTMLElement, die2: HTMLElement) {
+	private onClick(totalScoreDiv: HTMLElement, outcomeDiv: HTMLElement, die1: HTMLElement, die2: HTMLElement, diceContainer: HTMLElement) {
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower;
 
-		if (total <= 6) {
-			outcomeDiv.innerHTML = "Miss...";
-			outcomeDiv.classList.remove("marker-yellow")
-			outcomeDiv.classList.remove("marker-blue")
-			outcomeDiv.classList.add("marker-peach")
-		} else if (total <= 9) { 
-			outcomeDiv.innerHTML = "Mixed Success";
-			outcomeDiv.classList.remove("marker-yellow")
-			outcomeDiv.classList.remove("marker-peach")
-			outcomeDiv.classList.add("marker-blue")
-		}
-		else {
-			outcomeDiv.innerHTML = "Success!";
-			outcomeDiv.classList.remove("marker-blue")
-			outcomeDiv.classList.remove("marker-peach")
-			outcomeDiv.classList.add("marker-yellow")
-		}
-                die1.className = `fa-solid ${this.diceToClass(d1)}`;
-                die2.className = `fa-solid ${this.diceToClass(d2)}`;
 
+		diceContainer.classList.remove('rolling');
+		void diceContainer.offsetWidth;
+		diceContainer.classList.add('rolling');
 
+		setTimeout(() => {
+			outcomeDiv.classList.remove('marker-peach', 'marker-yellow', 'marker-blue');
+			if (total <= 6) {
+				outcomeDiv.innerHTML = "Miss...";
+				outcomeDiv.classList.add("marker-peach")
+			} else if (total <= 9) { 
+				outcomeDiv.innerHTML = "Mixed Success";
+				outcomeDiv.classList.add("marker-blue")
+			}
+			else {
+				outcomeDiv.innerHTML = "Success!";
+				outcomeDiv.classList.add("marker-yellow")
+			}
+			die1.className = `fa-solid ${this.diceToClass(d1)}`;
+			die2.className = `fa-solid ${this.diceToClass(d2)}`;
 
-		totalScoreDiv.innerHTML = `${total}`;
+			totalScoreDiv.innerHTML = `${total}`;
+		}, 250);
 	}
 
 	init(ctx: WindowContext): void {
@@ -65,9 +65,10 @@ class DiceService implements Service {
 		const outcome = ctx.body.querySelector('#outcome-text')! as HTMLElement;
 		const die1 = ctx.body.querySelector('#die1')! as HTMLElement;
 		const die2 = ctx.body.querySelector('#die2')! as HTMLElement;
+		const diceContainer = ctx.body.querySelector('#dice-result-container-element')! as HTMLElement;
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags, activeTagsDiv, totalPowerSpan));
-		rollBtn.addEventListener('click', () => this.onClick(totalScore, outcome, die1, die2));
+		rollBtn.addEventListener('click', () => this.onClick(totalScore, outcome, die1, die2, diceContainer));
 	}
 }
 

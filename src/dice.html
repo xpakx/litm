@@ -183,6 +183,18 @@ h4.tags-header {
 	display: inline-flex;
 }
 
+@keyframes dice-roll {
+    0% { transform: translateY(0) rotate(0); }
+    20% { transform: translateY(-15px) rotate(-20deg); }
+    40% { transform: translateY(5px) rotate(20deg); }
+    60% { transform: translateY(-10px) rotate(-10deg); }
+    80% { transform: translateY(2px) rotate(10deg); }
+    100% { transform: translateY(0) rotate(0); }
+}
+
+.rolling .die {
+    animation: dice-roll 0.5s ease-in-out;
+}
 
 </style>
 
@@ -207,7 +219,7 @@ h4.tags-header {
 
 
 	<span class="label-text">RESULT</span>
-	<div class="dice-result-container">
+	<div class="dice-result-container" id="dice-result-container-element">
 		<div class="die"><i id="die1" class="fa-solid fa-dice-six"></i></div>
 		<div class="die"><i id="die2" class="fa-solid fa-dice-six"></i></div>
 	</div>
