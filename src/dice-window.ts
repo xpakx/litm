@@ -6,6 +6,14 @@ class DiceService implements Service {
 	currentPower: number = 0;
         diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
+	activeTagsDiv?: HTMLElement;
+	totalPowerSpan?: HTMLElement;
+	rollBtn?: HTMLElement;
+	totalScore?: HTMLElement;
+	outcome?: HTMLElement;
+	die1?: HTMLElement;
+	die2?: HTMLElement;
+	diceContainer?: HTMLElement;
 
 	private tagComponent(tag: any): string {
 		const color = tag.type === 'power' ? '#a6e3a1' : '#f38ba8';
@@ -19,56 +27,67 @@ class DiceService implements Service {
 	}
 
 
-	private onTags(tags: any[], activeTagsDiv: HTMLElement, totalPowerSpan: HTMLElement) {
-		activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
+	private onTags(tags: any[]) {
+		if (!this.activeTagsDiv) return
+		this.activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
 		this.currentPower = tags.reduce((sum, tag) => sum + tag.value, 0);
-		totalPowerSpan.innerText = this.currentPower.toString();
-		totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+
+		if (!this.totalPowerSpan) return
+		this.totalPowerSpan.innerText = this.currentPower.toString();
+		this.totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
 	}
 
-	private onClick(totalScoreDiv: HTMLElement, outcomeDiv: HTMLElement, die1: HTMLElement, die2: HTMLElement, diceContainer: HTMLElement) {
+	private updateOutcome(d1: number, d2: number, total: number) {
+		if (!this.outcome) return;
+		this.outcome.classList.remove('marker-peach', 'marker-yellow', 'marker-blue');
+		if (total <= 6) {
+			this.outcome.innerHTML = "Miss...";
+			this.outcome.classList.add("marker-peach")
+		} else if (total <= 9) { 
+			this.outcome.innerHTML = "Mixed Success";
+			this.outcome.classList.add("marker-blue")
+		}
+		else {
+			this.outcome.innerHTML = "Success!";
+			this.outcome.classList.add("marker-yellow")
+		}
+
+		if (!this.die1) return;
+		this.die1.className = `fa-solid ${this.diceToClass(d1)}`;
+
+		if (!this.die2) return;
+		this.die2.className = `fa-solid ${this.diceToClass(d2)}`;
+
+		if (!this.totalScore) return;
+		this.totalScore.innerHTML = `${total}`;
+	}
+
+	private onClick() {
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower;
 
+		if (!this.diceContainer) return;
 
-		diceContainer.classList.remove('rolling');
-		void diceContainer.offsetWidth;
-		diceContainer.classList.add('rolling');
+		this.diceContainer.classList.remove('rolling');
+		void this.diceContainer.offsetWidth;
+		this.diceContainer.classList.add('rolling');
 
-		setTimeout(() => {
-			outcomeDiv.classList.remove('marker-peach', 'marker-yellow', 'marker-blue');
-			if (total <= 6) {
-				outcomeDiv.innerHTML = "Miss...";
-				outcomeDiv.classList.add("marker-peach")
-			} else if (total <= 9) { 
-				outcomeDiv.innerHTML = "Mixed Success";
-				outcomeDiv.classList.add("marker-blue")
-			}
-			else {
-				outcomeDiv.innerHTML = "Success!";
-				outcomeDiv.classList.add("marker-yellow")
-			}
-			die1.className = `fa-solid ${this.diceToClass(d1)}`;
-			die2.className = `fa-solid ${this.diceToClass(d2)}`;
-
-			totalScoreDiv.innerHTML = `${total}`;
-		}, 250);
+		setTimeout(() => this.updateOutcome(d1, d2, total), 250);
 	}
 
 	init(ctx: WindowContext): void {
-		const activeTagsDiv = ctx.body.querySelector('#active-tags')! as HTMLElement;
-		const totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
-		const rollBtn = ctx.body.querySelector('#roll-btn')!;
+		this.activeTagsDiv = ctx.body.querySelector('#active-tags')! as HTMLElement;
+		this.totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
+		this.rollBtn = ctx.body.querySelector('#roll-btn')!;
+		this.totalScore = ctx.body.querySelector('#total-score')! as HTMLElement;
+		this.outcome = ctx.body.querySelector('#outcome-text')! as HTMLElement;
+		this.die1 = ctx.body.querySelector('#die1')! as HTMLElement;
+		this.die2 = ctx.body.querySelector('#die2')! as HTMLElement;
+		this.diceContainer = ctx.body.querySelector('#dice-result-container-element')! as HTMLElement;
 
-		const totalScore = ctx.body.querySelector('#total-score')! as HTMLElement;
-		const outcome = ctx.body.querySelector('#outcome-text')! as HTMLElement;
-		const die1 = ctx.body.querySelector('#die1')! as HTMLElement;
-		const die2 = ctx.body.querySelector('#die2')! as HTMLElement;
-		const diceContainer = ctx.body.querySelector('#dice-result-container-element')! as HTMLElement;
-
-		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags, activeTagsDiv, totalPowerSpan));
-		rollBtn.addEventListener('click', () => this.onClick(totalScore, outcome, die1, die2, diceContainer));
+		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
+		this.rollBtn.addEventListener('click', () => this.onClick());
 	}
 }
 
