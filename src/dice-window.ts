@@ -8,12 +8,17 @@ class DiceService implements Service {
 
 	activeTagsDiv?: HTMLElement;
 	totalPowerSpan?: HTMLElement;
-	rollBtn?: HTMLElement;
+	rollBtn?: HTMLButtonElement;
 	totalScore?: HTMLElement;
 	outcome?: HTMLElement;
 	die1?: HTMLElement;
 	die2?: HTMLElement;
 	diceContainer?: HTMLElement;
+	subPowerBtn?: HTMLButtonElement;
+	addPowerBtn?: HTMLButtonElement;
+
+	addHocPower: number = 0;
+	tagPower: number = 0;
 
 	private tagComponent(tag: any): string {
 		const color = tag.type === 'power' ? '#a6e3a1' : '#f38ba8';
@@ -30,7 +35,8 @@ class DiceService implements Service {
 	private onTags(tags: any[]) {
 		if (!this.activeTagsDiv) return
 		this.activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
-		this.currentPower = tags.reduce((sum, tag) => sum + tag.value, 0);
+		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
+		this.currentPower = this.tagPower + this.addHocPower;
 
 		if (!this.totalPowerSpan) return
 		this.totalPowerSpan.innerText = this.currentPower.toString();
@@ -76,18 +82,32 @@ class DiceService implements Service {
 		setTimeout(() => this.updateOutcome(d1, d2, total), 250);
 	}
 
+	updateAdHocPower(delta: number) {
+		this.addHocPower += delta;
+		this.currentPower = this.tagPower + this.addHocPower;
+
+		if (!this.totalPowerSpan) return
+		this.totalPowerSpan.innerText = this.currentPower.toString();
+		this.totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+	}
+
 	init(ctx: WindowContext): void {
-		this.activeTagsDiv = ctx.body.querySelector('#active-tags')! as HTMLElement;
-		this.totalPowerSpan = ctx.body.querySelector('#total-power')! as HTMLElement;
-		this.rollBtn = ctx.body.querySelector('#roll-btn')!;
-		this.totalScore = ctx.body.querySelector('#total-score')! as HTMLElement;
-		this.outcome = ctx.body.querySelector('#outcome-text')! as HTMLElement;
-		this.die1 = ctx.body.querySelector('#die1')! as HTMLElement;
-		this.die2 = ctx.body.querySelector('#die2')! as HTMLElement;
-		this.diceContainer = ctx.body.querySelector('#dice-result-container-element')! as HTMLElement;
+		this.activeTagsDiv = ctx.body.querySelector('#active-tags') as HTMLElement;
+		this.totalPowerSpan = ctx.body.querySelector('#total-power') as HTMLElement;
+		this.rollBtn = ctx.body.querySelector('#roll-btn') as HTMLButtonElement;
+		this.totalScore = ctx.body.querySelector('#total-score') as HTMLElement;
+		this.outcome = ctx.body.querySelector('#outcome-text') as HTMLElement;
+		this.die1 = ctx.body.querySelector('#die1') as HTMLElement;
+		this.die2 = ctx.body.querySelector('#die2') as HTMLElement;
+		this.diceContainer = ctx.body.querySelector('#dice-result-container-element') as HTMLElement;
+
+		this.subPowerBtn = ctx.body.querySelector('#sub-power-btn') as HTMLButtonElement;
+		this.addPowerBtn = ctx.body.querySelector('#add-power-btn') as HTMLButtonElement;
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
 		this.rollBtn.addEventListener('click', () => this.onClick());
+		this.subPowerBtn.addEventListener('click', () => this.updateAdHocPower(-1));
+		this.addPowerBtn.addEventListener('click', () => this.updateAdHocPower(1));
 	}
 }
 
