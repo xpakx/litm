@@ -1,0 +1,87 @@
+<style>
+.smart-card {
+	background-color: var(--card-bg);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.card-header {
+	background-color: var(--header-bg);
+	color: var(--header-text);
+	font-family: 'Cinzel', serif;
+	text-align: center;
+	padding: 12px 0;
+	font-size: 14px;
+	letter-spacing: 2px;
+	font-weight: 700;
+	border-bottom: 2px solid #5a4638;
+	user-select: none;
+	z-index: 10;
+}
+
+.helper-bar {
+	background-color: #dcd3c1;
+	font-size: 11px;
+	color: #5c5046;
+	padding: 6px;
+	text-align: center;
+	font-family: 'Cinzel', serif;
+	border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.editor-container {
+	flex-grow: 1;
+	position: relative;
+	cursor: text;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: #876c59 #f2ead6;
+}
+
+#smart-editor {
+	width: 100%;
+	min-height: 100%;
+	box-sizing: border-box;
+	padding: 0 25px 40px 25px;
+	outline: none;
+
+	font-family: 'Caveat', cursive;
+	font-size: 26px;
+	color: var(--text-dark);
+	line-height: 34px;
+
+	background-image: repeating-linear-gradient(
+		transparent, 
+		transparent 33px, 
+		var(--line-color) 33px, 
+		var(--line-color) 34px
+			);
+	background-attachment: local;
+	background-position: 0 10px;
+}
+
+.helper-bar {
+	background-color: #dcd3c1;
+	font-size: 11px;
+	color: #5c5046;
+	padding: 6px;
+	text-align: center;
+	font-family: 'Cinzel', serif;
+	border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+</style>
+<div class="smart-card">
+	<div class="helper-bar">
+		Type <b>+Tag</b>, <b>-Tag</b>, or <b>+Status-3</b> then SPACE.
+	</div>
+
+	<div class="editor-container" id="smart-note-editor">
+		<div id="smart-editor" contenteditable="true" spellcheck="false" placeholder="What happens?"></div>
+	</div>
+</div>
+

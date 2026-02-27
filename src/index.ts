@@ -1,6 +1,7 @@
 import { App, type Service, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-window.js";
 import { diceWindow } from "./dice-window.js";
+import { smartNoteWindow } from "./smart-note-window.js";
 
 
 class ClockService implements Service {
@@ -82,4 +83,5 @@ const character: Character = {
     app.register(clockWindow(10, 200));
     app.register(characterWindow(50, 50, character));
     app.register(diceWindow(100, 150));
+    app.register(smartNoteWindow(200, 150));
 })();
