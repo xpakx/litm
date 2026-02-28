@@ -55,7 +55,7 @@ class SmartNoteService implements Service {
 		const selection = window.getSelection();
 
 		const matchIndex = match.index;
-		if (!matchIndex) return;
+		if (matchIndex === undefined) return;
 		const fullMatchStr = match[0];
 
 		let startOffset = matchIndex;
