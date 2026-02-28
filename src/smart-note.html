@@ -74,6 +74,49 @@
 	border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
+.smart-tag-wrapper {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+	margin: 0 4px;
+	height: 30px;
+	user-select: none;
+	cursor: default;
+}
+
+.marker-text {
+	position: relative;
+	display: inline-block;
+	padding: 0 8px;
+	z-index: 1;
+	font-weight: 700;
+}
+
+.marker-text::before {
+	content: '';
+	position: absolute;
+	top: 10%; bottom: 10%; left: 0; right: 0;
+	z-index: -1;
+	border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+	opacity: 0.85;
+	transition: all 0.2s ease;
+}
+
+.style-pos .marker-text::before {
+	background-color: var(--highlight-yellow);
+	transform: rotate(-1deg);
+}
+
+.style-neg .marker-text::before {
+	background-color: var(--highlight-peach);
+	transform: rotate(1.5deg);
+}
+
+.style-status .marker-text::before {
+	background-color: var(--highlight-blue);
+	transform: skewX(-5deg);
+}
+
 </style>
 <div class="smart-card">
 	<div class="helper-bar">
