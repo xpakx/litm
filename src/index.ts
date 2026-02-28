@@ -2,6 +2,7 @@ import { App, type Service, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-window.js";
 import { diceWindow } from "./dice-window.js";
 import { smartNoteWindow } from "./smart-note-window.js";
+import { TestComponent } from './html-component.js';
 
 
 class ClockService implements Service {
