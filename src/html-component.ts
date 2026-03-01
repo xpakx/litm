@@ -54,6 +54,36 @@ export function trigger(): Trigger {
 	return t;
 }
 
+export interface ReadonlySignal<T> {
+	(): T;
+	subscribe(fn: (v: T) => void): () => void;
+}
+
+export function computed<T>(computeFn: () => T, dependencies: Signal<any>[]): ReadonlySignal<T> {
+	let _value = computeFn();
+	const _subscribers = new Set<(v: T) => void>();
+
+	const compSignal = (() => _value) as ReadonlySignal<T>;
+
+	const update = () => {
+		const newValue = computeFn();
+		if (_value !== newValue) {
+			_value = newValue;
+			_subscribers.forEach(fn => fn(_value));
+		}
+	};
+
+	dependencies.forEach(dep => dep.subscribe(update));
+
+	compSignal.subscribe = (fn: (v: T) => void) => {
+		_subscribers.add(fn);
+		fn(_value);
+		return () => _subscribers.delete(fn);
+	};
+
+	return compSignal;
+}
+
 export abstract class HTMLComponent extends HTMLElement {
 	protected ui: ShadowRoot;
 	public windowContext?: WindowContext;
@@ -77,7 +107,7 @@ export abstract class HTMLComponent extends HTMLElement {
 		return this.getAttribute(name);
 	}
 
-	emit(eventName: string, payload: any = {}) {
+	emit<T = unknown>(eventName: string, payload?: T) {
 		this.dispatchEvent(new CustomEvent(eventName, {
 			bubbles: true,
 			composed: true,
@@ -170,13 +200,12 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
-	bindStyle(name: string, property: keyof CSSStyleDeclaration, signal: Signal<string>) {
+	bindStyle(name: string, property: keyof CSSStyleDeclaration, signal: Signal<string> | ReadonlySignal<string>) {
 		const elem = this.getById(name);
 		if (!elem) return;
 
 		const unsub = signal.subscribe(value => {
-			// @ts-ignore
-			elem.style[property] = value;
+			elem.style.setProperty(property as string, value);
 		});
 
 		this._unsubscribers.push(unsub);
@@ -211,6 +240,35 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
+	bindAttribute(name: string, attr: string, signal: Signal<string | boolean | null>) {
+		const elem = this.getById(name);
+		if (!elem) return () => {};
+
+		const unsub = signal.subscribe(val => {
+			if (val === false || val === null) {
+				elem.removeAttribute(attr);
+			} else {
+				elem.setAttribute(attr, val === true ? '' : val.toString());
+			}
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
+	bindInput(name: string, signal: Signal<string>) {
+		const elem = this.getById(name) as HTMLInputElement;
+		if (!elem) return () => {};
+
+		const inputHandler = (e: Event) => signal.set((e.target as HTMLInputElement).value);
+		elem.addEventListener('input', inputHandler);
+
+		const unsub = signal.subscribe(val => {
+			if (elem.value !== val) elem.value = val;
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
 	// CLEANUP
 	disconnectedCallback() {
 		this._unsubscribers.forEach(unsub => unsub());
@@ -229,6 +287,11 @@ export function register(tagName: string) {
 
 
 export function componentOf(name: string, html: string): HTMLComponent {
+	if (customElements.get(name)) {
+		const ExistingClass = customElements.get(name) as CustomElementConstructor;
+		return new ExistingClass() as HTMLComponent;
+	}
+
 	class DummyComponent extends HTMLComponent {
 		connectedCallback() {
 			console.log(`${name} connected`);

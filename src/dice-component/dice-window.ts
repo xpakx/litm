@@ -1,6 +1,6 @@
 import { type WindowContext, type Service } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, HTMLComponent, signal, trigger } from "../html-component.js";
+import { componentOf, computed, HTMLComponent, signal, trigger } from "../html-component.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
@@ -8,7 +8,7 @@ class DiceService implements Service {
 	totalScore = signal(0);
 	outcomeText = signal('');
 	outcomeClass = signal('');
-	powerColor = signal('');
+	powerColor = computed(() => this.getPowerColor(), [this.currentPower]);
 	die1Class = signal('fa-dice-six');
 	die2Class = signal('fa-dice-six');
 
@@ -40,7 +40,13 @@ class DiceService implements Service {
 		this.activeTags.set(tags);
 		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
 		this.currentPower.set(this.tagPower + this.addHocPower);
-		this.powerColor.set(this.currentPower() < 0 ? '#f38ba8' : '#a6e3a1');
+	}
+
+	private getPowerColor(): string {
+		const power = this.currentPower();
+		if (power == 0) return '';
+		if (power < 0) return '#f38ba8' ;
+		return  '#a6e3a1'
 	}
 
 	private updateOutcome(d1: number, d2: number, total: number) {
@@ -73,7 +79,6 @@ class DiceService implements Service {
 	updateAdHocPower(delta: number) {
 		this.addHocPower += delta;
 		this.currentPower.set(this.tagPower + this.addHocPower);
-		this.powerColor.set(this.currentPower() < 0 ? '#f38ba8' : '#a6e3a1');
 	}
 
 	init(ctx: WindowContext): void {
