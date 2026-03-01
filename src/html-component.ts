@@ -41,6 +41,7 @@ export abstract class HTMLComponent extends HTMLElement {
 	protected static template?: HTMLTemplateElement;
 	protected static stylesheet?: CSSStyleSheet;
 	private _elements: Map<string, HTMLElement> = new Map();
+	private _unsubscribers: Array<() => void> = [];
 
 	constructor() {
 		super();
@@ -170,7 +171,14 @@ export abstract class HTMLComponent extends HTMLElement {
 	bindContent(name: string, signal: Signal<any>) {
 		const elem = this.getById(name);
 		if (!elem) return;
-		signal.subscribe(val => elem.textContent = val.toString());
+		const unsub = signal.subscribe(val => elem.textContent = val.toString());
+		this._unsubscribers.push(unsub);
+	}
+
+	// CLEANUP
+	disconnectedCallback() {
+		this._unsubscribers.forEach(unsub => unsub());
+		this._unsubscribers = [];
 	}
 
 }
