@@ -34,6 +34,25 @@ export function signal<T>(initialValue: T): Signal<T> {
 	return signal;
 }
 
+export interface Trigger {
+	(): void;
+	subscribe(fn: () => void): () => void;
+}
+
+export function trigger(): Trigger {
+	const _subscribers = new Set<() => void>();
+
+	const t = (() => {
+		_subscribers.forEach(fn => fn());
+	}) as Trigger;
+
+	t.subscribe = (fn: () => void) => {
+		_subscribers.add(fn);
+		return () => _subscribers.delete(fn);
+	};
+
+	return t;
+}
 
 export abstract class HTMLComponent extends HTMLElement {
 	protected ui: ShadowRoot;
@@ -174,6 +193,19 @@ export abstract class HTMLComponent extends HTMLElement {
 			items.forEach((item, index) => {
 				container.appendChild(renderFn(item, index));
 			});
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
+	bindAnimation(name: string, animationClass: string, source: Trigger) {
+		const elem = this.getById(name);
+		if (!elem) return;
+
+		const unsub = source.subscribe(() => {
+			elem.classList.remove(animationClass);
+			void elem.offsetWidth; // force reflow
+			elem.classList.add(animationClass);
 		});
 
 		this._unsubscribers.push(unsub);

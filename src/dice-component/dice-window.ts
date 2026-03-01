@@ -1,6 +1,6 @@
 import { type WindowContext, type Service } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, HTMLComponent, signal } from "../html-component.js";
+import { componentOf, HTMLComponent, signal, trigger } from "../html-component.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
@@ -11,14 +11,15 @@ class DiceService implements Service {
 	powerColor = signal('');
 	die1Class = signal('fa-dice-six');
 	die2Class = signal('fa-dice-six');
+
+
+	rollAnimation = trigger(); 
         diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
 	activeTags = signal<any[]>([]);
 
 	addHocPower: number = 0;
 	tagPower: number = 0;
-
-	component?: HTMLComponent;
 
 	private tagComponent(tag: any): HTMLElement {
 		const div = document.createElement('div');
@@ -65,7 +66,7 @@ class DiceService implements Service {
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower();
 
-		this.component?.pokeAnimation('dice-result-container-element', 'rolling');
+		this.rollAnimation();
 		setTimeout(() => this.updateOutcome(d1, d2, total), 250);
 	}
 
@@ -85,6 +86,8 @@ class DiceService implements Service {
 		component.bindDynamicClass('die2', this.die2Class);
 		component.bindStyle('total-power', 'color', this.powerColor);
 		component.bindList('active-tags', this.activeTags, (tag) => this.tagComponent(tag));
+
+		component.bindAnimation('dice-result-container-element', 'rolling', this.rollAnimation);
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
 		component.onClick('roll-btn', () => this.onClick());
