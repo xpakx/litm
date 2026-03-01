@@ -1,5 +1,5 @@
 import type { WindowContext } from "../app.js";
-import { HTMLComponent, register, type DOMSignal } from "../html-component.js";
+import { HTMLComponent, register, signal } from "../html-component.js";
 
 @register('test-component')
 export class TestComponent extends HTMLComponent {
@@ -33,19 +33,18 @@ export class TestComponent extends HTMLComponent {
 }
 
 class TestService {
-	count?: DOMSignal;
+	count = signal(10);
 
 	onIncButton() {
-		this.count!.update((currentVal) => {
-			const next = parseInt(currentVal) + 1;
-			return next.toString();
+		this.count.update((val: number) => {
+			return val+1;
 		});
 	}
 
 	init(ctx: WindowContext): void {
 		console.log(ctx.body);
 		const body = ctx.body as TestComponent;
-		this.count = body.getContentSignal('count');
+		body.bindContent('count', this.count);
 		body.onClick('btn', () => this.onIncButton());
 	}
 }

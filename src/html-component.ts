@@ -1,17 +1,45 @@
 import { type WindowContext } from "./app.js";
 
-export interface DOMSignal {
-	(): string;
-	set(value: string): void;
-	update(updater: (current: string) => string): void;
+export interface Signal<T> {
+	(): T;
+	set(value: T): void;
+	update(fn: (v: T) => T): void;
+	subscribe(fn: (v: T) => void): () => void;
 }
+
+export function signal<T>(initialValue: T): Signal<T> {
+	let _value = initialValue;
+	const _subscribers = new Set<(v: T) => void>();
+
+	const signal = (() => {
+		return _value;
+	}) as Signal<T>;
+
+	signal.set = (newValue: T) => {
+		if (_value === newValue) return;
+		_value = newValue;
+		_subscribers.forEach(fn => fn(_value));
+	};
+
+	signal.update = (updater: (v: T) => T) => {
+		signal.set(updater(_value));
+	};
+
+	signal.subscribe = (fn: (v: T) => void) => {
+		_subscribers.add(fn);
+		fn(_value);
+		return () => _subscribers.delete(fn);
+	};
+
+	return signal;
+}
+
 
 export abstract class HTMLComponent extends HTMLElement {
 	protected ui: ShadowRoot;
 	public windowContext?: WindowContext;
 	protected static template?: HTMLTemplateElement;
 	protected static stylesheet?: CSSStyleSheet;
-	private _signals: Map<string, DOMSignal> = new Map();
 	private _elements: Map<string, HTMLElement> = new Map();
 
 	constructor() {
@@ -74,36 +102,6 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	// UPDATING
 
-	// TODO: update by variable name, not id
-	getContentSignal(id: string): DOMSignal {
-		if (this._signals.has(id)) {
-			return this._signals.get(id)!;
-		}
-
-		const el = this.ui.getElementById(id);
-		
-		if (!el) {
-			console.warn(`[HTMLComponent] Element with id '${id}' not found. Signal will fail.`);
-			const noopSignal = (() => '') as DOMSignal;
-			noopSignal.set = () => {};
-			noopSignal.update = () => {};
-			return noopSignal;
-		}
-
-		const signal = (() => el.textContent || '') as DOMSignal;
-
-		signal.set = (value: string) => {
-			el.textContent = value;
-		};
-
-		signal.update = (updater: (current: string) => string) => {
-			el.textContent = updater(el.textContent || '');
-		};
-
-		this._signals.set(id, signal);
-		return signal;
-	}
-
 	private getById(name: string): HTMLElement | undefined {
 		if (this._elements.has(name)) {
 			return this._elements.get(name)!;
@@ -164,6 +162,15 @@ export abstract class HTMLComponent extends HTMLElement {
 		const elem = this.getById(name);
 		if (!elem) return;
 		elem.style.color = color;
+	}
+
+
+	// 'true' signals
+	
+	bindContent(name: string, signal: Signal<any>) {
+		const elem = this.getById(name);
+		if (!elem) return;
+		signal.subscribe(val => elem.textContent = val.toString());
 	}
 
 }

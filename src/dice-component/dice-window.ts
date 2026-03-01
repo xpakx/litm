@@ -1,16 +1,19 @@
 import { type WindowContext, type Service } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, HTMLComponent } from "../html-component.js";
+import { componentOf, HTMLComponent, signal } from "../html-component.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
-	currentPower: number = 0;
+	currentPower = signal(0);
+	totalScore = signal(0);
+	outcomeText = signal('');
         diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
 	activeTagsDiv?: HTMLElement;
 
 	addHocPower: number = 0;
 	tagPower: number = 0;
+
 	component?: HTMLComponent;
 
 	private tagComponent(tag: any): string {
@@ -29,10 +32,9 @@ class DiceService implements Service {
 		// if (!this.activeTagsDiv) return
 		// this.activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
 		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
-		this.currentPower = this.tagPower + this.addHocPower;
+		this.currentPower.set(this.tagPower + this.addHocPower);
 
-		this.component?.setContent('total-power', this.currentPower.toString());
-		this.component?.setColor('total-power', this.currentPower < 0 ? '#f38ba8' : '#a6e3a1');
+		this.component?.setColor('total-power', this.currentPower() < 0 ? '#f38ba8' : '#a6e3a1');
 	}
 
 	private updateOutcome(d1: number, d2: number, total: number) {
@@ -40,25 +42,25 @@ class DiceService implements Service {
 		const classes = ['marker-peach', 'marker-yellow', 'marker-blue'];
 		if (total <= 6) {
 			this.component.chooseClass('outcome-text', 'marker-peach', classes);
-			this.component.setContent('outcome-text', "Miss...");
+			this.outcomeText.set("Miss...");
 		} else if (total <= 9) { 
 			this.component.chooseClass('outcome-text', 'marker-blue', classes);
-			this.component.setContent('outcome-text', "Mixed Success");
+			this.outcomeText.set("Mixed Success");
 		}
 		else {
 			this.component.chooseClass('outcome-text', 'marker-yellow', classes);
-			this.component.setContent('outcome-text', "Success!");
+			this.outcomeText.set("Success!");
 		}
 
 		this.component.chooseClass('die1', this.diceToClass(d1), this.diceClasses);
 		this.component.chooseClass('die2', this.diceToClass(d2), this.diceClasses);
-		this.component.setContent('total-score', `${total}`);
+		this.totalScore.set(total);
 	}
 
 	private onClick() {
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
-		const total = d1 + d2 + this.currentPower;
+		const total = d1 + d2 + this.currentPower();
 
 		this.component?.pokeAnimation('dice-result-container-element', 'rolling');
 		setTimeout(() => this.updateOutcome(d1, d2, total), 250);
@@ -66,15 +68,17 @@ class DiceService implements Service {
 
 	updateAdHocPower(delta: number) {
 		this.addHocPower += delta;
-		this.currentPower = this.tagPower + this.addHocPower;
+		this.currentPower.set(this.tagPower + this.addHocPower);
 
-		this.component?.setContent('total-power', this.currentPower.toString());
-		this.component?.setColor('total-power', this.currentPower < 0 ? '#f38ba8' : '#a6e3a1');
+		this.component?.setColor('total-power', this.currentPower() < 0 ? '#f38ba8' : '#a6e3a1');
 	}
 
 	init(ctx: WindowContext): void {
 		this.component = ctx.body as HTMLComponent;
 		this.activeTagsDiv = ctx.body.querySelector('#active-tags') as HTMLElement;
+		this.component.bindContent('total-power', this.currentPower);
+		this.component.bindContent('total-score', this.totalScore);
+		this.component.bindContent('outcome-text', this.outcomeText);
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
 		this.component.onClick('roll-btn', () => this.onClick());
