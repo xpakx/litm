@@ -1,4 +1,5 @@
-import { HTMLComponent, register } from "./html-component.js";
+import type { WindowContext } from "./app.js";
+import { HTMLComponent, register, type DOMSignal } from "./html-component.js";
 
 @register('test-component')
 export class TestComponent extends HTMLComponent {
@@ -25,7 +26,27 @@ export class TestComponent extends HTMLComponent {
 		return `
 		<h2>Hello World</h2>
 		<p>Hello from web component.</p>
+		<p id='count'>0</p>
+		<button id='btn'>click</button>
 		`;
+	}
+}
+
+class TestService {
+	count?: DOMSignal;
+
+	onIncButton() {
+		this.count!.update((currentVal) => {
+			const next = parseInt(currentVal) + 1;
+			return next.toString();
+		});
+	}
+
+	init(ctx: WindowContext): void {
+		console.log(ctx.body);
+		const body = ctx.body as TestComponent;
+		this.count = body.getContentSignal('count');
+		body.onClick('btn', () => this.onIncButton());
 	}
 }
 
@@ -37,7 +58,7 @@ export function testWindow(x: number, y: number): any {
 		y: y,
 		width: 420, 
 		height: 280,
-		services: [],
+		services: [new TestService()],
 		element: new TestComponent(),
 	}
 }

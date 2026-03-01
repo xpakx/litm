@@ -1,10 +1,17 @@
 import { type WindowContext } from "./app.js";
 
+export interface DOMSignal {
+	(): string;
+	set(value: string): void;
+	update(updater: (current: string) => string): void;
+}
+
 export abstract class HTMLComponent extends HTMLElement {
 	protected ui: ShadowRoot;
 	public windowContext?: WindowContext;
 	protected static template?: HTMLTemplateElement;
 	protected static stylesheet?: CSSStyleSheet;
+	private _signals: Map<string, DOMSignal> = new Map();
 
 	constructor() {
 		super();
@@ -62,6 +69,51 @@ export abstract class HTMLComponent extends HTMLElement {
 			this.stylesheet = new CSSStyleSheet();
 			this.stylesheet.replaceSync(cssText);
 		}
+	}
+
+	// UPDATING
+
+	// TODO: update by variable name, not id
+	getContentSignal(id: string): DOMSignal {
+		if (this._signals.has(id)) {
+			return this._signals.get(id)!;
+		}
+
+		const el = this.ui.getElementById(id);
+		
+		if (!el) {
+			console.warn(`[HTMLComponent] Element with id '${id}' not found. Signal will fail.`);
+			const noopSignal = (() => '') as DOMSignal;
+			noopSignal.set = () => {};
+			noopSignal.update = () => {};
+			return noopSignal;
+		}
+
+		const signal = (() => el.textContent || '') as DOMSignal;
+
+		signal.set = (value: string) => {
+			el.textContent = value;
+		};
+
+		signal.update = (updater: (current: string) => string) => {
+			el.textContent = updater(el.textContent || '');
+		};
+
+		this._signals.set(id, signal);
+		return signal;
+	}
+
+	setContent(name: string, content: string): void {
+		const elem = this.ui.getElementById(name);
+		if (!elem) {
+			console.warn(`[HTMLComponent] Trying to update '${name}' non-existent element`);
+			return;
+		}
+		elem.innerText = content;
+	}
+
+	onClick(name: string, func: () => void) {
+		this.ui.getElementById(name)?.addEventListener('click', func);
 	}
 }
 
