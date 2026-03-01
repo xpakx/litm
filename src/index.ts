@@ -2,7 +2,7 @@ import { App, type Service, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-window.js";
 import { diceWindow } from "./dice-window.js";
 import { smartNoteWindow } from "./smart-note-window.js";
-import { TestComponent } from './html-component.js';
+import { TestComponent, testWindow } from './test-component.js';
 
 
 class ClockService implements Service {
@@ -79,10 +79,12 @@ const character: Character = {
 (() => {
     const app = new App("app");
 
-    app.register(basicWindow(50, 50, "Hello world"));
-    app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
-    app.register(clockWindow(10, 200));
-    app.register(characterWindow(50, 50, character));
-    app.register(diceWindow(100, 150));
-    app.register(smartNoteWindow(200, 150));
+    //app.register(basicWindow(50, 50, "Hello world"));
+    //app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
+    //app.register(clockWindow(10, 200));
+    //app.register(characterWindow(50, 50, character));
+    //app.register(diceWindow(100, 150));
+    //app.register(smartNoteWindow(200, 150));
+
+    app.register(testWindow(300, 300));
 })();

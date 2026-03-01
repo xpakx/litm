@@ -64,14 +64,22 @@ export class App { zIndexCounter: number = 100;
 			width = 300,
 			height = 200,
 			services = [],
-			template = ''
+			template = '',
+			element = undefined,
 		} = config;
 
 		const winEl = this.createDOMWindow(
 			id, x, y, width, height
 		);
 		const header = this.createDOMHeader(title);
-		const body = this.createDOMBody(template);
+
+		let body: HTMLElement;
+		if (element) {
+			body = element;
+			body.className = 'app-body';
+		} else {
+			 body = this.createDOMBody(template);
+		}
 
 		winEl.appendChild(header);
 		winEl.appendChild(body);
