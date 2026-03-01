@@ -13,18 +13,22 @@ class DiceService implements Service {
 	die2Class = signal('fa-dice-six');
         diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
-	activeTagsDiv?: HTMLElement;
+	activeTags = signal<any[]>([]);
 
 	addHocPower: number = 0;
 	tagPower: number = 0;
 
 	component?: HTMLComponent;
 
-	private tagComponent(tag: any): string {
+	private tagComponent(tag: any): HTMLElement {
+		const div = document.createElement('div');
 		const color = tag.type === 'power' ? '#a6e3a1' : '#f38ba8';
-		const style = `font-size: 0.9em; margin-bottom: 3px; color: ${color}`;
-		const value = `${tag.value > 0 ? '+' : ''}${tag.value} ${tag.name}`
-		return `<div style="${style}">${value}</div>`
+		div.style.fontSize = '0.9em';
+		div.style.marginBottom = '3px';
+		div.style.color = color;
+		const sign = tag.value > 0 ? '+' : '';
+		div.textContent = `${sign}${tag.value} ${tag.name}`;
+		return div;
 	}
 
 	private diceToClass(result: number): string {
@@ -32,8 +36,7 @@ class DiceService implements Service {
 	}
 
 	private onTags(tags: any[]) {
-		// if (!this.activeTagsDiv) return
-		// this.activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
+		this.activeTags.set(tags);
 		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
 		this.currentPower.set(this.tagPower + this.addHocPower);
 		this.powerColor.set(this.currentPower() < 0 ? '#f38ba8' : '#a6e3a1');
@@ -73,20 +76,20 @@ class DiceService implements Service {
 	}
 
 	init(ctx: WindowContext): void {
-		this.component = ctx.body as HTMLComponent;
-		this.activeTagsDiv = ctx.body.querySelector('#active-tags') as HTMLElement;
-		this.component.bindContent('total-power', this.currentPower);
-		this.component.bindContent('total-score', this.totalScore);
-		this.component.bindContent('outcome-text', this.outcomeText);
-		this.component.bindDynamicClass('outcome-text', this.outcomeClass);
-		this.component.bindDynamicClass('die1', this.die1Class);
-		this.component.bindDynamicClass('die2', this.die2Class);
-		this.component.bindStyle('total-power', 'color', this.powerColor);
+		const component = ctx.body as HTMLComponent;
+		component.bindContent('total-power', this.currentPower);
+		component.bindContent('total-score', this.totalScore);
+		component.bindContent('outcome-text', this.outcomeText);
+		component.bindDynamicClass('outcome-text', this.outcomeClass);
+		component.bindDynamicClass('die1', this.die1Class);
+		component.bindDynamicClass('die2', this.die2Class);
+		component.bindStyle('total-power', 'color', this.powerColor);
+		component.bindList('active-tags', this.activeTags, (tag) => this.tagComponent(tag));
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
-		this.component.onClick('roll-btn', () => this.onClick());
-		this.component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
-		this.component.onClick('add-power-btn', () => this.updateAdHocPower(1));
+		component.onClick('roll-btn', () => this.onClick());
+		component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
+		component.onClick('add-power-btn', () => this.updateAdHocPower(1));
 	}
 }
 

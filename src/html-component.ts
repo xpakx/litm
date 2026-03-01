@@ -163,6 +163,22 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
+	// ????
+	bindList<T>(name: string, signal: Signal<T[]>, renderFn: (item: T, index: number) => HTMLElement) {
+		const container = this.getById(name);
+		if (!container) return;
+
+		const unsub = signal.subscribe(items => {
+			container.replaceChildren(); 
+
+			items.forEach((item, index) => {
+				container.appendChild(renderFn(item, index));
+			});
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
 	// CLEANUP
 	disconnectedCallback() {
 		this._unsubscribers.forEach(unsub => unsub());
