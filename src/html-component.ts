@@ -116,39 +116,8 @@ export abstract class HTMLComponent extends HTMLElement {
 		return elem;
 	}
 
-	setContent(name: string, content: string): void {
-		const elem = this.getById(name);
-		if (!elem) return;
-		elem.innerText = content;
-	}
-
 	onClick(name: string, func: () => void) {
 		this.ui.getElementById(name)?.addEventListener('click', func);
-	}
-
-	addClass(name: string, ...cls: string[]) {
-		const elem = this.getById(name);
-		if (!elem) return;
-		elem.classList.add(...cls);
-	}
-
-	removeClass(name: string, ...cls: string[]) {
-		const elem = this.getById(name);
-		if (!elem) return;
-		elem.classList.remove(...cls);
-	}
-
-	toggleClass(name: string, cls: string) {
-		const elem = this.getById(name);
-		if (!elem) return;
-		elem.classList.toggle(cls);
-	}
-
-	chooseClass(name: string, choice: string, cls: string[]) {
-		const elem = this.getById(name);
-		if (!elem) return;
-		elem.classList.remove(...cls);
-		elem.classList.add(choice);
 	}
 
 	pokeAnimation(name: string, cls: string) {
@@ -159,19 +128,38 @@ export abstract class HTMLComponent extends HTMLElement {
 		elem.classList.add(cls);
 	}
 
-	setColor(name: string, color: string): void {
-		const elem = this.getById(name);
-		if (!elem) return;
-		elem.style.color = color;
-	}
-
-
 	// 'true' signals
 	
 	bindContent(name: string, signal: Signal<any>) {
 		const elem = this.getById(name);
 		if (!elem) return;
 		const unsub = signal.subscribe(val => elem.textContent = val.toString());
+		this._unsubscribers.push(unsub);
+	}
+
+	bindDynamicClass(name: string, signal: Signal<string>) {
+		const elem = this.getById(name);
+		if (!elem) return;
+
+		let lastClass = "";
+		const unsub = signal.subscribe(currentClass => {
+			if (lastClass) elem.classList.remove(lastClass);
+			if (currentClass) elem.classList.add(currentClass);
+			lastClass = currentClass;
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
+	bindStyle(name: string, property: keyof CSSStyleDeclaration, signal: Signal<string>) {
+		const elem = this.getById(name);
+		if (!elem) return;
+
+		const unsub = signal.subscribe(value => {
+			// @ts-ignore
+			elem.style[property] = value;
+		});
+
 		this._unsubscribers.push(unsub);
 	}
 
