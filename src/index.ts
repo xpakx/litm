@@ -1,8 +1,8 @@
 import { App, type Service, type WindowContext } from "./app.js";
-import { characterWindow, type Character } from "./character-window.js";
-import { diceWindow } from "./dice-window.js";
-import { smartNoteWindow } from "./smart-note-window.js";
-import { TestComponent, testWindow } from './test-component.js';
+import { characterWindow, type Character } from "./character-component/character-window.js";
+import { diceWindow } from "./dice-component/dice-window.js";
+import { smartNoteWindow } from "./smart-component/smart-note-window.js";
+import { TestComponent, testWindow } from './test-component/test-component.js';
 
 
 class ClockService implements Service {
@@ -48,21 +48,6 @@ function clockWindow(x: number, y: number) {
 	}
 }
 
-function basicWindow(x: number, y: number, text: string): any {
-	return {
-		title: 'Basic Window',
-		x: x,
-		y: y,
-		width: 250, 
-		height: 120,
-		services: [],
-		template: `
-		<p style="text-align:center; margin:0; color:#666">
-		${text}
-		</p>`
-	}
-}
-
 const character: Character = {
     name: "Name",
     themes: [
@@ -79,12 +64,11 @@ const character: Character = {
 (() => {
     const app = new App("app");
 
-    //app.register(basicWindow(50, 50, "Hello world"));
-    //app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
-    //app.register(clockWindow(10, 200));
-    //app.register(characterWindow(50, 50, character));
-    //app.register(diceWindow(100, 150));
-    //app.register(smartNoteWindow(200, 150));
+    // app.register(clockWindow(10, 200));
+    // app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
+    app.register(characterWindow(50, 50, character));
+    app.register(diceWindow(100, 150));
+    app.register(smartNoteWindow(200, 150));
 
     app.register(testWindow(300, 300));
     function newTestWindow() {

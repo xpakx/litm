@@ -1,5 +1,5 @@
-import { type WindowContext, type Service } from "./app.js";
-import { EventBus } from "./event-bus.js";
+import { type WindowContext, type Service } from "../app.js";
+import { EventBus } from "../event-bus.js";
 import smartNoteTemplate from './smart-note.html'; 
 
 class SmartNoteService implements Service {

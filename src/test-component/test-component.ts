@@ -1,5 +1,5 @@
-import type { WindowContext } from "./app.js";
-import { HTMLComponent, register, type DOMSignal } from "./html-component.js";
+import type { WindowContext } from "../app.js";
+import { HTMLComponent, register, type DOMSignal } from "../html-component.js";
 
 @register('test-component')
 export class TestComponent extends HTMLComponent {

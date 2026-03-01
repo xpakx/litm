@@ -124,3 +124,20 @@ export function register(tagName: string) {
 		console.log(`registered component ${tagName}`);
 	};
 }
+
+
+export function componentOf(name: string, html: string): HTMLComponent {
+	class DummyComponent extends HTMLComponent {
+		connectedCallback() {
+			console.log(`${name} connected`);
+		}
+
+		static html() {
+			return html;
+		}
+	}
+
+	customElements.define(name, DummyComponent);
+	console.log(`registered component ${name}`);
+	return new DummyComponent();
+}

@@ -1,5 +1,5 @@
-import { type WindowContext, type Service } from "./app.js";
-import { EventBus } from "./event-bus.js";
+import { type WindowContext, type Service } from "../app.js";
+import { EventBus } from "../event-bus.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {

@@ -1,5 +1,5 @@
-import { type Service, type WindowContext } from "./app.js";
-import { EventBus } from "./event-bus.js";
+import { type Service, type WindowContext } from "../app.js";
+import { EventBus } from "../event-bus.js";
 import characterTemplate from './character.html'; 
 
 
