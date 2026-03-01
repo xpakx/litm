@@ -87,4 +87,10 @@ const character: Character = {
     //app.register(smartNoteWindow(200, 150));
 
     app.register(testWindow(300, 300));
+    function newTestWindow() {
+	    app.register(testWindow(300, 300));
+    }
+    (window as any).newTestWindow = newTestWindow;
 })();
+
+

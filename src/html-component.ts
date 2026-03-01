@@ -4,6 +4,7 @@ export abstract class HTMLComponent extends HTMLElement {
 	protected ui: ShadowRoot;
 	public windowContext?: WindowContext;
 	protected static template?: HTMLTemplateElement;
+	protected static stylesheet?: CSSStyleSheet;
 
 	constructor() {
 		super();
@@ -30,8 +31,11 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	protected onContextReady() {}
 
-
 	static html(): string {
+		return '';
+	}
+
+	static css(): string {
 		return '';
 	}
 
@@ -39,11 +43,25 @@ export abstract class HTMLComponent extends HTMLElement {
 		const ComponentClass = this.constructor as typeof HTMLComponent;
 		if (!ComponentClass.template) ComponentClass.registerTemplate();
 		this.ui.appendChild(ComponentClass.template!.content.cloneNode(true));
+
+
+		if (!ComponentClass.stylesheet) ComponentClass.registerStyles();
+		if (ComponentClass.stylesheet) {
+			this.ui.adoptedStyleSheets = [ComponentClass.stylesheet];
+		}
 	}
 
 	static registerTemplate() {
 		this.template = document.createElement('template');
 		this.template.innerHTML = this.html();
+	}
+
+	static registerStyles() {
+		const cssText = this.css();
+		if (cssText) {
+			this.stylesheet = new CSSStyleSheet();
+			this.stylesheet.replaceSync(cssText);
+		}
 	}
 }
 

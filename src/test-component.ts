@@ -2,18 +2,30 @@ import { HTMLComponent, register } from "./html-component.js";
 
 @register('test-component')
 export class TestComponent extends HTMLComponent {
-	constructor() {
-		super();
-	}
-
 	connectedCallback() {
 		console.log('test-component connected');
 	}
 
+	static css() {
+		return `
+			:host { 
+				display: flex; 
+				justify-content: center;
+				align-items: center;
+				flex-direction: column;
+			}
+			h2 { 
+				color: var(--highlight-blue);
+			}
+			p { font-style: italic; }
+			`;
+	}
+
 	static html() {
-		return `<p>
-		Hello World
-		</p>`;
+		return `
+		<h2>Hello World</h2>
+		<p>Hello from web component.</p>
+		`;
 	}
 }
 
