@@ -1,5 +1,6 @@
 import { type WindowContext, type Service } from "../app.js";
 import { EventBus } from "../event-bus.js";
+import { componentOf, HTMLComponent } from "../html-component.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
@@ -7,18 +8,10 @@ class DiceService implements Service {
         diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
 	activeTagsDiv?: HTMLElement;
-	totalPowerSpan?: HTMLElement;
-	rollBtn?: HTMLButtonElement;
-	totalScore?: HTMLElement;
-	outcome?: HTMLElement;
-	die1?: HTMLElement;
-	die2?: HTMLElement;
-	diceContainer?: HTMLElement;
-	subPowerBtn?: HTMLButtonElement;
-	addPowerBtn?: HTMLButtonElement;
 
 	addHocPower: number = 0;
 	tagPower: number = 0;
+	component?: HTMLComponent;
 
 	private tagComponent(tag: any): string {
 		const color = tag.type === 'power' ? '#a6e3a1' : '#f38ba8';
@@ -33,39 +26,33 @@ class DiceService implements Service {
 
 
 	private onTags(tags: any[]) {
-		if (!this.activeTagsDiv) return
-		this.activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
+		// if (!this.activeTagsDiv) return
+		// this.activeTagsDiv.innerHTML = tags.map(t => this.tagComponent(t)).join('');
 		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
 		this.currentPower = this.tagPower + this.addHocPower;
 
-		if (!this.totalPowerSpan) return
-		this.totalPowerSpan.innerText = this.currentPower.toString();
-		this.totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+		this.component?.setContent('total-power', this.currentPower.toString());
+		this.component?.setColor('total-power', this.currentPower < 0 ? '#f38ba8' : '#a6e3a1');
 	}
 
 	private updateOutcome(d1: number, d2: number, total: number) {
-		if (!this.outcome) return;
-		this.outcome.classList.remove('marker-peach', 'marker-yellow', 'marker-blue');
+		if (!this.component) return;
+		const classes = ['marker-peach', 'marker-yellow', 'marker-blue'];
 		if (total <= 6) {
-			this.outcome.innerHTML = "Miss...";
-			this.outcome.classList.add("marker-peach")
+			this.component.chooseClass('outcome-text', 'marker-peach', classes);
+			this.component.setContent('outcome-text', "Miss...");
 		} else if (total <= 9) { 
-			this.outcome.innerHTML = "Mixed Success";
-			this.outcome.classList.add("marker-blue")
+			this.component.chooseClass('outcome-text', 'marker-blue', classes);
+			this.component.setContent('outcome-text', "Mixed Success");
 		}
 		else {
-			this.outcome.innerHTML = "Success!";
-			this.outcome.classList.add("marker-yellow")
+			this.component.chooseClass('outcome-text', 'marker-yellow', classes);
+			this.component.setContent('outcome-text', "Success!");
 		}
 
-		if (!this.die1) return;
-		this.die1.className = `fa-solid ${this.diceToClass(d1)}`;
-
-		if (!this.die2) return;
-		this.die2.className = `fa-solid ${this.diceToClass(d2)}`;
-
-		if (!this.totalScore) return;
-		this.totalScore.innerHTML = `${total}`;
+		this.component.chooseClass('die1', this.diceToClass(d1), this.diceClasses);
+		this.component.chooseClass('die2', this.diceToClass(d2), this.diceClasses);
+		this.component.setContent('total-score', `${total}`);
 	}
 
 	private onClick() {
@@ -73,12 +60,7 @@ class DiceService implements Service {
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower;
 
-		if (!this.diceContainer) return;
-
-		this.diceContainer.classList.remove('rolling');
-		void this.diceContainer.offsetWidth;
-		this.diceContainer.classList.add('rolling');
-
+		this.component?.pokeAnimation('dice-result-container-element', 'rolling');
 		setTimeout(() => this.updateOutcome(d1, d2, total), 250);
 	}
 
@@ -86,28 +68,18 @@ class DiceService implements Service {
 		this.addHocPower += delta;
 		this.currentPower = this.tagPower + this.addHocPower;
 
-		if (!this.totalPowerSpan) return
-		this.totalPowerSpan.innerText = this.currentPower.toString();
-		this.totalPowerSpan.style.color = this.currentPower < 0 ? '#f38ba8' : '#a6e3a1';
+		this.component?.setContent('total-power', this.currentPower.toString());
+		this.component?.setColor('total-power', this.currentPower < 0 ? '#f38ba8' : '#a6e3a1');
 	}
 
 	init(ctx: WindowContext): void {
+		this.component = ctx.body as HTMLComponent;
 		this.activeTagsDiv = ctx.body.querySelector('#active-tags') as HTMLElement;
-		this.totalPowerSpan = ctx.body.querySelector('#total-power') as HTMLElement;
-		this.rollBtn = ctx.body.querySelector('#roll-btn') as HTMLButtonElement;
-		this.totalScore = ctx.body.querySelector('#total-score') as HTMLElement;
-		this.outcome = ctx.body.querySelector('#outcome-text') as HTMLElement;
-		this.die1 = ctx.body.querySelector('#die1') as HTMLElement;
-		this.die2 = ctx.body.querySelector('#die2') as HTMLElement;
-		this.diceContainer = ctx.body.querySelector('#dice-result-container-element') as HTMLElement;
-
-		this.subPowerBtn = ctx.body.querySelector('#sub-power-btn') as HTMLButtonElement;
-		this.addPowerBtn = ctx.body.querySelector('#add-power-btn') as HTMLButtonElement;
 
 		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
-		this.rollBtn.addEventListener('click', () => this.onClick());
-		this.subPowerBtn.addEventListener('click', () => this.updateAdHocPower(-1));
-		this.addPowerBtn.addEventListener('click', () => this.updateAdHocPower(1));
+		this.component.onClick('roll-btn', () => this.onClick());
+		this.component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
+		this.component.onClick('add-power-btn', () => this.updateAdHocPower(1));
 	}
 }
 
@@ -117,7 +89,8 @@ export function diceWindow(x: number, y: number): any {
 		x: x,
 		y: y,
 		width: 300, height: 450,
-		template: diceTemplate,
-		services: [new DiceService()]
+		// template: diceTemplate,
+		services: [new DiceService()],
+		element: componentOf('win-dice', diceTemplate),
 	}
 }

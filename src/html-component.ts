@@ -12,6 +12,7 @@ export abstract class HTMLComponent extends HTMLElement {
 	protected static template?: HTMLTemplateElement;
 	protected static stylesheet?: CSSStyleSheet;
 	private _signals: Map<string, DOMSignal> = new Map();
+	private _elements: Map<string, HTMLElement> = new Map();
 
 	constructor() {
 		super();
@@ -103,18 +104,68 @@ export abstract class HTMLComponent extends HTMLElement {
 		return signal;
 	}
 
-	setContent(name: string, content: string): void {
+	private getById(name: string): HTMLElement | undefined {
+		if (this._elements.has(name)) {
+			return this._elements.get(name)!;
+		}
 		const elem = this.ui.getElementById(name);
 		if (!elem) {
 			console.warn(`[HTMLComponent] Trying to update '${name}' non-existent element`);
 			return;
 		}
+		this._elements.set(name, elem);
+		return elem;
+	}
+
+	setContent(name: string, content: string): void {
+		const elem = this.getById(name);
+		if (!elem) return;
 		elem.innerText = content;
 	}
 
 	onClick(name: string, func: () => void) {
 		this.ui.getElementById(name)?.addEventListener('click', func);
 	}
+
+	addClass(name: string, ...cls: string[]) {
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.classList.add(...cls);
+	}
+
+	removeClass(name: string, ...cls: string[]) {
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.classList.remove(...cls);
+	}
+
+	toggleClass(name: string, cls: string) {
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.classList.toggle(cls);
+	}
+
+	chooseClass(name: string, choice: string, cls: string[]) {
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.classList.remove(...cls);
+		elem.classList.add(choice);
+	}
+
+	pokeAnimation(name: string, cls: string) {
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.classList.remove(cls);
+		void elem.offsetWidth;
+		elem.classList.add(cls);
+	}
+
+	setColor(name: string, color: string): void {
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.style.color = color;
+	}
+
 }
 
 export function register(tagName: string) {
