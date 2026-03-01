@@ -90,7 +90,9 @@ export abstract class HTMLComponent extends HTMLElement {
 	protected static template?: HTMLTemplateElement;
 	protected static stylesheet?: CSSStyleSheet;
 	private _elements: Map<string, HTMLElement> = new Map();
+
 	private _unsubscribers: Array<() => void> = [];
+	private _eventListeners: Array<{elem: HTMLElement, name: string, fn: EventListener}> = [];
 
 	constructor() {
 		super();
@@ -166,7 +168,10 @@ export abstract class HTMLComponent extends HTMLElement {
 	}
 
 	onClick(name: string, func: () => void) {
-		this.ui.getElementById(name)?.addEventListener('click', func);
+		const elem = this.getById(name);
+		if (!elem) return;
+		elem.addEventListener('click', func);
+		this._eventListeners.push({ elem, name: 'click', fn: func as EventListener });
 	}
 
 	pokeAnimation(name: string, cls: string) {
@@ -261,6 +266,7 @@ export abstract class HTMLComponent extends HTMLElement {
 
 		const inputHandler = (e: Event) => signal.set((e.target as HTMLInputElement).value);
 		elem.addEventListener('input', inputHandler);
+		this._eventListeners.push({ elem, name: 'input', fn: inputHandler });
 
 		const unsub = signal.subscribe(val => {
 			if (elem.value !== val) elem.value = val;
@@ -271,8 +277,14 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	// CLEANUP
 	disconnectedCallback() {
+		console.log("Disconnected");
 		this._unsubscribers.forEach(unsub => unsub());
 		this._unsubscribers = [];
+
+		this._eventListeners.forEach(({elem, name, fn}) => {
+			elem.removeEventListener(name, fn);
+		});
+		this._eventListeners = [];
 	}
 
 }
