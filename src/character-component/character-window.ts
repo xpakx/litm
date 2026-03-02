@@ -47,7 +47,7 @@ class TagWindowService implements Service {
 		span.classList.add('handwritten', 'tag-btn');
 		if (tag.weakness) span.classList.add('marker-peach');
 		else span.classList.add('marker-yellow');
-		span.dataset.type = 'power';
+		span.dataset.type = tag.weakness ? 'weakness' : 'power';
 		span.dataset.name = tag.name;
 		span.textContent = tag.name;
 
