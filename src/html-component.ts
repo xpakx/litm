@@ -84,6 +84,48 @@ export function computed<T>(computeFn: () => T, dependencies: Signal<any>[]): Re
 	return compSignal;
 }
 
+export function deepSignal<TParent extends object, K extends keyof TParent>(
+	parent: Signal<TParent>,
+	key: K
+): Signal<TParent[K]> {
+	const _subscribers = new Set<(v: TParent[K]) => void>();
+
+	let _lastValue = parent()[key];
+
+	const ds = (() => {
+		return parent()[key];
+	}) as Signal<TParent[K]>;
+
+	parent.subscribe((newParent) => {
+		const newValue = newParent[key];
+		if (newValue !== _lastValue) {
+			_lastValue = newValue;
+			_subscribers.forEach(fn => fn(_lastValue));
+		}
+	});
+
+	ds.set = (newValue: TParent[K]) => {
+		if (_lastValue === newValue) return;
+
+		parent.update(oldParent => ({
+			...oldParent,
+			[key]: newValue
+		}));
+	};
+
+	ds.update = (fn: (v: TParent[K]) => TParent[K]) => {
+		ds.set(fn(parent()[key]));
+	};
+
+	ds.subscribe = (fn: (v: TParent[K]) => void) => {
+		_subscribers.add(fn);
+		fn(parent()[key]);
+		return () => _subscribers.delete(fn);
+	};
+
+	return ds;
+}
+
 export abstract class HTMLComponent extends HTMLElement {
 	protected ui: ShadowRoot;
 	public windowContext?: WindowContext;
@@ -167,7 +209,7 @@ export abstract class HTMLComponent extends HTMLElement {
 		return elem;
 	}
 
-	onClick(name: string, func: () => void) {
+	onClick(name: string, func: (() => void) | ((e: MouseEvent) => void)) {
 		const elem = this.getById(name);
 		if (!elem) return;
 		elem.addEventListener('click', func);
