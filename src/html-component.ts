@@ -191,7 +191,7 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
-	bindDynamicClass(name: string, signal: Signal<string>) {
+	bindDynamicClass(name: string, signal: Signal<string> | ReadonlySignal<string>) {
 		const elem = this.getById(name);
 		if (!elem) return;
 
@@ -247,7 +247,7 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	bindAttribute(name: string, attr: string, signal: Signal<string | boolean | null>) {
 		const elem = this.getById(name);
-		if (!elem) return () => {};
+		if (!elem) return;
 
 		const unsub = signal.subscribe(val => {
 			if (val === false || val === null) {
@@ -260,10 +260,7 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
-	bindInput(name: string, signal: Signal<string>) {
-		const elem = this.getById(name) as HTMLInputElement;
-		if (!elem) return () => {};
-
+	private bindInputElem(elem: HTMLInputElement, signal: Signal<string>) {
 		const inputHandler = (e: Event) => signal.set((e.target as HTMLInputElement).value);
 		elem.addEventListener('input', inputHandler);
 		this._eventListeners.push({ elem, name: 'input', fn: inputHandler });
@@ -273,6 +270,29 @@ export abstract class HTMLComponent extends HTMLElement {
 		});
 
 		this._unsubscribers.push(unsub);
+	}
+
+	private bindContentEditable(elem: HTMLElement, signal: Signal<string>) {
+		const inputHandler = (_e: Event) => signal.set(elem.innerText);
+		elem.addEventListener('input', inputHandler);
+		this._eventListeners.push({ elem, name: 'input', fn: inputHandler });
+
+		const unsub = signal.subscribe(val => {
+			if (elem.innerText !== val) elem.innerText = val;
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
+	bindInput(name: string, signal: Signal<string>) {
+		const elem = this.getById(name);
+		if (!elem) return;
+
+		if (elem.isContentEditable) {
+			this.bindContentEditable(elem, signal);
+		} else {
+			this.bindInputElem(elem as HTMLInputElement, signal);
+		}
 	}
 
 	// CLEANUP
