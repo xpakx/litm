@@ -35,8 +35,14 @@ class DiceService implements Service {
 		return div;
 	}
 
-	private onTags(tags: any[]) {
+	private onTag(tag: any, added: boolean) {
+		let tags = this.activeTags();
+		const index = tags.findIndex((t => t.name === tag.name));
+		const exists = index >= 0;
+		if (added && !exists) tags.push(tag);
+		if (!added && exists) tags.splice(index, 1);
 		this.activeTags.set(tags);
+
 		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
 		this.currentPower.set(this.tagPower + this.addHocPower);
 	}
@@ -97,7 +103,8 @@ class DiceService implements Service {
 
 		component.bindAnimation('dice-result-container-element', 'rolling', this.rollAnimation);
 
-		EventBus.instance.on('TAGS_UPDATED', (tags: any[]) => this.onTags(tags));
+		EventBus.instance.on('TAG_ADDED', (tags: any) => this.onTag(tags, true));
+		EventBus.instance.on('TAG_REMOVED', (tags: any) => this.onTag(tags, false));
 		component.onClick('roll-btn', () => this.onClick());
 		component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
 		component.onClick('add-power-btn', () => this.updateAdHocPower(1));

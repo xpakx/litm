@@ -19,6 +19,43 @@ export class TestComponent extends HTMLComponent {
 				color: var(--highlight-blue);
 			}
 			p { font-style: italic; }
+
+			#btn {
+				background: none;
+				border: none;
+				cursor: pointer;
+				margin-bottom: 15px;
+				transition: transform 0.1s;
+				font-family: 'Caveat', cursive;
+				color: var(--text-dark);
+				font-size: 32px;
+				font-weight: 700;
+				position: relative;
+				display: inline-block;
+				padding: 0 10px;
+				z-index: 1;
+			}
+
+			#btn:active {
+				transform: scale(0.95);
+			}
+
+
+
+			#btn::before {
+				content: '';
+				position: absolute;
+				top: 15%;
+				bottom: 10%;
+				left: 0;
+				right: 0;
+				z-index: -1;
+				border-radius: 3px 8px 4px 6px / 5px 3px 8px 4px; 
+				opacity: 0.9;
+				transition: background-color 0.3s ease;
+				background-color: var(--highlight-yellow);
+				transform: skewX(-4deg) rotate(-0.5deg);
+			}
 			`;
 	}
 
@@ -27,7 +64,7 @@ export class TestComponent extends HTMLComponent {
 		<h2>Hello World</h2>
 		<p>Hello from web component.</p>
 		<p id='count'>0</p>
-		<button id='btn'>click</button>
+		<button id='btn'>Click</button>
 		`;
 	}
 }

@@ -53,7 +53,7 @@ const character: Character = {
     themes: [
         {
             name: "Theme 1",
-            powerTags: ["Tag 1", "Tag 2", "Tag 2"],
+            powerTags: ["Tag 1", "Tag 2", "Tag 3"],
             weaknessTags: ["Weakness"],
 	    quest: "Quest 1",
         },

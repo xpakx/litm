@@ -1,5 +1,6 @@
 import { type Service, type WindowContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
+import { componentOf, deepSignal, HTMLComponent, signal } from "../html-component.js";
 import characterTemplate from './character.html'; 
 
 
@@ -15,84 +16,102 @@ export interface Character {
 	themes: Theme[];
 }
 
+interface Tag {
+	name: string;
+	weakness: boolean;
+	main: boolean;
+}
+
 class TagWindowService implements Service {
 	character: Character;
 
 	container?: HTMLElement;
-	quest?: HTMLElement;
+	theme = signal<Theme>({name: '', powerTags: [], weaknessTags: [], quest: ''});
+	quest = deepSignal(this.theme, 'quest');
+	tags = signal<Tag[]>([]);
 
 	constructor(character: Character) {
 		this.character = character;
 	}
+	
+	tagComponent(tag: Tag): HTMLElement {
+		const container = document.createElement('div');
+		container.classList.add('item-row');
+		if (tag.main) container.classList.add('item-main');
+		else container.classList.add('item-sub');
+		if (tag.weakness) container.classList.add('item-weakness');
 
-	private makeTag(tag: string, main: boolean = false): string {
-		return `<div class="item-row ${main ? 'item-main' : 'item-sub'}">
-			<div></div>
+		const emptyDiv = document.createElement('div');
 
-			<span class="handwritten marker-yellow tag-btn"
-			data-type="power" data-name="${tag}">
-			${tag}
-			</span>
-			<svg class="scratch-icon" viewBox="0 0 24 24">
-			<path d="M7,18 L11,4 M12,19 L16,5 M17,20 L21,6" stroke="#4a4239" stroke-width="1.8" stroke-linecap="round"/>
-			</svg>
-			</div>` 
-	}
+		const span = document.createElement('span');
+		span.classList.add('handwritten', 'tag-btn');
+		if (tag.weakness) span.classList.add('marker-peach');
+		else span.classList.add('marker-yellow');
+		span.dataset.type = 'power';
+		span.dataset.name = tag.name;
+		span.textContent = tag.name;
 
-	private makeWeakness(tag: string): string {
-		return `<div class="item-row item-sub item-weakness">
-			<div></div>
-			<span class="handwritten marker-peach tag-btn"
-			data-type="weakness" data-name="${tag}">
-			${tag}
-			</span>
-			<svg class="scratch-icon" viewBox="0 0 24 24">
-			<path d="M7,18 L11,4 M12,19 L16,5 M17,20 L21,6" stroke="#4a4239" stroke-width="1.8" stroke-linecap="round"/>
-			</svg>
-			</div>` 
-	}
+		const svgNS = 'http://www.w3.org/2000/svg';
+		const svg = document.createElementNS(svgNS, 'svg');
+		svg.setAttribute('class', 'scratch-icon');
+		svg.setAttribute('viewBox', '0 0 24 24');
 
+		const path = document.createElementNS(svgNS, 'path');
+		path.setAttribute('d', 'M7,18 L11,4 M12,19 L16,5 M17,20 L21,6');
+		path.setAttribute('stroke', '#4a4239');
+		path.setAttribute('stroke-width', '1.8');
+		path.setAttribute('stroke-linecap', 'round');
 
-	private appendTheme(theme: Theme) {
-		let html = '';
-		theme.powerTags.forEach((tag, index) => {
-			html += this.makeTag(tag, index == 0);
-		});
+		svg.append(path);
 
-		theme.weaknessTags.forEach(tag => {
-			html += this.makeWeakness(tag);
-		});
+		container.append(emptyDiv, span, svg);
 
-		if (this.container) this.container.innerHTML = html;
-		if (this.quest) this.quest.textContent = theme.quest;
-	}
-
-	onClick(e: MouseEvent) {
-		const target = e.target as HTMLElement;
-		target.classList.toggle('selected');
-		if (!this.container) return;
-
-		const selectedTags = Array.from(this.container.querySelectorAll('.tag-btn.selected')).map((el: any) => ({
-			name: el.getAttribute('data-name'),
-			type: el.getAttribute('data-type'),
-			value: el.getAttribute('data-type') === 'power' ? 1 : -1
-		}));
-
-		// TODO: probably better to split in TAGS_ADD, and TAGS_REMOVE if we want more components
-		EventBus.instance.emit('TAGS_UPDATED', selectedTags);
+		return container;
 	}
 
 	init(ctx: WindowContext): void {
 		this.container = ctx.body.querySelector('#items') as HTMLElement;
-		this.quest = ctx.body.querySelector('#quest-content') as HTMLElement;
 
-		this.appendTheme(this.character.themes[0]!);
+		const component = ctx.body as HTMLComponent;
+		this.theme.set(this.character.themes[0]!);
+		component.bindInput('quest-content', this.quest);
+		this.quest.subscribe((t: string) => console.log(t));
 
-		const buttons = this.container.querySelectorAll('.tag-btn');
-		buttons.forEach((elem: Element) => {
-			const btn = elem as HTMLButtonElement;
-			btn.addEventListener('click', (e: MouseEvent) => this.onClick(e));
+		const tags: Tag[] = []
+		this.theme().powerTags.forEach((name, index) => {
+			tags.push({
+				main: index == 0,
+				weakness: false,
+				name: name,
+			});
 		});
+		this.theme().weaknessTags.forEach((name) => {
+			tags.push({
+				main: false,
+				weakness: true,
+				name: name,
+			});
+		});
+		this.tags.set(tags);
+		component.bindList('items', this.tags, (tag) => this.tagComponent(tag));
+		component.onClick('items', (e: MouseEvent) => this.onItemClick(e)); 
+	}
+
+	onItemClick(event: MouseEvent) {
+		if (!event.target) return;
+		const targetElement = event.target as HTMLElement;
+		const tag = targetElement.closest('.tag-btn');
+		if (!tag) return;
+
+		const test = tag.classList.toggle('selected');
+
+		const busEvent = {
+			name: tag.getAttribute('data-name'),
+			type: tag.getAttribute('data-type'),
+			value: tag.getAttribute('data-type') === 'power' ? 1 : -1
+		};
+		const eventKey = test ? 'TAG_ADDED' : 'TAG_REMOVED';
+		EventBus.instance.emit(eventKey, busEvent);
 	}
 }
 
@@ -103,7 +122,8 @@ export function characterWindow(x: number, y: number, character: Character): any
 		y: y,
 		width: 320, 
 		height: 450,
-		template: characterTemplate,
-		services: [new TagWindowService(character)]
+		//template: characterTemplate,
+		services: [new TagWindowService(character)],
+		element: componentOf("win-char", characterTemplate),
     }
 }
