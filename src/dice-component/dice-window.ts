@@ -1,20 +1,23 @@
 import { type WindowContext, type Service } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, computed, HTMLComponent, signal, trigger } from "../html-component.js";
+import { componentOf, computed, HTMLComponent, signal, trigger, type Signal } from "../html-component.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
+        diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
+
 	currentPower = signal(0);
 	totalScore = signal(0);
 	outcomeText = signal('');
 	outcomeClass = signal('');
 	powerColor = computed(() => this.getPowerColor(), [this.currentPower]);
-	die1Class = signal('fa-dice-six');
-	die2Class = signal('fa-dice-six');
 
+	die1 = signal(6);
+	die2 = signal(6);
+	die1Class = computed(() => this.getDiceClass(this.die1), [this.die1]);
+	die2Class = computed(() => this.getDiceClass(this.die2), [this.die2]);
 
 	rollAnimation = trigger(); 
-        diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
 	activeTags = signal<any[]>([]);
 
@@ -32,10 +35,6 @@ class DiceService implements Service {
 		return div;
 	}
 
-	private diceToClass(result: number): string {
-		return this.diceClasses[result - 1]!;
-	}
-
 	private onTags(tags: any[]) {
 		this.activeTags.set(tags);
 		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
@@ -47,6 +46,10 @@ class DiceService implements Service {
 		if (power == 0) return '';
 		if (power < 0) return '#f38ba8' ;
 		return  '#a6e3a1'
+	}
+
+	private getDiceClass(die: Signal<number>): string {
+		return this.diceClasses[die() - 1]!;
 	}
 
 	private updateOutcome(d1: number, d2: number, total: number) {
@@ -62,8 +65,8 @@ class DiceService implements Service {
 			this.outcomeText.set("Success!");
 		}
 
-		this.die1Class.set(this.diceToClass(d1));
-		this.die2Class.set(this.diceToClass(d2));
+		this.die1.set(d1);
+		this.die2.set(d2);
 		this.totalScore.set(total);
 	}
 
