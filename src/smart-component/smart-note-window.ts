@@ -21,6 +21,32 @@ class SmartNoteService implements Service {
 		this.input.subscribe(
 			() => this.onInput()
 		);
+		component.onClick(
+			'smart-editor', 
+			(event: MouseEvent) => this.onItemClick(event)
+		);
+	}
+
+
+	onItemClick(event: MouseEvent) {
+		if (!event.target) return;
+		const targetElement = event.target as HTMLElement;
+		const tag = targetElement.closest('.smart-tag-wrapper');
+		if (!tag) return;
+
+		const test = tag.classList.toggle('selected');
+		let power = 1;
+		const powerAttr = tag.getAttribute('data-power');
+		if (powerAttr !== null) power = parseInt(powerAttr);
+
+		const busEvent = {
+			name: tag.getAttribute('data-name'),
+			type: tag.getAttribute('data-type'),
+			value: power,
+		};
+		const eventKey = test ? 'TAG_ADDED' : 'TAG_REMOVED';
+		console.log(busEvent);
+		EventBus.instance.emit(eventKey, busEvent);
 	}
 
 	onInput(_event?: InputEvent) {
@@ -84,6 +110,9 @@ class SmartNoteService implements Service {
 		textSpan.className = "marker-text";
 		textSpan.innerText = label;
 		wrapper.appendChild(textSpan);
+		wrapper.dataset.name = label;
+		wrapper.dataset.type = positive ? 'power' : 'weakness';
+		wrapper.dataset.power = value ?? '1';
 
 		range.insertNode(wrapper);
 
