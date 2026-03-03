@@ -1,7 +1,7 @@
 import { App, type Service, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
-import { HttpClient, HttpErrorResponse } from "./http/http-client.js";
+import { HttpClient, HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./http/http-client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { TestComponent, testWindow } from './test-component/test-component.js';
 
@@ -104,5 +104,34 @@ const character: Character = {
 	    .then((todo: Todo) => console.log(todo))
 	    .catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
 
+
+
+
+
+
+
+    class LoggingInterceptor implements HttpInterceptor {
+	    async intercept(req: HttpRequest<any>, next: HttpHandler): Promise<HttpResponse<any>> {
+		    const start = Date.now();
+		    try {
+			    const response = await next.handle(req);
+			    const ms = Date.now() - start;
+			    console.log(`[Log] SUCCESS: ${req.method} ${req.url} - ${response.status} in ${ms}ms`);
+			    return response;
+		    } catch (error) {
+			    const ms = Date.now() - start;
+			    if (error instanceof HttpErrorResponse) {
+				    console.error(`[Log] ERROR: ${req.method} ${req.url} - ${error.status} in ${ms}ms`, error.error);
+			    }
+			    throw error;
+		    }
+	    }
+    }
+
+    const http2 = new HttpClient([new LoggingInterceptor()]);
+
+    http2.get<Todo>('https://jsonplaceholder.typicode.com/todos/2')
+	    .then((todo: Todo) => console.log(todo))
+	    .catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
 
 })();

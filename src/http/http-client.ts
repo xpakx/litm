@@ -32,6 +32,10 @@ export interface HttpHandler {
 	handle(req: HttpRequest<any>): Promise<HttpResponse<any>>;
 }
 
+export interface HttpInterceptor {
+	intercept(req: HttpRequest<any>, next: HttpHandler): Promise<HttpResponse<any>>;
+}
+
 class HttpFetchBackend implements HttpHandler {
 	async handle(req: HttpRequest<any>): Promise<HttpResponse<any>> {
 		const init: RequestInit = {
@@ -72,9 +76,15 @@ class HttpFetchBackend implements HttpHandler {
 export class HttpClient {
 	private handler: HttpHandler;
 
-	constructor() {
+	constructor(interceptors: HttpInterceptor[] = []) {
 		const backend = new HttpFetchBackend();
-		this.handler = backend;
+
+		this.handler = interceptors.reduceRight<HttpHandler>(
+			(nextHandler, interceptor) => ({
+				handle: (req) => interceptor.intercept(req, nextHandler),
+			}),
+				backend
+		);
 	}
 
 	private async request<T>(req: HttpRequest<any>): Promise<T> {
