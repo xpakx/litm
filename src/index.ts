@@ -1,6 +1,7 @@
 import { App, type Service, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
+import { HttpClient, HttpErrorResponse } from "./http/http-client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { TestComponent, testWindow } from './test-component/test-component.js';
 
@@ -75,6 +76,33 @@ const character: Character = {
 	    app.register(testWindow(300, 300));
     }
     (window as any).newTestWindow = newTestWindow;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    interface Todo {
+	    userId: number;
+	    id: number;
+	    title: string;
+	    completed: boolean;
+    }
+
+    const http = new HttpClient();
+
+    http.get<Todo>('https://jsonplaceholder.typicode.com/todos/1')
+	    .then((todo: Todo) => console.log(todo))
+	    .catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
+
+
 })();
-
-
