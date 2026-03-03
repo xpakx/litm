@@ -1,10 +1,11 @@
 import { type WindowContext, type Service, type WindowConfig } from "../app.js";
 import { EventBus } from "../event-bus.js";
+import { componentOf, HTMLComponent, signal } from "../html-component.js";
 import smartNoteTemplate from './smart-note.html'; 
 
 class SmartNoteService implements Service {
-	smartNoteEditor?: HTMLElement;
 	editor?: HTMLElement;
+	input = signal('');
 
 
 	focusEditor() {
@@ -13,14 +14,16 @@ class SmartNoteService implements Service {
 	}
 
 	init(ctx: WindowContext): void {
-		this.smartNoteEditor = ctx.body.querySelector('#smart-note-editor') as HTMLElement;
-		this.editor = document.getElementById('smart-editor') as HTMLElement;
+		const component = ctx.body as HTMLComponent;
 
-		this.smartNoteEditor.addEventListener('click', () => this.focusEditor());
-		this.editor.addEventListener('input', (e: Event) => this.onInput(e as InputEvent))
+		// this.smartNoteEditor.addEventListener('click', () => this.focusEditor());
+		component.bindInput('smart-editor', this.input);
+		this.input.subscribe(
+			() => this.onInput()
+		);
 	}
 
-	onInput(_event: InputEvent) {
+	onInput(_event?: InputEvent) {
             const selection = window.getSelection();
             if (!selection || !selection.rangeCount) return;
 
@@ -105,7 +108,8 @@ export function smartNoteWindow(x: number, y: number): WindowConfig {
 		y: y,
 		width: 300, 
 		height: 450,
-		template: smartNoteTemplate,
-		services: [new SmartNoteService()]
+		// template: smartNoteTemplate,
+		services: [new SmartNoteService()],
+		element: componentOf('win-note', smartNoteTemplate),
 	}
 }
