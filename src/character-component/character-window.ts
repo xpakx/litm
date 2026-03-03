@@ -1,8 +1,8 @@
-import { type Service, type WindowContext } from "../app.js";
+import { App, type Service, type WindowConfig, type WindowContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, deepSignal, HTMLComponent, signal } from "../html-component.js";
+import { tagComponent } from "../tag-component/tag-window.js";
 import characterTemplate from './character.html'; 
-
 
 interface Theme {
 	name: string;
@@ -35,38 +35,14 @@ class TagWindowService implements Service {
 	}
 	
 	tagComponent(tag: Tag): HTMLElement {
-		const container = document.createElement('div');
-		container.classList.add('item-row');
-		if (tag.main) container.classList.add('item-main');
-		else container.classList.add('item-sub');
-		if (tag.weakness) container.classList.add('item-weakness');
-
-		const emptyDiv = document.createElement('div');
-
-		const span = document.createElement('span');
-		span.classList.add('handwritten', 'tag-btn');
-		if (tag.weakness) span.classList.add('marker-peach');
-		else span.classList.add('marker-yellow');
-		span.dataset.type = tag.weakness ? 'weakness' : 'power';
-		span.dataset.name = tag.name;
-		span.textContent = tag.name;
-
-		const svgNS = 'http://www.w3.org/2000/svg';
-		const svg = document.createElementNS(svgNS, 'svg');
-		svg.setAttribute('class', 'scratch-icon');
-		svg.setAttribute('viewBox', '0 0 24 24');
-
-		const path = document.createElementNS(svgNS, 'path');
-		path.setAttribute('d', 'M7,18 L11,4 M12,19 L16,5 M17,20 L21,6');
-		path.setAttribute('stroke', '#4a4239');
-		path.setAttribute('stroke-width', '1.8');
-		path.setAttribute('stroke-linecap', 'round');
-
-		svg.append(path);
-
-		container.append(emptyDiv, span, svg);
-
-		return container;
+		// TODO: This would recreate all subcomponents on
+		// change in tag list, we will probably want to 
+		// improve bindList in the future and proxy with 
+		// list of signals instead
+		const config = tagComponent(signal(tag));
+		// TODO: Not terribly happy with static call
+		const elem = App.instance().registerComponent(config);
+		return elem;
 	}
 
 	init(ctx: WindowContext): void {
@@ -115,7 +91,7 @@ class TagWindowService implements Service {
 	}
 }
 
-export function characterWindow(x: number, y: number, character: Character): any {
+export function characterWindow(x: number, y: number, character: Character): WindowConfig {
 	return {
 		title: `Character: ${character.name}`,
 		x: x,

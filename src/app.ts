@@ -1,8 +1,33 @@
+import type { HTMLComponent } from "./html-component";
+
 export interface WindowContext {
 	root: HTMLElement,
 	body: HTMLElement,
 	setTitle: (t: string) => void,
 	close: () => void,
+}
+
+export interface WindowConfig {
+	id?: string;
+	title?: string;
+	x?: number;
+	y?: number;
+	width?: number;
+	height?: number;
+	services?: Service[];
+	template?: string;
+	element?: HTMLComponent;
+}
+
+export interface ComponentContext {
+	body: HTMLElement,
+	close: () => void,
+}
+
+export interface ComponentConfig {
+	services?: Service[];
+	template?: string;
+	element?: HTMLComponent;
 }
 
 // target is probably to have a Service with logic, some kind of 
@@ -15,9 +40,13 @@ export interface Service {
 
 export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
+	windowCounter: number = 0;
+
+	static _instance: App;
 
 	constructor(appElement: string) {
 		this.desktop = document.getElementById(appElement)!;
+		App._instance = this;
 	}
 
 	private getNextZIndex(): string {
@@ -54,10 +83,14 @@ export class App { zIndexCounter: number = 100;
 		return body;
 	}
 
+	private getNextWindowId(): string {
+		return `${this.windowCounter++}`;
+	}
 
-	register(config: any) {
+
+	register(config: WindowConfig) {
 		const { 
-			id = 'win-' + Date.now(), 
+			id = 'win-' + this.getNextWindowId(), 
 			title = 'Untitled', 
 			x = 50,
 			y = 50, 
@@ -143,5 +176,35 @@ export class App { zIndexCounter: number = 100;
 			element.style.zIndex = this.getNextZIndex();
 		}
 		handle.onmousedown = dragMouseDown;
+	}
+
+	registerComponent(config: ComponentConfig): HTMLElement {
+		const { 
+			services = [],
+			template = '',
+			element = undefined,
+		} = config;
+
+		let body: HTMLElement;
+		if (element) {
+			body = element;
+		} else {
+			 body = this.createDOMBody(template);
+		}
+
+		const context: ComponentContext = {
+			body: body,
+			close: () => body.remove()
+		};
+		services.forEach((serviceFn: any) => {
+			if ('init' in serviceFn) serviceFn.init(context);
+			else serviceFn(context);
+		});
+
+		return body;
+	}
+
+	static instance(): App { 
+		return this._instance;
 	}
 }

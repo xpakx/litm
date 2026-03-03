@@ -247,6 +247,18 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
+	bindClass(name: string, cls: string, signal: Signal<boolean> | ReadonlySignal<boolean>) {
+		const elem = this.getById(name);
+		if (!elem) return;
+
+		const unsub = signal.subscribe(state => {
+			if (state) elem.classList.add(cls);
+			else elem.classList.remove(cls);
+		});
+
+		this._unsubscribers.push(unsub);
+	}
+
 	bindStyle(name: string, property: keyof CSSStyleDeclaration, signal: Signal<string> | ReadonlySignal<string>) {
 		const elem = this.getById(name);
 		if (!elem) return;

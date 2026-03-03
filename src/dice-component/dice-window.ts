@@ -1,4 +1,4 @@
-import { type WindowContext, type Service } from "../app.js";
+import { type WindowContext, type Service, type WindowConfig } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, computed, HTMLComponent, signal, trigger, type Signal } from "../html-component.js";
 import diceTemplate from './dice.html'; 
@@ -111,7 +111,7 @@ class DiceService implements Service {
 	}
 }
 
-export function diceWindow(x: number, y: number): any {
+export function diceWindow(x: number, y: number): WindowConfig {
 	return {
 		title: 'Action / Dice Roller',
 		x: x,

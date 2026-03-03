@@ -1,4 +1,4 @@
-import { App, type Service, type WindowContext } from "./app.js";
+import { App, type Service, type WindowConfig, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
 import { HttpClient, HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./http/http-client.js";
@@ -17,7 +17,7 @@ class ClockService implements Service {
     }
 }
 
-function musicWindow(x: number, y: number, id: string): any {
+function musicWindow(x: number, y: number, id: string): WindowConfig {
 	return {
 		title: 'Music',
 		x: x,
@@ -37,7 +37,7 @@ function musicWindow(x: number, y: number, id: string): any {
 	}
 }
 
-function clockWindow(x: number, y: number) {
+function clockWindow(x: number, y: number): WindowConfig {
 	return {
 		title: 'Clock',
 		x: x,
@@ -77,61 +77,58 @@ const character: Character = {
     }
     (window as any).newTestWindow = newTestWindow;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    interface Todo {
-	    userId: number;
-	    id: number;
-	    title: string;
-	    completed: boolean;
-    }
-
-    const http = new HttpClient();
-
-    http.get<Todo>('https://jsonplaceholder.typicode.com/todos/1')
-	    .then((todo: Todo) => console.log(todo))
-	    .catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
-
-
-
-
-
-
-
-    class LoggingInterceptor implements HttpInterceptor {
-	    async intercept(req: HttpRequest<any>, next: HttpHandler): Promise<HttpResponse<any>> {
-		    const start = Date.now();
-		    try {
-			    const response = await next.handle(req);
-			    const ms = Date.now() - start;
-			    console.log(`[Log] SUCCESS: ${req.method} ${req.url} - ${response.status} in ${ms}ms`);
-			    return response;
-		    } catch (error) {
-			    const ms = Date.now() - start;
-			    if (error instanceof HttpErrorResponse) {
-				    console.error(`[Log] ERROR: ${req.method} ${req.url} - ${error.status} in ${ms}ms`, error.error);
-			    }
-			    throw error;
-		    }
-	    }
-    }
-
-    const http2 = new HttpClient([new LoggingInterceptor()]);
-
-    http2.get<Todo>('https://jsonplaceholder.typicode.com/todos/2')
-	    .then((todo: Todo) => console.log(todo))
-	    .catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
-
+    // testHttpRequest();
+    // testHttpInterceptor();
 })();
+
+
+function testHttpRequest() {
+	interface Todo {
+		userId: number;
+		id: number;
+		title: string;
+		completed: boolean;
+	}
+
+	const http = new HttpClient();
+
+	http.get<Todo>('https://jsonplaceholder.typicode.com/todos/1')
+		.then((todo: Todo) => console.log(todo))
+	.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
+
+}
+
+
+function testHttpInterceptor() {
+	interface Todo {
+		userId: number;
+		id: number;
+		title: string;
+		completed: boolean;
+	}
+
+	class LoggingInterceptor implements HttpInterceptor {
+		async intercept(req: HttpRequest<any>, next: HttpHandler): Promise<HttpResponse<any>> {
+			const start = Date.now();
+			try {
+				const response = await next.handle(req);
+				const ms = Date.now() - start;
+				console.log(`[Log] SUCCESS: ${req.method} ${req.url} - ${response.status} in ${ms}ms`);
+				return response;
+			} catch (error) {
+				const ms = Date.now() - start;
+				if (error instanceof HttpErrorResponse) {
+					console.error(`[Log] ERROR: ${req.method} ${req.url} - ${error.status} in ${ms}ms`, error.error);
+				}
+				throw error;
+			}
+		}
+	}
+
+	const http2 = new HttpClient([new LoggingInterceptor()]);
+
+	http2.get<Todo>('https://jsonplaceholder.typicode.com/todos/2')
+		.then((todo: Todo) => console.log(todo))
+	.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
+
+}
