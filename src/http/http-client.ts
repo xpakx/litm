@@ -83,7 +83,7 @@ export class HttpClient {
 			(nextHandler, interceptor) => ({
 				handle: (req) => interceptor.intercept(req, nextHandler),
 			}),
-				backend
+			backend
 		);
 	}
 

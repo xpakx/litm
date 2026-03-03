@@ -25,7 +25,6 @@ interface Tag {
 class TagWindowService implements Service {
 	character: Character;
 
-	container?: HTMLElement;
 	theme = signal<Theme>({name: '', powerTags: [], weaknessTags: [], quest: ''});
 	quest = deepSignal(this.theme, 'quest');
 	tags = signal<Tag[]>([]);
@@ -46,8 +45,6 @@ class TagWindowService implements Service {
 	}
 
 	init(ctx: WindowContext): void {
-		this.container = ctx.body.querySelector('#items') as HTMLElement;
-
 		const component = ctx.body as HTMLComponent;
 		this.theme.set(this.character.themes[0]!);
 		component.bindInput('quest-content', this.quest);
@@ -70,24 +67,6 @@ class TagWindowService implements Service {
 		});
 		this.tags.set(tags);
 		component.bindList('items', this.tags, (tag) => this.tagComponent(tag));
-		component.onClick('items', (e: MouseEvent) => this.onItemClick(e)); 
-	}
-
-	onItemClick(event: MouseEvent) {
-		if (!event.target) return;
-		const targetElement = event.target as HTMLElement;
-		const tag = targetElement.closest('.tag-btn');
-		if (!tag) return;
-
-		const test = tag.classList.toggle('selected');
-
-		const busEvent = {
-			name: tag.getAttribute('data-name'),
-			type: tag.getAttribute('data-type'),
-			value: tag.getAttribute('data-type') === 'power' ? 1 : -1
-		};
-		const eventKey = test ? 'TAG_ADDED' : 'TAG_REMOVED';
-		EventBus.instance.emit(eventKey, busEvent);
 	}
 }
 

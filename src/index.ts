@@ -94,7 +94,7 @@ function testHttpRequest() {
 
 	http.get<Todo>('https://jsonplaceholder.typicode.com/todos/1')
 		.then((todo: Todo) => console.log(todo))
-	.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
+		.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
 
 }
 
@@ -110,25 +110,25 @@ function testHttpInterceptor() {
 	class LoggingInterceptor implements HttpInterceptor {
 		async intercept(req: HttpRequest<any>, next: HttpHandler): Promise<HttpResponse<any>> {
 			const start = Date.now();
-			try {
-				const response = await next.handle(req);
-				const ms = Date.now() - start;
-				console.log(`[Log] SUCCESS: ${req.method} ${req.url} - ${response.status} in ${ms}ms`);
-				return response;
-			} catch (error) {
-				const ms = Date.now() - start;
-				if (error instanceof HttpErrorResponse) {
-					console.error(`[Log] ERROR: ${req.method} ${req.url} - ${error.status} in ${ms}ms`, error.error);
-				}
-				throw error;
-			}
+			return next.handle(req)
+				.then((response: HttpResponse<any>) => {
+					const ms = Date.now() - start;
+					console.log(`[Log] SUCCESS: ${req.method} ${req.url} - ${response.status} in ${ms}ms`);
+					return response;
+				})
+				.catch((error: any) => {
+					const ms = Date.now() - start;
+					if (error instanceof HttpErrorResponse) {
+						console.error(`[Log] ERROR: ${req.method} ${req.url} - ${error.status} in ${ms}ms`, error.error);
+					}
+					throw error;
+				});
 		}
 	}
 
-	const http2 = new HttpClient([new LoggingInterceptor()]);
+	const http = new HttpClient([new LoggingInterceptor()]);
 
-	http2.get<Todo>('https://jsonplaceholder.typicode.com/todos/2')
+	http.get<Todo>('https://jsonplaceholder.typicode.com/todos/2')
 		.then((todo: Todo) => console.log(todo))
-	.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
-
+		.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
 }
