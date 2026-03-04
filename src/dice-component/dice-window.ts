@@ -19,10 +19,12 @@ class DiceService implements Service {
 
 	activeTags = signal<any[]>([]);
 
-	addHocPower = signal(0);
+	adHocPower = signal(0);
 	tagPower = computed(() => this.activeTags().reduce((sum, tag) => sum + tag.value, 0), [this.activeTags]);
-	currentPower = computed(() => this.tagPower() + this.addHocPower(), [this.tagPower, this.addHocPower]);
+	currentPower = computed(() => this.tagPower() + this.adHocPower(), [this.tagPower, this.adHocPower]);
 	powerColor = computed(() => this.getPowerColor(), [this.currentPower]);
+
+	isRolling = false;
 
 	private tagComponent(tag: any): HTMLElement {
 		const div = document.createElement('div');
@@ -69,9 +71,13 @@ class DiceService implements Service {
 		this.die1.set(d1);
 		this.die2.set(d2);
 		this.totalScore.set(total);
+		this.isRolling = false;
 	}
 
 	private onClick() {
+		if (this.isRolling) return;
+		this.isRolling = true;
+
 		const d1 = Math.floor(Math.random() * 6) + 1;
 		const d2 = Math.floor(Math.random() * 6) + 1;
 		const total = d1 + d2 + this.currentPower();
@@ -81,7 +87,7 @@ class DiceService implements Service {
 	}
 
 	updateAdHocPower(delta: number) {
-		this.addHocPower.update((val: number) => val + delta);
+		this.adHocPower.update((val: number) => val + delta);
 	}
 
 	init(ctx: WindowContext): void {
