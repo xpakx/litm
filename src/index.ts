@@ -5,6 +5,7 @@ import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type Ht
 import { HttpClient } from "./http/client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { TestComponent, testWindow } from './test-component/test-component.js';
+import { StompClient } from "./stomp/client.js";
 
 
 class ClockService implements Service {
@@ -80,6 +81,7 @@ const character: Character = {
 
     // testHttpRequest();
     // testHttpInterceptor();
+    testWS();
 })();
 
 
@@ -132,4 +134,21 @@ function testHttpInterceptor() {
 	http.get<Todo>('https://jsonplaceholder.typicode.com/todos/2')
 		.then((todo: Todo) => console.log(todo))
 		.catch((error: HttpErrorResponse) => console.log('Something went wrong:', error));
+}
+
+
+function testWS() {
+	const stompClient = new StompClient('ws://localhost:8000/ws-endpoint', {
+		login: 'user',
+	passcode: 'password'
+	});
+
+	stompClient.connect()
+		.then(() => {
+			console.log("Connected!");
+			stompClient.subscribe('/topic/updates', (body, _) => {
+				console.log("Received data:", body);
+			});
+			stompClient.send('/app/chat', { message: 'Hello World' });
+		});
 }
