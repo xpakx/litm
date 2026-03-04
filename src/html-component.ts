@@ -1,4 +1,5 @@
 import { type WindowContext } from "./app.js";
+import { SmartNoteHelper, type SmartInputRule } from "./smart-note-helper.js";
 
 export interface Signal<T> {
 	(): T;
@@ -347,6 +348,41 @@ export abstract class HTMLComponent extends HTMLElement {
 		} else {
 			this.bindInputElem(elem as HTMLInputElement, signal);
 		}
+	}
+
+
+	bindSmartInput(name: string, signal: Signal<string>, rules: SmartInputRule[]) {
+		const elem = this.getById(name);
+		if (!elem || !elem.isContentEditable) return;
+		
+		const smartNote = new SmartNoteHelper(rules);
+
+		let isUpdatingSignal = false;
+
+		const getSelection = (): Selection | null => {
+			if (typeof (this.ui as any).getSelection === 'function') {
+				return (this.ui as any).getSelection();
+			}
+			return window.getSelection();
+		};
+
+		const inputHandler = (_e: Event) => {
+			smartNote.handleInput(getSelection);
+			isUpdatingSignal = true;
+			signal.set(smartNote.serializeDOM(elem));
+			isUpdatingSignal = false;
+		};
+
+		elem.addEventListener('input', inputHandler);
+		this._eventListeners.push({ elem, name: 'input', fn: inputHandler });
+
+		const unsub = signal.subscribe(val => {
+			if (isUpdatingSignal) return;
+			const parsedNodes = smartNote.parseToNodes(val);
+			elem.replaceChildren(...parsedNodes);
+		});
+
+		this._unsubscribers.push(unsub);
 	}
 
 	// CLEANUP
