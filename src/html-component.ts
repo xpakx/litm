@@ -60,7 +60,7 @@ export interface ReadonlySignal<T> {
 	subscribe(fn: (v: T) => void): () => void;
 }
 
-export function computed<T>(computeFn: () => T, dependencies: Signal<any>[]): ReadonlySignal<T> {
+export function computed<T>(computeFn: () => T, dependencies: Signal<any>[] | ReadonlySignal<any>[]): ReadonlySignal<T> {
 	let _value = computeFn();
 	const _subscribers = new Set<(v: T) => void>();
 
@@ -227,7 +227,7 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	// 'true' signals
 	
-	bindContent(name: string, signal: Signal<any>) {
+	bindContent(name: string, signal: Signal<any> | ReadonlySignal<any>) {
 		const elem = this.getById(name);
 		if (!elem) return;
 		const unsub = signal.subscribe(val => elem.textContent = val.toString());

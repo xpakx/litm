@@ -6,11 +6,9 @@ import diceTemplate from './dice.html';
 class DiceService implements Service {
         diceClasses = ['fa-dice-one', 'fa-dice-two', 'fa-dice-three', 'fa-dice-four', 'fa-dice-five', 'fa-dice-six'];
 
-	currentPower = signal(0);
 	totalScore = signal(0);
 	outcomeText = signal('');
 	outcomeClass = signal('');
-	powerColor = computed(() => this.getPowerColor(), [this.currentPower]);
 
 	die1 = signal(6);
 	die2 = signal(6);
@@ -21,8 +19,10 @@ class DiceService implements Service {
 
 	activeTags = signal<any[]>([]);
 
-	addHocPower: number = 0;
-	tagPower: number = 0;
+	addHocPower = signal(0);
+	tagPower = computed(() => this.activeTags().reduce((sum, tag) => sum + tag.value, 0), [this.activeTags]);
+	currentPower = computed(() => this.tagPower() + this.addHocPower(), [this.tagPower, this.addHocPower]);
+	powerColor = computed(() => this.getPowerColor(), [this.currentPower]);
 
 	private tagComponent(tag: any): HTMLElement {
 		const div = document.createElement('div');
@@ -37,14 +37,9 @@ class DiceService implements Service {
 
 	private onTag(tag: any, added: boolean) {
 		let tags = this.activeTags();
-		const index = tags.findIndex((t => t.name === tag.name));
-		const exists = index >= 0;
-		if (added && !exists) tags.push(tag);
-		if (!added && exists) tags.splice(index, 1);
+		if (added) tags = [...tags, tag];
+		if (!added) tags = tags.filter((t) => t.name !== tag.name);
 		this.activeTags.set(tags);
-
-		this.tagPower = tags.reduce((sum, tag) => sum + tag.value, 0);
-		this.currentPower.set(this.tagPower + this.addHocPower);
 	}
 
 	private getPowerColor(): string {
@@ -86,8 +81,7 @@ class DiceService implements Service {
 	}
 
 	updateAdHocPower(delta: number) {
-		this.addHocPower += delta;
-		this.currentPower.set(this.tagPower + this.addHocPower);
+		this.addHocPower.update((val: number) => val + delta);
 	}
 
 	init(ctx: WindowContext): void {
