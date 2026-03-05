@@ -81,7 +81,7 @@ const character: Character = {
 
     // testHttpRequest();
     // testHttpInterceptor();
-    testWS();
+    // testWS();
 })();
 
 

@@ -1,6 +1,7 @@
 import { App, type Service, type WindowConfig, type WindowContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, deepSignal, HTMLComponent, signal } from "../html-component.js";
+import { componentOf, HTMLComponent } from "../html-component.js";
+import { deepSignal, signal } from "../signal.js";
 import { tagComponent } from "../tag-component/tag-window.js";
 import characterTemplate from './character.html'; 
 

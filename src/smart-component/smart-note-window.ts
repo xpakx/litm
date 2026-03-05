@@ -1,6 +1,7 @@
 import { type WindowContext, type Service, type WindowConfig } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, HTMLComponent, signal } from "../html-component.js";
+import { componentOf, HTMLComponent } from "../html-component.js";
+import {  signal } from "../signal.js";
 import smartNoteTemplate from './smart-note.html'; 
 
 class SmartNoteService implements Service {

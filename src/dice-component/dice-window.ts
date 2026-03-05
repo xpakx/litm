@@ -1,6 +1,7 @@
 import { type WindowContext, type Service, type WindowConfig } from "../app.js";
 import { EventBus } from "../event-bus.js";
-import { componentOf, computed, HTMLComponent, signal, trigger, type Signal } from "../html-component.js";
+import { componentOf, HTMLComponent } from "../html-component.js";
+import { computed, signal, trigger, type Signal } from "../signal.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
