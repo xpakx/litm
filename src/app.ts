@@ -17,6 +17,7 @@ export interface WindowConfig {
 	services?: Service[];
 	template?: string;
 	element?: HTMLComponent;
+	zone?: string;
 }
 
 export interface ComponentContext {
@@ -100,7 +101,12 @@ export class App { zIndexCounter: number = 100;
 			services = [],
 			template = '',
 			element = undefined,
+			zone = undefined,
 		} = config;
+
+                const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
+                if (!parentElement) return;
+
 
 		const winEl = this.createDOMWindow(
 			id, x, y, width, height
@@ -117,7 +123,7 @@ export class App { zIndexCounter: number = 100;
 
 		winEl.appendChild(header);
 		winEl.appendChild(body);
-		this.desktop.appendChild(winEl);
+		parentElement.appendChild(winEl);
 		this.enableDrag(winEl, header);
 		this.enableActions(winEl, header);
 
@@ -236,6 +242,7 @@ export class App { zIndexCounter: number = 100;
 			zone.id = `zone-${areaName}`;
 			zone.className = 'wf-zone';
 			zone.style.gridArea = areaName;
+			zone.style.position = 'relative';
 			layoutZone.appendChild(zone);
 			this._zones.set(areaName, zone);
 		});

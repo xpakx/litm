@@ -158,7 +158,7 @@ function testZones() {
         App.instance().setLayout({
             cols: '1fr 145px', 
             areas: [
-                ['sidebar', 'main'],
+                ['main', 'sidebar'],
             ]
 	});
 
