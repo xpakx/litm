@@ -67,6 +67,7 @@ const character: Character = {
 (() => {
     const app = new App("app");
 
+    testZones();
     // app.register(clockWindow(10, 200));
     // app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
     app.register(characterWindow(50, 50, character));
@@ -151,4 +152,14 @@ function testWS() {
 			});
 			stompClient.send('/app/chat', { message: 'Hello World' });
 		});
+}
+
+function testZones() {
+        App.instance().setLayout({
+            cols: '1fr 145px', 
+            areas: [
+                ['sidebar', 'main'],
+            ]
+	});
+
 }

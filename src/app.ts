@@ -207,4 +207,42 @@ export class App { zIndexCounter: number = 100;
 	static instance(): App { 
 		return this._instance;
 	}
+
+	setLayout(layout: LayoutDefinition) {
+		const {
+			rows = '',
+			cols = '',
+			areas
+		} = layout;
+
+		const layoutZone = document.createElement('div');
+		layoutZone.className = 'app-zones';
+		layoutZone.id = 'app-zones';
+		layoutZone.style.gridTemplateRows = rows;
+		layoutZone.style.gridTemplateColumns = cols;
+		layoutZone.style.display = 'grid';
+		layoutZone.style.width = '100%';
+		layoutZone.style.height = '100%';
+		let areaString = '';
+		areas.forEach(r => areaString += `"${r.join(' ')}" `);
+		layoutZone.style.gridTemplateAreas = areaString;
+
+		this.desktop.appendChild(layoutZone);
+
+
+		[...new Set(areas.flat())].forEach(areaName => {
+			const zone = document.createElement('div');
+			zone.id = `zone-${areaName}`;
+			zone.className = 'wf-zone';
+			zone.style.gridArea = areaName;
+			layoutZone.appendChild(zone);
+		});
+
+	}
+}
+
+export interface LayoutDefinition {
+	rows?: string;
+	cols?: string;
+	areas: string[][];
 }
