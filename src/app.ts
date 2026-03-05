@@ -41,6 +41,7 @@ export interface Service {
 export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
 	windowCounter: number = 0;
+	private _zones: Map<string, HTMLElement> = new Map();
 
 	static _instance: App;
 
@@ -236,6 +237,7 @@ export class App { zIndexCounter: number = 100;
 			zone.className = 'wf-zone';
 			zone.style.gridArea = areaName;
 			layoutZone.appendChild(zone);
+			this._zones.set(areaName, zone);
 		});
 
 	}
