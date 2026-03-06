@@ -23,15 +23,14 @@ interface Tag {
 	main: boolean;
 }
 
-class TagWindowService implements Service {
-	character: Character;
+class ThemeService implements Service {
 
 	theme = signal<Theme>({name: '', powerTags: [], weaknessTags: [], quest: ''});
 	quest = deepSignal(this.theme, 'quest');
 	tags = signal<Tag[]>([]);
 
-	constructor(character: Character) {
-		this.character = character;
+	constructor(theme: Theme) {
+		this.theme.set(theme);
 	}
 	
 	tagComponent(tag: Tag): HTMLElement {
@@ -47,7 +46,6 @@ class TagWindowService implements Service {
 
 	init(ctx: WindowContext): void {
 		const component = ctx.body as HTMLComponent;
-		this.theme.set(this.character.themes[0]!);
 		component.bindInput('quest-content', this.quest);
 		this.quest.subscribe((t: string) => console.log(t));
 
@@ -79,7 +77,7 @@ export function characterWindow(x: number, y: number, character: Character): Win
 		width: 320, 
 		height: 450,
 		//template: characterTemplate,
-		services: [new TagWindowService(character)],
+		services: [new ThemeService(character.themes[0]!)],
 		element: componentOf("win-char", characterTemplate),
     }
 }
