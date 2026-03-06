@@ -36,4 +36,16 @@ export class EventBus {
 			.forEach(cb => cb(payload));
 		}
 	}
+
+	once(event: string, callback: Function): void {
+		const wrapper = (payload?: any) => {
+			callback(payload);
+			this.off(event, wrapper);
+		};
+		this.on(event, wrapper);
+	}
+
+	clearAll(): void {
+		this.listeners = {};
+	}
 };
