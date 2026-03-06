@@ -269,8 +269,10 @@ export class App { zIndexCounter: number = 100;
                         
                         const maxW = container.clientWidth - element.offsetWidth;
                         const maxH = container.clientHeight - element.offsetHeight;
-                        if(newTop < 0) newTop = 0; if(newLeft < 0) newLeft = 0;
-                        if(newTop > maxH) newTop = maxH; if(newLeft > maxW) newLeft = maxW;
+                        if(newTop < 0) newTop = 0;
+			if(newLeft < 0) newLeft = 0;
+                        if(newTop > maxH) newTop = maxH;
+			if(newLeft > maxW) newLeft = maxW;
 
                         element.style.top = newTop + "px";
 			element.style.left = newLeft + "px";
