@@ -80,7 +80,7 @@ class SmartNoteService implements Service {
 			type: type,
 			value: power,
 		};
-		const eventKey = test ? 'TAG_ADDED' : 'TAG_REMOVED';
+		const eventKey = test ? 'tag:add' : 'tag:remove';
 		console.log(busEvent);
 		EventBus.instance.emit(eventKey, busEvent);
 	}

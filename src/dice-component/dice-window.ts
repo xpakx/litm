@@ -104,8 +104,8 @@ class DiceService implements Service {
 
 		component.bindAnimation('dice-result-container-element', 'rolling', this.rollAnimation);
 
-		EventBus.instance.on('TAG_ADDED', (tags: any) => this.onTag(tags, true));
-		EventBus.instance.on('TAG_REMOVED', (tags: any) => this.onTag(tags, false));
+		EventBus.instance.on('tag:add', (tag: any) => this.onTag(tag, true));
+		EventBus.instance.on('tag:remove', (tag: any) => this.onTag(tag, false));
 		component.onClick('roll-btn', () => this.onClick());
 		component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
 		component.onClick('add-power-btn', () => this.updateAdHocPower(1));

@@ -56,7 +56,7 @@ export class TagService implements Service {
 			value: tag.weakness ? -1 : 1
 		};
 
-		const eventKey = this.isSelected() ? 'TAG_ADDED' : 'TAG_REMOVED';
+		const eventKey = this.isSelected() ? 'tag:add' : 'tag:remove';
 		EventBus.instance.emit(eventKey, busEvent);
 	}
 }
