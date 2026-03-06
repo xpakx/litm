@@ -18,6 +18,7 @@ export interface WindowConfig {
 	template?: string;
 	element?: HTMLComponent;
 	zone?: string;
+	trapInZone?: boolean;
 }
 
 export interface ComponentContext {
@@ -102,6 +103,7 @@ export class App { zIndexCounter: number = 100;
 			template = '',
 			element = undefined,
 			zone = undefined,
+			trapInZone = false,
 		} = config;
 
                 const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
@@ -124,7 +126,8 @@ export class App { zIndexCounter: number = 100;
 		winEl.appendChild(header);
 		winEl.appendChild(body);
 		parentElement.appendChild(winEl);
-		this.enableDrag(winEl, header);
+		if (trapInZone) this.enableDragTrapped(winEl, header, parentElement);
+		else this.enableDrag(winEl, header);
 		this.enableActions(winEl, header);
 
 
@@ -247,6 +250,47 @@ export class App { zIndexCounter: number = 100;
 			this._zones.set(areaName, zone);
 		});
 
+	}
+
+
+	enableDragTrapped(element: HTMLElement, handle: HTMLElement, container: HTMLElement) {
+		let lastClientX = 0, lastClientY = 0;
+
+		let elementDrag = (e: MouseEvent) => {
+			e.preventDefault();
+			const deltaX = lastClientX - e.clientX;
+			const deltaY = lastClientY - e.clientY;
+			lastClientX = e.clientX;
+			lastClientY = e.clientY;
+
+
+                        let newTop = element.offsetTop - deltaY;
+                        let newLeft = element.offsetLeft - deltaX;
+                        
+                        const maxW = container.clientWidth - element.offsetWidth;
+                        const maxH = container.clientHeight - element.offsetHeight;
+                        if(newTop < 0) newTop = 0; if(newLeft < 0) newLeft = 0;
+                        if(newTop > maxH) newTop = maxH; if(newLeft > maxW) newLeft = maxW;
+
+                        element.style.top = newTop + "px";
+			element.style.left = newLeft + "px";
+		}
+
+		let closeDragElement = () => {
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+
+		let dragMouseDown = (e: MouseEvent) => {
+			e.preventDefault();
+			lastClientX = e.clientX;
+			lastClientY = e.clientY;
+			document.onmouseup = closeDragElement;
+			document.onmousemove = elementDrag;
+
+			element.style.zIndex = this.getNextZIndex();
+		}
+		handle.onmousedown = dragMouseDown;
 	}
 }
 
