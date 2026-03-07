@@ -6,6 +6,7 @@ import { HttpClient } from "./http/client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { TestComponent, testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
+import type { HTMLComponent } from "./html-component.js";
 
 
 class ClockService implements Service {
@@ -170,13 +171,13 @@ function testPanels() {
 		'sidebar',
 		{
 			template: `
-                <div style="display:flex; align-items:center; height:100%; width: 100%; padding:0 15px; background:#1e1e1e; flex-direction:column;">
-                    <strong style="color:white; margin-right:20px">Sidebar</strong>
-                    <button>Option 1</button>
-                    <button>Option 2</button>
-                    <button>Option 3</button>
-                </div>
-            `
+			<div style="display:flex; align-items:center; height:100%; width: 100%; padding:0 15px; background:#1e1e1e; flex-direction:column;">
+			<strong style="color:white; margin-right:20px">Sidebar</strong>
+			<button id='btn-1'>Option 1</button>
+			<button>Option 2</button>
+			<button>Option 3</button>
+			</div>
+			`
 		}
 	);
 

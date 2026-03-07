@@ -294,19 +294,11 @@ export class App { zIndexCounter: number = 100;
 	createPanel(area: string, config: ComponentConfig) {
                 const zone = this._zones.get(area);
                 if (!zone) return;
-		const { 
-			services = [], // TODO
-			template = '',
-			element = undefined,
-		} = config;
-
-		let body: HTMLElement;
-		if (element) body = element;
-		else body = this.createDOMBody(template);
-                body.className = 'app-panel';
-		body.style.width = '100%';
-		body.style.height = '100%';
-                zone.insertBefore(body, zone.firstChild);
+		const component = this.registerComponent(config);
+                component.className = 'app-panel';
+		component.style.width = '100%';
+		component.style.height = '100%';
+                zone.insertBefore(component, zone.firstChild);
 	}
 }
 
