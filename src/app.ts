@@ -32,10 +32,6 @@ export interface ComponentConfig {
 	element?: HTMLComponent;
 }
 
-// target is probably to have a Service with logic, some kind of 
-// template in a form of Web Component (?) and maybe load
-// html/css from file (?) that would make it easy to connect
-// events in html to service and vice versa
 export interface Service {
 	init(ctx: WindowContext): void;
 }
@@ -293,6 +289,24 @@ export class App { zIndexCounter: number = 100;
 			element.style.zIndex = this.getNextZIndex();
 		}
 		handle.onmousedown = dragMouseDown;
+	}
+
+	createPanel(area: string, config: ComponentConfig) {
+                const zone = this._zones.get(area);
+                if (!zone) return;
+		const { 
+			services = [], // TODO
+			template = '',
+			element = undefined,
+		} = config;
+
+		let body: HTMLElement;
+		if (element) body = element;
+		else body = this.createDOMBody(template);
+                body.className = 'app-panel';
+		body.style.width = '100%';
+		body.style.height = '100%';
+                zone.insertBefore(body, zone.firstChild);
 	}
 }
 
