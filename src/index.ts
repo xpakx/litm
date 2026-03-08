@@ -6,7 +6,8 @@ import { HttpClient } from "./http/client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { TestComponent, testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
-import type { HTMLComponent } from "./html-component.js";
+import { componentOf, type HTMLComponent } from "./html-component.js";
+import sidebarElement from './sidebar-component/sidebar.html';
 
 
 class ClockService implements Service {
@@ -158,7 +159,7 @@ function testWS() {
 
 function testZones() {
         App.instance().setLayout({
-            cols: '1fr 145px', 
+            cols: '1fr 200px', 
             areas: [
                 ['main', 'sidebar'],
             ]
@@ -178,6 +179,8 @@ function testPanels() {
 			<button>Option 3</button>
 			</div>
 			`
+			,
+		element: componentOf('app-sidebar', sidebarElement)
 		}
 	);
 

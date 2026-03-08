@@ -1,0 +1,116 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+#sidebar {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	position: relative;
+	flex-shrink: 0;
+	padding: 5px 20px;
+	background-color: var(--card-bg);
+	background-image: repeating-linear-gradient(
+		transparent, 
+		transparent 33px, 
+		var(--line-color) 33px, 
+		var(--line-color) 34px
+			);
+	background-position: 0 10px;
+	box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+}
+
+
+.label-text {
+	font-family: 'Cinzel', serif;
+	color: #8c8072;
+	font-size: 11px;
+	letter-spacing: 1.5px;
+	font-weight: 600;
+}
+
+.handwritten {
+	font-family: 'Caveat', cursive;
+	color: var(--text-dark);
+}
+
+
+.nav-menu {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.nav-item {
+	text-decoration: none;
+	color: var(--text-dark);
+	font-size: 28px;
+	padding: 0 15px;
+	position: relative;
+	cursor: pointer;
+	z-index: 1;
+}
+
+.nav-item i {
+	font-size: 16px;
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.nav-item::before {
+	content: '';
+	position: absolute;
+	top: 15%;
+	bottom: 10%;
+	left: 5px;
+	right: 15px;
+	z-index: -1;
+	border-radius: 3px 8px 4px 6px / 5px 3px 8px 4px; 
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.nav-item:hover::before, .nav-item.active::before {
+	opacity: 0.9;
+}
+
+.nav-item:hover::before {
+	background-color: var(--highlight-peach);
+}
+
+.nav-item.active::before {
+	background-color: var(--highlight-yellow);
+}
+</style>
+
+
+<nav id="sidebar">
+
+	<span class="label-text" style="margin-left: 10px; margin-bottom: 5px;">Navigation</span>
+	<ul class="nav-menu">
+		<li class="nav-item active">
+			<i class="fa-solid fa-scroll"></i>
+			<span class="handwritten">Entry 1</span>
+		</li>
+		<li class="nav-item">
+			<i class="fa-solid fa-khanda"></i>
+			<span class="handwritten">Entry 2</span>
+		</li>
+		<li class="nav-item">
+			<i class="fa-solid fa-book-journal-whills"></i>
+			<span class="handwritten">Entry 3</span>
+		</li>
+		<li class="nav-item">
+			<i class="fa-solid fa-users"></i>
+			<span class="handwritten align-to-lines">Entry 3</span>
+		</li>
+	</ul>
+
+	<div class="section-divider"></div>
+
+</nav>
