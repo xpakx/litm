@@ -1,4 +1,4 @@
-import type { HTMLComponent } from "./html-component";
+import { HTMLComponent } from "./html-component.js";
 
 export interface WindowContext {
 	root: HTMLElement,
@@ -300,6 +300,48 @@ export class App { zIndexCounter: number = 100;
 		component.style.height = '100%';
                 zone.insertBefore(component, zone.firstChild);
 	}
+
+	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig) {
+                const zone = this._zones.get(area);
+		if (!zone) return;
+
+		let container = zone.querySelector('.app-tab-container');
+		if (!container) {
+			container = document.createElement('div');
+			container.className = 'app-tab-container';
+			container.innerHTML = `<div class="app-tab-bar"></div><div class="app-tab-content"></div>`;
+			zone.insertBefore(container, zone.firstChild);
+		}
+		const tabBar = container.querySelector('.app-tab-bar')!;
+		const tabContent = container.querySelector('.app-tab-content')!;
+
+		const btn = document.createElement('button');
+		btn.className = 'app-tab-button';
+		btn.innerHTML = `Test`; // TODO
+
+		const pane = document.createElement('div');
+		pane.className = 'app-tab-pane';
+
+		if (component instanceof HTMLElement) {
+			pane.appendChild(component);
+		} else {
+			component = this.registerComponent(component);
+			pane.appendChild(component);
+		}
+
+
+		btn.onclick = () => {
+			tabBar.querySelectorAll('.app-tab-button').forEach(b => b.classList.remove('active'));
+			tabContent.querySelectorAll('.app-tab-pane').forEach(p => p.classList.remove('active'));
+			btn.classList.add('active');
+			pane.classList.add('active');
+		};
+
+		tabBar.appendChild(btn);
+		tabContent.appendChild(pane);
+		if (tabBar.children.length === 1) btn.click();
+	}
+
 }
 
 export interface LayoutDefinition {

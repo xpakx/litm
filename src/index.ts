@@ -69,12 +69,14 @@ const character: Character = {
     const app = new App("app");
 
     testZones();
-    testPanels();
+    // testPanels();
     // app.register(clockWindow(10, 200));
     // app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
     app.register(characterWindow(50, 50, character));
     app.register(diceWindow(100, 150));
     app.register(smartNoteWindow(200, 150));
+    app.addTab('sidebar', diceWindow(0, 0));
+    app.addTab('sidebar', smartNoteWindow(0, 0));
 
     app.register(testWindow(300, 300));
     function newTestWindow() {
