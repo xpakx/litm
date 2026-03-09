@@ -293,27 +293,25 @@ export class App { zIndexCounter: number = 100;
 
 	createPanel(area: string, config: ComponentConfig) {
                 const zone = this._zones.get(area);
-                if (!zone) return;
-		const component = this.registerComponent(config);
-                component.className = 'app-panel';
-		component.style.width = '100%';
-		component.style.height = '100%';
-                zone.insertBefore(component, zone.firstChild);
+		if (!zone) return;
+		this.addTab(area, config);
+		const tabBar = zone.querySelector('.app-tab-bar')! as HTMLElement;
+		tabBar.style.display = 'none';
 	}
 
 	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig) {
                 const zone = this._zones.get(area);
 		if (!zone) return;
 
-		let container = zone.querySelector('.app-tab-container');
+		let container = zone.querySelector('.app-panel-container');
 		if (!container) {
 			container = document.createElement('div');
-			container.className = 'app-tab-container';
-			container.innerHTML = `<div class="app-tab-bar"></div><div class="app-tab-content"></div>`;
+			container.className = 'app-panel-container';
+			container.innerHTML = `<div class="app-tab-bar"></div><div class="app-panel-content"></div>`;
 			zone.insertBefore(container, zone.firstChild);
 		}
 		const tabBar = container.querySelector('.app-tab-bar')!;
-		const tabContent = container.querySelector('.app-tab-content')!;
+		const tabContent = container.querySelector('.app-panel-content')!;
 
 		const btn = document.createElement('button');
 		btn.className = 'app-tab-button';
