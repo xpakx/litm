@@ -16,7 +16,6 @@
             --win-bg: #ecf0f1;
             --header-bg: #876c59;
             --header-text: #e8e2d5;
-            --accent: #3498db;
 
             --card-bg: #f2ead6;
             --text-dark: #332d28;
@@ -26,6 +25,8 @@
             --highlight-peach: #eebf9d;
             --highlight-blue: #a3c9c7;
             --border-color: #7b6a5a;
+
+	    --tab-accent: #dcd3c1;
         }
 
         body, html {
@@ -101,6 +102,66 @@
             font-size: 14px;
             position: relative;
         }
+
+
+        .app-panel-container {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		z-index: 0;
+		background: var(--bg-color);
+	}
+
+        .app-tab-bar {
+		display: flex;
+		background: var(--card-bg);
+		border-bottom: 1px solid var(--tab-accent);
+		overflow-x: auto;
+	}
+
+        .app-tab-button {
+            padding: 8px 15px;
+	    cursor: pointer;
+	    background: transparent;
+	    color: #aaa;
+            border: none;
+	    border-right: 1px solid var(--tab-accent);
+	    font-size: 12px;
+	    font-weight: bold;
+	    white-space: nowrap;
+	    outline: none;
+        }
+
+        .app-tab-button:hover {
+		color: #fff;
+		background: rgba(255,255,255,0.05);
+	}
+
+        .app-tab-button.active {
+		background: var(--highlight-blue);
+		color: #fff;
+		border-bottom: 2px solid var(--accent);
+	}
+
+        .app-panel-content {
+		flex: 1;
+		position: relative;
+		overflow: hidden;
+	}
+
+        .app-tab-pane {
+		position: absolute;
+		inset: 0;
+		display: none;
+		overflow: auto;
+		background: var(--highlight-blue);
+	}
+
+        .app-tab-pane.active {
+		display: block;
+	}
+
     </style>
 </head>
 <body>
