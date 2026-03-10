@@ -1,4 +1,5 @@
 import { HTMLComponent } from "./html-component.js";
+import { Panel } from "./panel.js";
 
 export interface WindowContext {
 	root: HTMLElement,
@@ -34,72 +35,6 @@ export interface ComponentConfig {
 
 export interface Service {
 	init(ctx: WindowContext): void;
-}
-
-export class Panel {
-	name: string;
-	_zone: HTMLElement;
-
-	_container: HTMLElement;
-	_tabBar: HTMLElement;
-	_panelContent: HTMLElement;
-
-	constructor(name: string, zone: HTMLElement) {
-		this.name = name;
-		this._zone = zone;
-
-		let container = this._zone.querySelector('.app-panel-container') as HTMLElement;
-		if (container) {
-			this._container = container;
-			this._tabBar = container.querySelector('.app-tab-bar') as HTMLElement;
-			this._panelContent = container.querySelector('.app-panel-content') as HTMLElement;
-			this._panelContent.innerHTML = '';
-			this._tabBar.innerHTML = '';
-		} else {
-			this._container = document.createElement('div');
-			this._container.className = 'app-panel-container';
-
-			this._tabBar = document.createElement('div');
-			this._tabBar.className = 'app-tab-bar';
-			this._container.appendChild(this._tabBar);
-
-			this._panelContent = document.createElement('div');
-			this._panelContent.className = 'app-panel-content';
-			this._container.appendChild(this._panelContent);
-
-			this._zone.insertBefore(this._container, zone.firstChild);
-		}
-	}
-
-	hideTabs() {
-		this._tabBar.style.display = 'none';
-	}
-
-	showTabs() {
-		this._tabBar.style.display = 'flex';
-	}
-
-	addTab(component: HTMLElement | HTMLComponent) {
-		const btn = document.createElement('button');
-		btn.className = 'app-tab-button';
-		btn.innerHTML = `Test`; // TODO
-
-		const pane = document.createElement('div');
-		pane.className = 'app-tab-pane';
-
-		pane.appendChild(component);
-
-		btn.onclick = () => {
-			this._tabBar.querySelectorAll('.app-tab-button').forEach(b => b.classList.remove('active'));
-			this._panelContent.querySelectorAll('.app-tab-pane').forEach(p => p.classList.remove('active'));
-			btn.classList.add('active');
-			pane.classList.add('active');
-		};
-
-		this._tabBar.appendChild(btn);
-		this._panelContent.appendChild(pane);
-		if (this._tabBar.children.length === 1) btn.click();
-	}
 }
 
 export class App { zIndexCounter: number = 100;
@@ -359,15 +294,17 @@ export class App { zIndexCounter: number = 100;
 	}
 
 	createPanel(area: string, config: ComponentConfig) {
-                const zone = this._zones.get(area);
-		if (!zone) return;
-		const panel = this.getPanel(area, zone);
+		const panel = this.getPanelFor(area);
+		if (!panel) return;
 		const component = this.registerComponent(config);
 		panel.addTab(component);
 		panel.hideTabs();
 	}
 
-	getPanel(area: string, zone: HTMLElement): Panel {
+	getPanelFor(area: string): Panel | undefined {
+                const zone = this._zones.get(area);
+		if (!zone) return;
+
 		let panel = this._panels.get(area);
 		if (panel) return panel;
 
@@ -377,9 +314,8 @@ export class App { zIndexCounter: number = 100;
 	}
 
 	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig) {
-                const zone = this._zones.get(area);
-		if (!zone) return;
-		const panel = this.getPanel(area, zone);
+		const panel = this.getPanelFor(area);
+		if (!panel) return;
 
 		if (component instanceof HTMLElement) {
 			panel.addTab(component);
@@ -387,9 +323,7 @@ export class App { zIndexCounter: number = 100;
 			component = this.registerComponent(component);
 			panel.addTab(component);
 		}
-
 	}
-
 }
 
 export interface LayoutDefinition {
