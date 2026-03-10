@@ -3,6 +3,7 @@ import { HTMLComponent } from "./html-component.js";
 interface Tab {
 	pane: HTMLElement;
 	button: HTMLElement;
+	component: HTMLElement | HTMLComponent;
 }
 
 export class Panel {
@@ -70,10 +71,30 @@ export class Panel {
 		this._tabs.push({
 			button: btn,
 			pane: pane,
+			component: component,
 		});
 
 		this._tabBar.appendChild(btn);
 		this._panelContent.appendChild(pane);
 		if (this._tabs.length === 1) btn.click();
+	}
+
+	removeTab(index: number): HTMLElement | HTMLComponent | null {
+		const tab = this._tabs[index];
+		if (!tab) return null;
+
+		const wasActive = tab.button.classList.contains('active');
+
+		if (tab.component instanceof Node) tab.pane.removeChild(tab.component);
+		tab.button.remove();
+		tab.pane.remove();
+		this._tabs.splice(index, 1);
+
+		if (wasActive && this._tabs.length > 0) {
+			const nextActiveIndex = Math.max(0, index - 1);
+			this._tabs[nextActiveIndex]!.button.click();
+		}
+
+		return tab.component;
 	}
 }
