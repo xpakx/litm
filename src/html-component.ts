@@ -163,14 +163,21 @@ export abstract class HTMLComponent extends HTMLElement {
 		this._unsubscribers.push(unsub);
 	}
 
-	bindAnimation(name: string, animationClass: string, source: Trigger) {
+	bindAnimation(name: string, animationClass: string, source: Trigger, animationName?: string) {
 		const elem = this.getById(name);
 		if (!elem) return;
+
+		function onAnimationEnd(event: AnimationEvent) {
+			if (animationName && event.animationName !== animationName) return;
+			elem!.classList.remove(animationClass);
+			elem!.onanimationend = null;
+		}
 
 		const unsub = source.subscribe(() => {
 			elem.classList.remove(animationClass);
 			void elem.offsetWidth; // force reflow
 			elem.classList.add(animationClass);
+			elem.onanimationend = (event) => onAnimationEnd(event);
 		});
 
 		this._unsubscribers.push(unsub);
