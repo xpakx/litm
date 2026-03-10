@@ -115,6 +115,7 @@ export class App { zIndexCounter: number = 100;
 
 		let body: HTMLElement;
 		if (element) {
+			element.permanent = true;
 			body = element;
 			body.className = 'app-body';
 		} else {
@@ -126,7 +127,7 @@ export class App { zIndexCounter: number = 100;
 		parentElement.appendChild(winEl);
 		if (trapInZone) this.enableDragTrapped(winEl, header, parentElement);
 		else this.enableDrag(winEl, header);
-		this.enableActions(winEl, header);
+		this.enableActions(winEl, header, body);
 
 
 		const context: WindowContext = {
@@ -144,10 +145,12 @@ export class App { zIndexCounter: number = 100;
 	}
 
 
-	enableActions(winEl: HTMLElement, header: HTMLElement) {
+	enableActions(winEl: HTMLElement, header: HTMLElement, component: HTMLElement) {
 		const btn = header.querySelector('.close-btn') as HTMLButtonElement;
+		let comp = component instanceof HTMLComponent ? component : undefined;
 		btn.onclick = () => {
 			winEl.remove();
+			if (comp) comp.destroy();
 		};
 
 		winEl.onmousedown = () => {
@@ -320,6 +323,7 @@ export class App { zIndexCounter: number = 100;
 		if (component instanceof HTMLElement) {
 			panel.addTab(component);
 		} else {
+			if (component.element) component.element.permanent = true;
 			component = this.registerComponent(component);
 			panel.addTab(component);
 		}

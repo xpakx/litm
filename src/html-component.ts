@@ -11,6 +11,7 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	private _unsubscribers: Array<() => void> = [];
 	private _eventListeners: Array<{elem: HTMLElement, name: string, fn: EventListener}> = [];
+	permanent: boolean = false;
 
 	constructor() {
 		super();
@@ -263,6 +264,11 @@ export abstract class HTMLComponent extends HTMLElement {
 	// CLEANUP
 	disconnectedCallback() {
 		console.log("Disconnected");
+		if (!this.permanent) this.destroy();
+	}
+
+	destroy() {
+		console.log("Destroying")
 		this._unsubscribers.forEach(unsub => unsub());
 		this._unsubscribers = [];
 
