@@ -36,10 +36,77 @@ export interface Service {
 	init(ctx: WindowContext): void;
 }
 
+export class Panel {
+	name: string;
+	_zone: HTMLElement;
+
+	_container: HTMLElement;
+	_tabBar: HTMLElement;
+	_panelContent: HTMLElement;
+
+	constructor(name: string, zone: HTMLElement) {
+		this.name = name;
+		this._zone = zone;
+
+		let container = this._zone.querySelector('.app-panel-container') as HTMLElement;
+		if (container) {
+			this._container = container;
+			this._tabBar = container.querySelector('.app-tab-bar') as HTMLElement;
+			this._panelContent = container.querySelector('.app-panel-content') as HTMLElement;
+			this._panelContent.innerHTML = '';
+			this._tabBar.innerHTML = '';
+		} else {
+			this._container = document.createElement('div');
+			this._container.className = 'app-panel-container';
+
+			this._tabBar = document.createElement('div');
+			this._tabBar.className = 'app-tab-bar';
+			this._container.appendChild(this._tabBar);
+
+			this._panelContent = document.createElement('div');
+			this._panelContent.className = 'app-panel-content';
+			this._container.appendChild(this._panelContent);
+
+			this._zone.insertBefore(this._container, zone.firstChild);
+		}
+	}
+
+	hideTabs() {
+		this._tabBar.style.display = 'none';
+	}
+
+	showTabs() {
+		this._tabBar.style.display = 'flex';
+	}
+
+	addTab(component: HTMLElement | HTMLComponent) {
+		const btn = document.createElement('button');
+		btn.className = 'app-tab-button';
+		btn.innerHTML = `Test`; // TODO
+
+		const pane = document.createElement('div');
+		pane.className = 'app-tab-pane';
+
+		pane.appendChild(component);
+
+		btn.onclick = () => {
+			this._tabBar.querySelectorAll('.app-tab-button').forEach(b => b.classList.remove('active'));
+			this._panelContent.querySelectorAll('.app-tab-pane').forEach(p => p.classList.remove('active'));
+			btn.classList.add('active');
+			pane.classList.add('active');
+		};
+
+		this._tabBar.appendChild(btn);
+		this._panelContent.appendChild(pane);
+		if (this._tabBar.children.length === 1) btn.click();
+	}
+}
+
 export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
 	windowCounter: number = 0;
 	private _zones: Map<string, HTMLElement> = new Map();
+	private _panels: Map<string, Panel> = new Map();
 
 	static _instance: App;
 
@@ -294,50 +361,33 @@ export class App { zIndexCounter: number = 100;
 	createPanel(area: string, config: ComponentConfig) {
                 const zone = this._zones.get(area);
 		if (!zone) return;
-		this.addTab(area, config);
-		const tabBar = zone.querySelector('.app-tab-bar')! as HTMLElement;
-		tabBar.style.display = 'none';
+		const panel = this.getPanel(area, zone);
+		const component = this.registerComponent(config);
+		panel.addTab(component);
+		panel.hideTabs();
+	}
+
+	getPanel(area: string, zone: HTMLElement): Panel {
+		let panel = this._panels.get(area);
+		if (panel) return panel;
+
+		panel = new Panel(area, zone);
+		this._panels.set(area, panel);
+		return panel;
 	}
 
 	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig) {
                 const zone = this._zones.get(area);
 		if (!zone) return;
-
-		let container = zone.querySelector('.app-panel-container');
-		if (!container) {
-			container = document.createElement('div');
-			container.className = 'app-panel-container';
-			container.innerHTML = `<div class="app-tab-bar"></div><div class="app-panel-content"></div>`;
-			zone.insertBefore(container, zone.firstChild);
-		}
-		const tabBar = container.querySelector('.app-tab-bar')!;
-		const tabContent = container.querySelector('.app-panel-content')!;
-
-		const btn = document.createElement('button');
-		btn.className = 'app-tab-button';
-		btn.innerHTML = `Test`; // TODO
-
-		const pane = document.createElement('div');
-		pane.className = 'app-tab-pane';
+		const panel = this.getPanel(area, zone);
 
 		if (component instanceof HTMLElement) {
-			pane.appendChild(component);
+			panel.addTab(component);
 		} else {
 			component = this.registerComponent(component);
-			pane.appendChild(component);
+			panel.addTab(component);
 		}
 
-
-		btn.onclick = () => {
-			tabBar.querySelectorAll('.app-tab-button').forEach(b => b.classList.remove('active'));
-			tabContent.querySelectorAll('.app-tab-pane').forEach(p => p.classList.remove('active'));
-			btn.classList.add('active');
-			pane.classList.add('active');
-		};
-
-		tabBar.appendChild(btn);
-		tabContent.appendChild(pane);
-		if (tabBar.children.length === 1) btn.click();
 	}
 
 }
