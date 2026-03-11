@@ -25,6 +25,7 @@ export interface WindowConfig {
 export interface ComponentContext {
 	body: HTMLElement,
 	close: () => void,
+	component: (config: ComponentConfig) => HTMLElement,
 }
 
 export interface ComponentConfig {
@@ -238,7 +239,8 @@ export class App { zIndexCounter: number = 100;
 
 		const context: ComponentContext = {
 			body: body,
-			close: () => body.remove()
+			close: () => body.remove(),
+			component: (conf) => this.registerComponent(conf),
 		};
 		services.forEach((serviceFn: any) => {
 			if ('init' in serviceFn) serviceFn.init(context);
