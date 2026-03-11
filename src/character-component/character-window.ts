@@ -1,4 +1,4 @@
-import { App, type Service, type WindowConfig, type WindowContext } from "../app.js";
+import { App, type ComponentContext, type Service, type WindowConfig, type WindowContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { deepSignal, signal } from "../signal.js";
@@ -44,7 +44,7 @@ class ThemeService implements Service {
 		return elem;
 	}
 
-	init(ctx: WindowContext): void {
+	init(ctx: ComponentContext): void {
 		const component = ctx.body as HTMLComponent;
 		component.bindInput('quest-content', this.quest);
 		this.quest.subscribe((t: string) => console.log(t));

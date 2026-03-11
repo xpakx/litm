@@ -1,4 +1,4 @@
-import { type WindowContext, type Service, type WindowConfig } from "../app.js";
+import { type WindowContext, type Service, type WindowConfig, type ComponentContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import {  signal } from "../signal.js";
@@ -8,7 +8,7 @@ class SmartNoteService implements Service {
 	editor?: HTMLElement;
 	input = signal("The village is -bewitched-2 and -cold but +reliable soldiers are here.");
 
-	init(ctx: WindowContext): void {
+	init(ctx: ComponentContext): void {
 		const component = ctx.body as HTMLComponent;
 		this.input.subscribe(val => console.log(val));
 

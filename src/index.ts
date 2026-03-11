@@ -1,4 +1,4 @@
-import { App, type Service, type WindowConfig, type WindowContext } from "./app.js";
+import { App, type ComponentContext, type Service, type WindowConfig, type WindowContext } from "./app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
 import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./http/http.js";
@@ -10,12 +10,10 @@ import { sidebarComponent } from "./sidebar-component/sidebar.js";
 
 
 class ClockService implements Service {
-    init(ctx: WindowContext): void {
+    init(ctx: ComponentContext): void {
 	setInterval(() => {
-		if(ctx.root.parentNode) {
-			ctx.body.innerText = new Date()
-				.toLocaleTimeString();
-		}
+		ctx.body.innerText = new Date()
+			.toLocaleTimeString();
 	}, 1000);
     }
 }

@@ -34,7 +34,8 @@ export interface ComponentConfig {
 }
 
 export interface Service {
-	init(ctx: WindowContext): void;
+	init(ctx: ComponentContext): void;
+	dockWindow?(ctx: WindowContext): void;
 }
 
 export class Window {
@@ -42,6 +43,7 @@ export class Window {
 	_winHeader: HTMLElement;
 	_component: HTMLElement | HTMLComponent;
 	_zIndexFunc?: () => number;
+	_services: Service[];
 
 	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
 		const { 
@@ -51,9 +53,11 @@ export class Window {
 			y = 50, 
 			width = 300,
 			height = 200,
+			services = [],
 		} = config;
 		this._winElement = this.createDOMWindow(id, x, y, width, height);
 		this._winHeader = this.createDOMHeader(title);
+		this._services = services;
 
 		this._component = component;
 		if (this._component instanceof HTMLComponent) {
@@ -168,15 +172,33 @@ export class Window {
 
 	enableActions() {
 		const btn = this._winHeader.querySelector('.close-btn') as HTMLButtonElement;
-		let comp = this._component instanceof HTMLComponent ? this._component : undefined;
-		btn.onclick = () => {
-			this._winElement.remove();
-			if (comp) comp.destroy();
-		};
+		btn.onclick = () => this.close();
 
 		this._winElement.onmousedown = () => {
 			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
 		};
+	}
+
+	setTitle(title: string) {
+		this._winHeader.querySelector('span')!.innerText = title;
+	}
+
+	close() {
+		this._winElement.remove();
+		if ('destroy' in this._component) this._component.destroy();
+	}
+
+	dockServices() {
+		const context: WindowContext = {
+			root: this._winElement,
+			body: this._component,
+			setTitle: (t: string) => this.setTitle(t),
+			close: () => this.close()
+		};
+
+		this._services.forEach((service: Service | ((a: WindowContext) => void)) => {
+			if ('dockWindow' in service) service.dockWindow(context);
+		});
 	}
 }
 
@@ -247,14 +269,15 @@ export class App { zIndexCounter: number = 100;
 		const component = this.registerComponent(config);
 		if (element) component.className = 'app-body';
 
-		const window = new Window(config, this.getNextWindowId(), component);
-		window.setZIndexFunc(() => this.getNextZIndex());
-		window.setZIndex(this.getNextZIndex());
-		parentElement.appendChild(window._winElement);
+		const win = new Window(config, this.getNextWindowId(), component);
+		win.setZIndexFunc(() => this.getNextZIndex());
+		win.setZIndex(this.getNextZIndex());
+		parentElement.appendChild(win._winElement);
 
-		if (trapInZone) window.enableDragTrapped(parentElement);
-		else window.enableDrag();
-		window.enableActions();
+		if (trapInZone) win.enableDragTrapped(parentElement);
+		else win.enableDrag();
+		win.enableActions();
+		win.dockServices();
 	}
 
 	static instance(): App { 

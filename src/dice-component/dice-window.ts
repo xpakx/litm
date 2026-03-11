@@ -1,4 +1,4 @@
-import { type WindowContext, type Service, type WindowConfig } from "../app.js";
+import { type WindowContext, type Service, type WindowConfig, type ComponentContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { computed, signal, trigger, type Signal } from "../signal.js";
@@ -91,7 +91,7 @@ class DiceService implements Service {
 		this.adHocPower.update((val: number) => val + delta);
 	}
 
-	init(ctx: WindowContext): void {
+	init(ctx: ComponentContext): void {
 		const component = ctx.body as HTMLComponent;
 		component.bindContent('total-power', this.currentPower);
 		component.bindContent('total-score', this.totalScore);
