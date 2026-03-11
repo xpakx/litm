@@ -66,8 +66,8 @@ const character: Character = {
 (() => {
     const app = new App("app");
 
-    testZones();
-    // testPanels();
+    testZones(app);
+    // testPanels(app);
     // app.register(clockWindow(10, 200));
     // app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
     app.register(characterWindow(50, 50, character));
@@ -156,8 +156,8 @@ function testWS() {
 		});
 }
 
-function testZones() {
-        App.instance().setLayout({
+function testZones(app: App) {
+        app.setLayout({
             cols: '1fr 200px', 
             areas: [
                 ['main', 'sidebar'],
@@ -166,8 +166,8 @@ function testZones() {
 
 }
 
-function testPanels() {
-        App.instance().createPanel(
+function testPanels(app: App) {
+        app.createPanel(
 		'sidebar', sidebarComponent()
 	);
 }

@@ -1,5 +1,6 @@
 import { HTMLComponent } from "./html-component.js";
 import { Panel } from "./panel.js";
+import { Window } from "./window.js";
 
 export interface WindowContext {
 	root: HTMLElement,
@@ -25,7 +26,8 @@ export interface WindowConfig {
 export interface ComponentContext {
 	body: HTMLElement,
 	close: () => void,
-	component: (config: ComponentConfig) => HTMLElement,
+	newComponent: (config: ComponentConfig) => HTMLElement,
+	newWindow: (config: WindowConfig) => void,
 }
 
 export interface ComponentConfig {
@@ -39,168 +41,10 @@ export interface Service {
 	dockWindow?(ctx: WindowContext): void;
 }
 
-export class Window {
-	_winElement: HTMLElement;
-	_winHeader: HTMLElement;
-	_component: HTMLElement | HTMLComponent;
-	_zIndexFunc?: () => number;
-	_services: Service[];
-
-	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
-		const { 
-			id = 'win-' + windowId, 
-			title = 'Untitled', 
-			x = 50,
-			y = 50, 
-			width = 300,
-			height = 200,
-			services = [],
-		} = config;
-		this._winElement = this.createDOMWindow(id, x, y, width, height);
-		this._winHeader = this.createDOMHeader(title);
-		this._services = services;
-
-		this._component = component;
-		if (this._component instanceof HTMLComponent) {
-			this._component.permanent = true;
-		}
-
-		this._winElement.appendChild(this._winHeader);
-		this._winElement.appendChild(this._component);
-	}
-
-	setZIndex(index: number) {
-		this._winElement.style.zIndex = `${index}`;
-	}
-
-	setZIndexFunc(func: () => number) {
-		this._zIndexFunc = func;
-	}
-
-	private createDOMWindow(id: string, x: number, y: number,
-			       width: number, height: number): HTMLElement {
-		const winEl = document.createElement('div');
-		winEl.className = 'app-window';
-		winEl.id = id;
-		winEl.style.left = x + 'px';
-		winEl.style.top = y + 'px';
-		winEl.style.width = width + 'px';
-		winEl.style.height = height + 'px';
-		return winEl;
-	}
-
-	private createDOMHeader(title: string): HTMLElement {
-		const header = document.createElement('div');
-		header.className = 'app-header';
-		header.innerHTML = `
-		<span>${title}</span>
-		<div class="app-controls"><button class="close-btn" title="Close"></button></div>
-		`;
-		return header;
-	}
-
-	enableDragTrapped(container: HTMLElement) {
-		let lastClientX = 0, lastClientY = 0;
-
-		let elementDrag = (e: MouseEvent) => {
-			e.preventDefault();
-			const deltaX = lastClientX - e.clientX;
-			const deltaY = lastClientY - e.clientY;
-			lastClientX = e.clientX;
-			lastClientY = e.clientY;
-
-
-                        let newTop = this._winElement.offsetTop - deltaY;
-                        let newLeft = this._winElement.offsetLeft - deltaX;
-                        
-                        const maxW = container.clientWidth - this._winElement.offsetWidth;
-                        const maxH = container.clientHeight - this._winElement.offsetHeight;
-                        if(newTop < 0) newTop = 0;
-			if(newLeft < 0) newLeft = 0;
-                        if(newTop > maxH) newTop = maxH;
-			if(newLeft > maxW) newLeft = maxW;
-
-                        this._winElement.style.top = newTop + "px";
-			this._winElement.style.left = newLeft + "px";
-		}
-
-		let closeDragElement = () => {
-			document.onmouseup = null;
-			document.onmousemove = null;
-		}
-
-		let dragMouseDown = (e: MouseEvent) => {
-			e.preventDefault();
-			lastClientX = e.clientX;
-			lastClientY = e.clientY;
-			document.onmouseup = closeDragElement;
-			document.onmousemove = elementDrag;
-
-			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
-		}
-		this._winHeader.onmousedown = dragMouseDown;
-	}
-
-	enableDrag() {
-		let lastClientX = 0, lastClientY = 0;
-
-		let elementDrag = (e: MouseEvent) => {
-			e.preventDefault();
-			const deltaX = lastClientX - e.clientX;
-			const deltaY = lastClientY - e.clientY;
-			lastClientX = e.clientX;
-			lastClientY = e.clientY;
-			this._winElement.style.top = (this._winElement.offsetTop - deltaY) + "px";
-			this._winElement.style.left = (this._winElement.offsetLeft - deltaX) + "px";
-		}
-
-		let closeDragElement = () => {
-			document.onmouseup = null;
-			document.onmousemove = null;
-		}
-
-		let dragMouseDown = (e: MouseEvent) => {
-			e.preventDefault();
-			lastClientX = e.clientX;
-			lastClientY = e.clientY;
-			document.onmouseup = closeDragElement;
-			document.onmousemove = elementDrag;
-
-			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
-		}
-		this._winHeader.onmousedown = dragMouseDown;
-	}
-
-	enableActions() {
-		const btn = this._winHeader.querySelector('.close-btn') as HTMLButtonElement;
-		btn.onclick = () => this.close();
-
-		this._winElement.onmousedown = () => {
-			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
-		};
-	}
-
-	setTitle(title: string) {
-		this._winHeader.querySelector('span')!.innerText = title;
-	}
-
-	close() {
-		this._winElement.remove();
-		if ('destroy' in this._component) this._component.destroy();
-	}
-
-	dockServices() {
-		const context: WindowContext = {
-			root: this._winElement,
-			body: this._component,
-			setTitle: (t: string) => this.setTitle(t),
-			close: () => this.close()
-		};
-
-		this._services.forEach((service: Service | ((a: WindowContext) => void)) => {
-			if ('dockWindow' in service) service.dockWindow(context);
-		});
-	}
+export interface LayoutDefinition {
+	rows?: string;
+	cols?: string;
+	areas: string[][];
 }
 
 export class App { zIndexCounter: number = 100;
@@ -209,11 +53,8 @@ export class App { zIndexCounter: number = 100;
 	private _zones: Map<string, HTMLElement> = new Map();
 	private _panels: Map<string, Panel> = new Map();
 
-	static _instance: App;
-
 	constructor(appElement: string) {
 		this.desktop = document.getElementById(appElement)!;
-		App._instance = this;
 	}
 
 	private createDOMBody(template: string): HTMLElement {
@@ -240,7 +81,8 @@ export class App { zIndexCounter: number = 100;
 		const context: ComponentContext = {
 			body: body,
 			close: () => body.remove(),
-			component: (conf) => this.registerComponent(conf),
+			newComponent: (conf) => this.registerComponent(conf),
+			newWindow: (conf) => this.register(conf),
 		};
 		services.forEach((serviceFn: any) => {
 			if ('init' in serviceFn) serviceFn.init(context);
@@ -280,10 +122,6 @@ export class App { zIndexCounter: number = 100;
 		else win.enableDrag();
 		win.enableActions();
 		win.dockServices();
-	}
-
-	static instance(): App { 
-		return this._instance;
 	}
 
 	setLayout(layout: LayoutDefinition) {
@@ -353,10 +191,4 @@ export class App { zIndexCounter: number = 100;
 			panel.addTab(component);
 		}
 	}
-}
-
-export interface LayoutDefinition {
-	rows?: string;
-	cols?: string;
-	areas: string[][];
 }

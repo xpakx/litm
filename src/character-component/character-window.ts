@@ -1,4 +1,4 @@
-import { App, type ComponentContext, type Service, type WindowConfig, type WindowContext } from "../app.js";
+import { App, type ComponentConfig, type ComponentContext, type Service, type WindowConfig, type WindowContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { deepSignal, signal } from "../signal.js";
@@ -24,10 +24,10 @@ interface Tag {
 }
 
 class ThemeService implements Service {
-
 	theme = signal<Theme>({name: '', powerTags: [], weaknessTags: [], quest: ''});
 	quest = deepSignal(this.theme, 'quest');
 	tags = signal<Tag[]>([]);
+	newComponent?: (a: ComponentConfig) => HTMLElement;
 
 	constructor(theme: Theme) {
 		this.theme.set(theme);
@@ -40,11 +40,12 @@ class ThemeService implements Service {
 		// list of signals instead
 		const config = tagComponent(signal(tag));
 		// TODO: Not terribly happy with static call
-		const elem = App.instance().registerComponent(config);
+		const elem = this.newComponent!(config);
 		return elem;
 	}
 
 	init(ctx: ComponentContext): void {
+		this.newComponent = ctx.newComponent;
 		const component = ctx.body as HTMLComponent;
 		component.bindInput('quest-content', this.quest);
 		this.quest.subscribe((t: string) => console.log(t));
