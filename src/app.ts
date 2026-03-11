@@ -37,21 +37,39 @@ export interface Service {
 	init(ctx: WindowContext): void;
 }
 
-export class App { zIndexCounter: number = 100;
-	desktop: HTMLElement;
-	windowCounter: number = 0;
-	private _zones: Map<string, HTMLElement> = new Map();
-	private _panels: Map<string, Panel> = new Map();
+export class Window {
+	_winElement: HTMLElement;
+	_winHeader: HTMLElement;
+	_component: HTMLElement | HTMLComponent;
+	_zIndexFunc?: () => number;
 
-	static _instance: App;
+	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
+		const { 
+			id = 'win-' + windowId, 
+			title = 'Untitled', 
+			x = 50,
+			y = 50, 
+			width = 300,
+			height = 200,
+		} = config;
+		this._winElement = this.createDOMWindow(id, x, y, width, height);
+		this._winHeader = this.createDOMHeader(title);
 
-	constructor(appElement: string) {
-		this.desktop = document.getElementById(appElement)!;
-		App._instance = this;
+		this._component = component;
+		if (this._component instanceof HTMLComponent) {
+			this._component.permanent = true;
+		}
+
+		this._winElement.appendChild(this._winHeader);
+		this._winElement.appendChild(this._component);
 	}
 
-	private getNextZIndex(): string {
-		return `${++this.zIndexCounter}`;
+	setZIndex(index: number) {
+		this._winElement.style.zIndex = `${index}`;
+	}
+
+	setZIndexFunc(func: () => number) {
+		this._zIndexFunc = func;
 	}
 
 	private createDOMWindow(id: string, x: number, y: number,
@@ -63,7 +81,6 @@ export class App { zIndexCounter: number = 100;
 		winEl.style.top = y + 'px';
 		winEl.style.width = width + 'px';
 		winEl.style.height = height + 'px';
-		winEl.style.zIndex = this.getNextZIndex();
 		return winEl;
 	}
 
@@ -77,89 +94,7 @@ export class App { zIndexCounter: number = 100;
 		return header;
 	}
 
-	private createDOMBody(template: string): HTMLElement {
-		const body = document.createElement('div');
-		body.className = 'app-body';
-		body.innerHTML = template;
-		return body;
-	}
-
-	private getNextWindowId(): string {
-		return `${this.windowCounter++}`;
-	}
-
-
-	register(config: WindowConfig) {
-		const { 
-			id = 'win-' + this.getNextWindowId(), 
-			title = 'Untitled', 
-			x = 50,
-			y = 50, 
-			width = 300,
-			height = 200,
-			services = [],
-			template = '',
-			element = undefined,
-			zone = undefined,
-			trapInZone = false,
-		} = config;
-
-                const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
-                if (!parentElement) return;
-
-
-		const winEl = this.createDOMWindow(
-			id, x, y, width, height
-		);
-		const header = this.createDOMHeader(title);
-
-		let body: HTMLElement;
-		if (element) {
-			element.permanent = true;
-			body = element;
-			body.className = 'app-body';
-		} else {
-			 body = this.createDOMBody(template);
-		}
-
-		winEl.appendChild(header);
-		winEl.appendChild(body);
-		parentElement.appendChild(winEl);
-		if (trapInZone) this.enableDragTrapped(winEl, header, parentElement);
-		else this.enableDrag(winEl, header);
-		this.enableActions(winEl, header, body);
-
-
-		const context: WindowContext = {
-			root: winEl,
-			body: body,
-			setTitle: (t: string) => header.querySelector('span')!.innerText = t,
-			close: () => winEl.remove()
-		};
-		services.forEach((serviceFn: any) => {
-			if ('init' in serviceFn) serviceFn.init(context);
-			else serviceFn(context);
-		});
-
-		return context;
-	}
-
-
-	enableActions(winEl: HTMLElement, header: HTMLElement, component: HTMLElement) {
-		const btn = header.querySelector('.close-btn') as HTMLButtonElement;
-		let comp = component instanceof HTMLComponent ? component : undefined;
-		btn.onclick = () => {
-			winEl.remove();
-			if (comp) comp.destroy();
-		};
-
-		winEl.onmousedown = () => {
-			winEl.style.zIndex = this.getNextZIndex();
-		};
-	}
-
-
-	enableDrag(element: HTMLElement, handle: HTMLElement) {
+	enableDragTrapped(container: HTMLElement) {
 		let lastClientX = 0, lastClientY = 0;
 
 		let elementDrag = (e: MouseEvent) => {
@@ -168,8 +103,20 @@ export class App { zIndexCounter: number = 100;
 			const deltaY = lastClientY - e.clientY;
 			lastClientX = e.clientX;
 			lastClientY = e.clientY;
-			element.style.top = (element.offsetTop - deltaY) + "px";
-			element.style.left = (element.offsetLeft - deltaX) + "px";
+
+
+                        let newTop = this._winElement.offsetTop - deltaY;
+                        let newLeft = this._winElement.offsetLeft - deltaX;
+                        
+                        const maxW = container.clientWidth - this._winElement.offsetWidth;
+                        const maxH = container.clientHeight - this._winElement.offsetHeight;
+                        if(newTop < 0) newTop = 0;
+			if(newLeft < 0) newLeft = 0;
+                        if(newTop > maxH) newTop = maxH;
+			if(newLeft > maxW) newLeft = maxW;
+
+                        this._winElement.style.top = newTop + "px";
+			this._winElement.style.left = newLeft + "px";
 		}
 
 		let closeDragElement = () => {
@@ -184,9 +131,73 @@ export class App { zIndexCounter: number = 100;
 			document.onmouseup = closeDragElement;
 			document.onmousemove = elementDrag;
 
-			element.style.zIndex = this.getNextZIndex();
+			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
 		}
-		handle.onmousedown = dragMouseDown;
+		this._winHeader.onmousedown = dragMouseDown;
+	}
+
+	enableDrag() {
+		let lastClientX = 0, lastClientY = 0;
+
+		let elementDrag = (e: MouseEvent) => {
+			e.preventDefault();
+			const deltaX = lastClientX - e.clientX;
+			const deltaY = lastClientY - e.clientY;
+			lastClientX = e.clientX;
+			lastClientY = e.clientY;
+			this._winElement.style.top = (this._winElement.offsetTop - deltaY) + "px";
+			this._winElement.style.left = (this._winElement.offsetLeft - deltaX) + "px";
+		}
+
+		let closeDragElement = () => {
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+
+		let dragMouseDown = (e: MouseEvent) => {
+			e.preventDefault();
+			lastClientX = e.clientX;
+			lastClientY = e.clientY;
+			document.onmouseup = closeDragElement;
+			document.onmousemove = elementDrag;
+
+			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
+		}
+		this._winHeader.onmousedown = dragMouseDown;
+	}
+
+	enableActions() {
+		const btn = this._winHeader.querySelector('.close-btn') as HTMLButtonElement;
+		let comp = this._component instanceof HTMLComponent ? this._component : undefined;
+		btn.onclick = () => {
+			this._winElement.remove();
+			if (comp) comp.destroy();
+		};
+
+		this._winElement.onmousedown = () => {
+			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
+		};
+	}
+}
+
+export class App { zIndexCounter: number = 100;
+	desktop: HTMLElement;
+	windowCounter: number = 0;
+	private _zones: Map<string, HTMLElement> = new Map();
+	private _panels: Map<string, Panel> = new Map();
+
+	static _instance: App;
+
+	constructor(appElement: string) {
+		this.desktop = document.getElementById(appElement)!;
+		App._instance = this;
+	}
+
+	private createDOMBody(template: string): HTMLElement {
+		const body = document.createElement('div');
+		body.className = 'app-body';
+		body.innerHTML = template;
+		return body;
 	}
 
 	registerComponent(config: ComponentConfig): HTMLElement {
@@ -213,6 +224,37 @@ export class App { zIndexCounter: number = 100;
 		});
 
 		return body;
+	}
+
+	private getNextZIndex(): number {
+		return ++this.zIndexCounter;
+	}
+
+	private getNextWindowId(): number {
+		return this.windowCounter++;
+	}
+
+	register(config: WindowConfig) {
+		const { 
+			element = undefined,
+			zone = undefined,
+			trapInZone = false,
+		} = config;
+
+                const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
+                if (!parentElement) return;
+
+		const component = this.registerComponent(config);
+		if (element) component.className = 'app-body';
+
+		const window = new Window(config, this.getNextWindowId(), component);
+		window.setZIndexFunc(() => this.getNextZIndex());
+		window.setZIndex(this.getNextZIndex());
+		parentElement.appendChild(window._winElement);
+
+		if (trapInZone) window.enableDragTrapped(parentElement);
+		else window.enableDrag();
+		window.enableActions();
 	}
 
 	static instance(): App { 
@@ -250,51 +292,9 @@ export class App { zIndexCounter: number = 100;
 			layoutZone.appendChild(zone);
 			this._zones.set(areaName, zone);
 		});
-
 	}
 
 
-	enableDragTrapped(element: HTMLElement, handle: HTMLElement, container: HTMLElement) {
-		let lastClientX = 0, lastClientY = 0;
-
-		let elementDrag = (e: MouseEvent) => {
-			e.preventDefault();
-			const deltaX = lastClientX - e.clientX;
-			const deltaY = lastClientY - e.clientY;
-			lastClientX = e.clientX;
-			lastClientY = e.clientY;
-
-
-                        let newTop = element.offsetTop - deltaY;
-                        let newLeft = element.offsetLeft - deltaX;
-                        
-                        const maxW = container.clientWidth - element.offsetWidth;
-                        const maxH = container.clientHeight - element.offsetHeight;
-                        if(newTop < 0) newTop = 0;
-			if(newLeft < 0) newLeft = 0;
-                        if(newTop > maxH) newTop = maxH;
-			if(newLeft > maxW) newLeft = maxW;
-
-                        element.style.top = newTop + "px";
-			element.style.left = newLeft + "px";
-		}
-
-		let closeDragElement = () => {
-			document.onmouseup = null;
-			document.onmousemove = null;
-		}
-
-		let dragMouseDown = (e: MouseEvent) => {
-			e.preventDefault();
-			lastClientX = e.clientX;
-			lastClientY = e.clientY;
-			document.onmouseup = closeDragElement;
-			document.onmousemove = elementDrag;
-
-			element.style.zIndex = this.getNextZIndex();
-		}
-		handle.onmousedown = dragMouseDown;
-	}
 
 	createPanel(area: string, config: ComponentConfig) {
 		const panel = this.getPanelFor(area);
