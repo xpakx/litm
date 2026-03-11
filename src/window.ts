@@ -6,6 +6,8 @@ export class Window {
 	_winHeader: HTMLElement;
 	_component: HTMLElement | HTMLComponent;
 	_zIndexFunc?: () => number;
+	_addTabFunc?: (zone: string) => void;
+	dockable = false;
 	_services: Service[];
 
 	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
@@ -105,6 +107,7 @@ export class Window {
 
 	enableDrag() {
 		let lastClientX = 0, lastClientY = 0;
+		let currentDropZone: HTMLElement | null = null
 
 		let elementDrag = (e: MouseEvent) => {
 			e.preventDefault();
@@ -114,11 +117,20 @@ export class Window {
 			lastClientY = e.clientY;
 			this._winElement.style.top = (this._winElement.offsetTop - deltaY) + "px";
 			this._winElement.style.left = (this._winElement.offsetLeft - deltaX) + "px";
+
+			if (this.dockable) {
+				currentDropZone = this.hoverZone(e, currentDropZone);
+			}
 		}
 
 		let closeDragElement = () => {
 			document.onmouseup = null;
 			document.onmousemove = null;
+			if (this.dockable && currentDropZone) {
+				currentDropZone.classList.remove('drag-over');
+				// const zoneId = currentDropZone.id.replace('zone-', '');
+				// this.onDock(zoneId);
+			}
 		}
 
 		let dragMouseDown = (e: MouseEvent) => {
@@ -151,6 +163,10 @@ export class Window {
 		if ('destroy' in this._component) this._component.destroy();
 	}
 
+	destroy() {
+		this._winElement.remove();
+	}
+
 	dockServices() {
 		const context: WindowContext = {
 			root: this._winElement,
@@ -162,5 +178,31 @@ export class Window {
 		this._services.forEach((service: Service | ((a: WindowContext) => void)) => {
 			if ('dockWindow' in service) service.dockWindow(context);
 		});
+	}
+
+	setAddTab(func: (zone: string) => void) {
+		this._addTabFunc = func;
+	}
+
+	onDock(zone: string) {
+		this.destroy();
+		this._addTabFunc!(zone);
+	}
+
+
+	hoverZone(e: MouseEvent, currentDropZone: HTMLElement | null): HTMLElement | null {
+		this._winElement.style.pointerEvents = 'none';
+		const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+		this._winElement.style.pointerEvents = 'auto';
+
+		const zone = elUnder ? elUnder.closest('.wf-zone') as HTMLElement : null;
+
+		if (currentDropZone && currentDropZone !== zone) {
+			currentDropZone.classList.remove('drag-over');
+		}
+		if (zone) {
+			zone.classList.add('drag-over');
+		}
+		return zone;
 	}
 }

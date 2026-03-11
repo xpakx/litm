@@ -162,6 +162,16 @@
 		display: block;
 	}
 
+        .wf-zone.drag-over::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 122, 204, 0.15);
+		border: 2px dashed var(--highlight-peach);
+		z-index: 2;
+		pointer-events: none;
+        }
+
     </style>
 </head>
 <body>
