@@ -22,6 +22,7 @@ export interface WindowConfig {
 	zone?: string;
 	trapInZone?: boolean;
 	dockable?: boolean;
+	dockAreas?: string[];
 }
 
 export interface ComponentContext {
@@ -107,6 +108,7 @@ export class App { zIndexCounter: number = 100;
 			zone = undefined,
 			trapInZone = false,
 			dockable = false,
+			dockAreas = [],
 		} = config;
 
                 const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
@@ -120,8 +122,10 @@ export class App { zIndexCounter: number = 100;
 		win.setZIndex(this.getNextZIndex());
 		parentElement.appendChild(win._winElement);
 
-		win.dockable = dockable;
+		win.dockable = dockable || (dockAreas.length > 0);
+		win.dockAreas = dockAreas;
 		win.setAddTab((zone: string) => this.addTab(zone, component));
+		win.setGetPanel((zone: string) => this.getPanelFor(zone));
 
 		if (trapInZone) win.enableDragTrapped(parentElement);
 		else win.enableDrag();

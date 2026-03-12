@@ -1,5 +1,6 @@
 import type { Service, WindowConfig, WindowContext } from "./app.js";
 import { HTMLComponent } from "./html-component.js";
+import type { Panel } from "./panel.js";
 
 export class Window {
 	_winElement: HTMLElement;
@@ -7,7 +8,9 @@ export class Window {
 	_component: HTMLElement | HTMLComponent;
 	_zIndexFunc?: () => number;
 	_addTabFunc?: (zone: string) => void;
+	_getPanelFunc?: (zone: string) => Panel | undefined;
 	dockable = false;
+	dockAreas: string[] = [];
 	_services: Service[];
 
 	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
@@ -127,9 +130,8 @@ export class Window {
 			document.onmouseup = null;
 			document.onmousemove = null;
 			if (this.dockable && currentDropZone) {
-				currentDropZone.classList.remove('drag-over');
-				// const zoneId = currentDropZone.id.replace('zone-', '');
-				// this.onDock(zoneId);
+				this.dock(currentDropZone);
+				currentDropZone = null;
 			}
 		}
 
@@ -184,6 +186,10 @@ export class Window {
 		this._addTabFunc = func;
 	}
 
+	setGetPanel(func: (zone: string) => Panel | undefined) {
+		this._getPanelFunc = func;
+	}
+
 	onDock(zone: string) {
 		this.destroy();
 		this._addTabFunc!(zone);
@@ -197,12 +203,28 @@ export class Window {
 
 		const zone = elUnder ? elUnder.closest('.wf-zone') as HTMLElement : null;
 
+		const newZone = currentDropZone !== zone && zone;
+		if (!newZone) return zone;
+
 		if (currentDropZone && currentDropZone !== zone) {
 			currentDropZone.classList.remove('drag-over');
 		}
-		if (zone) {
-			zone.classList.add('drag-over');
-		}
+
+		const zoneId = zone.id.replace('zone-', '');
+		const panel = this._getPanelFunc!(zoneId);
+		if (!panel) return zone;
+		if (this.dockAreas.length > 0 && !this.dockAreas.includes(zoneId)) return zone;
+
+		if (zone) zone.classList.add('drag-over');
 		return zone;
+	}
+
+	dock(currentDropZone: HTMLElement) {
+		currentDropZone.classList.remove('drag-over');
+		const zoneId = currentDropZone.id.replace('zone-', '');
+		const panel = this._getPanelFunc!(zoneId);
+		if (!panel) return;
+		if (this.dockAreas.length > 0 && !this.dockAreas.includes(zoneId)) return;
+		this.onDock(zoneId);
 	}
 }
