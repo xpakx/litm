@@ -64,6 +64,39 @@ export class Panel {
 		btn.onclick = () => {
 			this.switchTab(btn, pane);
 		};
+
+
+                let isDraggingTab = false;
+                let startX = 0;
+                let startY = 0;
+
+                btn.onmousedown = (e) => {
+                    startX = e.clientX;
+		    startY = e.clientY;
+                    isDraggingTab = false;
+
+                    document.onmouseup = () => {
+                        document.onmouseup = null;
+			document.onmousemove = null;
+                        if (!isDraggingTab) this.switchTab(btn, pane);
+                    };
+
+                    document.onmousemove = (moveEvent) => {
+                        if (isDraggingTab) return;
+			const dist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
+			if (dist > 10) {
+				isDraggingTab = true;
+				document.onmouseup = null;
+				document.onmousemove = null;
+
+				btn.remove();
+				// pane.remove();
+				// TODO: create window
+				// TODO: switch tab
+			}
+                    };
+                };
+
 		this._tabs.push({
 			button: btn,
 			pane: pane,
