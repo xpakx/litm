@@ -93,8 +93,13 @@ export class Panel {
 				btn.remove();
 				pane.remove();
 				this._toWindowFunc!(component, moveEvent);
-				// TODO: create window
-				// TODO: switch tab
+				const indexSelf = this._tabs.findIndex(x => x.button === btn);
+				if (indexSelf >= 0) this._tabs.splice(indexSelf, 1);
+				let indexToChange = Math.min(indexSelf, this._tabs.length-1);
+				if (indexToChange >= 0) {
+					const tabToChange = this._tabs[indexToChange]!;
+					this.switchTab(tabToChange.button, tabToChange.pane);
+				}
 			}
                     };
                 };
