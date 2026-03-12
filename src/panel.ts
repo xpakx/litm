@@ -62,11 +62,7 @@ export class Panel {
 		pane.appendChild(component);
 
 		btn.onclick = () => {
-			if (btn.classList.contains('active')) return;
-			this._tabs.forEach(b => b.button.classList.remove('active'));
-			this._tabs.forEach(b => b.pane.classList.remove('active'));
-			btn.classList.add('active');
-			pane.classList.add('active');
+			this.switchTab(btn, pane);
 		};
 		this._tabs.push({
 			button: btn,
@@ -76,7 +72,15 @@ export class Panel {
 
 		this._tabBar.appendChild(btn);
 		this._panelContent.appendChild(pane);
-		if (this._tabs.length === 1) btn.click();
+		if (this._tabs.length === 1) this.switchTab(btn, pane);
+	}
+
+	switchTab(btn: HTMLElement, pane: HTMLElement) {
+		if (btn.classList.contains('active')) return;
+		this._tabs.forEach(b => b.button.classList.remove('active'));
+		this._tabs.forEach(b => b.pane.classList.remove('active'));
+		btn.classList.add('active');
+		pane.classList.add('active');
 	}
 
 	removeTab(index: number): HTMLElement | HTMLComponent | null {
