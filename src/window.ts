@@ -108,7 +108,7 @@ export class Window {
 		this._winHeader.onmousedown = dragMouseDown;
 	}
 
-	enableDrag() {
+	enableDrag(): (e: MouseEvent) => void {
 		let lastClientX = 0, lastClientY = 0;
 		let currentDropZone: HTMLElement | null = null
 
@@ -145,6 +145,7 @@ export class Window {
 			this._winElement.style.zIndex = `${this._zIndexFunc!()}`;
 		}
 		this._winHeader.onmousedown = dragMouseDown;
+		return dragMouseDown
 	}
 
 	enableActions() {

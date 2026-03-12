@@ -14,6 +14,8 @@ export class Panel {
 	_tabBar: HTMLElement;
 	_panelContent: HTMLElement;
 
+	_toWindowFunc?: (component: HTMLElement, e: MouseEvent) => void;
+
 	constructor(name: string, zone: HTMLElement) {
 		this.name = name;
 		this._zone = zone;
@@ -65,7 +67,6 @@ export class Panel {
 			this.switchTab(btn, pane);
 		};
 
-
                 let isDraggingTab = false;
                 let startX = 0;
                 let startY = 0;
@@ -90,7 +91,8 @@ export class Panel {
 				document.onmousemove = null;
 
 				btn.remove();
-				// pane.remove();
+				pane.remove();
+				this._toWindowFunc!(component, moveEvent);
 				// TODO: create window
 				// TODO: switch tab
 			}
@@ -133,5 +135,9 @@ export class Panel {
 		}
 
 		return tab.component;
+	}
+
+	setToWindowFunc(func: (component: HTMLElement, e: MouseEvent) => void) {
+		this._toWindowFunc = func;
 	}
 }

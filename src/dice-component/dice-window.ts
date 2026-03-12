@@ -121,5 +121,7 @@ export function diceWindow(x: number, y: number): WindowConfig {
 		// template: diceTemplate,
 		services: [new DiceService()],
 		element: componentOf('win-dice', diceTemplate),
+		dockable: true,
+		dockAreas: ['sidebar'],
 	}
 }

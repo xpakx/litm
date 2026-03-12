@@ -199,5 +199,28 @@ export class App { zIndexCounter: number = 100;
 			component = this.registerComponent(component);
 			panel.addTab(component);
 		}
+		panel.setToWindowFunc((c, e) => this.addWindow(c, e));
+	}
+
+	addWindow(component: HTMLElement | HTMLComponent, event: MouseEvent) {
+                const parentElement = this.desktop;
+		const config = { 
+			x: event.x - 150, // TODO
+			y: event.y - 10,
+		} // TODO: name, serices
+		const win = new Window(config, this.getNextWindowId(), component);
+		win.setZIndexFunc(() => this.getNextZIndex());
+		win.setZIndex(this.getNextZIndex());
+		parentElement.appendChild(win._winElement);
+
+		win.dockable = true;
+		win.dockAreas = ['sidebar']; // TODO
+		win.setAddTab((zone: string) => this.addTab(zone, component));
+		win.setGetPanel((zone: string) => this.getPanelFor(zone));
+
+		const dragEvent = win.enableDrag();
+		dragEvent(event);
+		win.enableActions();
+		win.dockServices();
 	}
 }
