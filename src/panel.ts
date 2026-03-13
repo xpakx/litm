@@ -5,6 +5,7 @@ interface Tab {
 	pane: HTMLElement;
 	button: HTMLElement;
 	component: HTMLElement | HTMLComponent;
+	settings: PanelSettings | undefined;
 }
 
 export class Panel {
@@ -16,7 +17,7 @@ export class Panel {
 	_panelContent: HTMLElement;
 
 	_toWindowFunc?: (component: HTMLElement, e: MouseEvent, s?: PanelSettings) => void;
-	_settings?: PanelSettings;
+	dockable: boolean = false;
 
 	constructor(name: string, zone: HTMLElement) {
 		this.name = name;
@@ -55,7 +56,7 @@ export class Panel {
 
 	_tabs: Tab[] = [];
 
-	addTab(component: HTMLElement | HTMLComponent) {
+	addTab(component: HTMLElement | HTMLComponent, settings?: PanelSettings) {
 		const btn = document.createElement('button');
 		btn.className = 'app-tab-button';
 		btn.innerHTML = `Test`; // TODO
@@ -94,7 +95,7 @@ export class Panel {
 
 				btn.remove();
 				pane.remove();
-				this._toWindowFunc!(component, moveEvent, this._settings);
+				this._toWindowFunc!(component, moveEvent, settings);
 				const indexSelf = this._tabs.findIndex(x => x.button === btn);
 				if (indexSelf >= 0) this._tabs.splice(indexSelf, 1);
 				let indexToChange = Math.min(indexSelf, this._tabs.length-1);
@@ -110,6 +111,7 @@ export class Panel {
 			button: btn,
 			pane: pane,
 			component: component,
+			settings: settings,
 		});
 
 		this._tabBar.appendChild(btn);
@@ -146,9 +148,5 @@ export class Panel {
 
 	setToWindowFunc(func: (component: HTMLElement, e: MouseEvent, s?: PanelSettings) => void) {
 		this._toWindowFunc = func;
-	}
-
-	setSettings(settings: PanelSettings) {
-		this._settings = settings;
 	}
 }

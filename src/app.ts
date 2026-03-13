@@ -202,14 +202,13 @@ export class App { zIndexCounter: number = 100;
 		if (!panel) return;
 
 		if (component instanceof HTMLElement) {
-			panel.addTab(component);
+			panel.addTab(component, settings);
 		} else {
 			if (component.element) component.element.permanent = true;
 			component = this.registerComponent(component);
-			panel.addTab(component);
+			panel.addTab(component, settings);
 		}
 		panel.setToWindowFunc((c, e, s) => this.addWindow(c, e, s));
-		if (settings) panel.setSettings(settings);
 	}
 
 	addWindow(component: HTMLElement | HTMLComponent, event: MouseEvent, settings?: PanelSettings) {
