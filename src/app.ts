@@ -177,12 +177,13 @@ export class App { zIndexCounter: number = 100;
 
 
 
-	createPanel(area: string, config: ComponentConfig) {
+	createPanel(area: string, config: ComponentConfig, dockable?: boolean) {
 		const panel = this.getPanelFor(area);
 		if (!panel) return;
 		const component = this.registerComponent(config);
 		panel.addTab(component);
 		panel.hideTabs();
+		if (dockable) panel.dockable = true;
 	}
 
 	getPanelFor(area: string): Panel | undefined {
@@ -224,7 +225,7 @@ export class App { zIndexCounter: number = 100;
 		parentElement.appendChild(win._winElement);
 
 		win.dockable = true;
-		win.dockAreas = ['sidebar']; // TODO
+		win.dockAreas = config.dockAreas ?? [];
 		win.setAddTab((zone: string, settings: PanelSettings) => this.addTab(zone, component, settings));
 		win.setGetPanel((zone: string) => this.getPanelFor(zone));
 

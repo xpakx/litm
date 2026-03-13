@@ -168,6 +168,6 @@ function testZones(app: App) {
 
 function testPanels(app: App) {
         app.createPanel(
-		'sidebar', sidebarComponent()
+		'sidebar', sidebarComponent(), true
 	);
 }

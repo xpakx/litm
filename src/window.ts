@@ -224,6 +224,7 @@ export class Window {
 		const panel = this._getPanelFunc!(zoneId);
 		if (!panel) return zone;
 		if (this.dockAreas.length > 0 && !this.dockAreas.includes(zoneId)) return zone;
+		if (this.dockAreas.length == 0 && !panel.dockable) return zone;
 
 		if (zone) zone.classList.add('drag-over');
 		return zone;
@@ -235,6 +236,7 @@ export class Window {
 		const panel = this._getPanelFunc!(zoneId);
 		if (!panel) return;
 		if (this.dockAreas.length > 0 && !this.dockAreas.includes(zoneId)) return;
+		if (this.dockAreas.length == 0 && !panel.dockable) return;
 		this.onDock(zoneId);
 	}
 }
