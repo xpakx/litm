@@ -89,9 +89,10 @@ export class Panel {
                         if (isDraggingTab) return;
 			const dist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
 			if (dist > 10) {
-				isDraggingTab = true;
 				document.onmouseup = null;
 				document.onmousemove = null;
+				if (!settings || !settings.dockable) return;
+				isDraggingTab = true;
 
 				btn.remove();
 				pane.remove();
