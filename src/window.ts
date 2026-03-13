@@ -1,4 +1,4 @@
-import type { Service, WindowConfig, WindowContext } from "./app.js";
+import type { PanelSettings, Service, WindowConfig, WindowContext } from "./app.js";
 import { HTMLComponent } from "./html-component.js";
 import type { Panel } from "./panel.js";
 
@@ -7,11 +7,12 @@ export class Window {
 	_winHeader: HTMLElement;
 	_component: HTMLElement | HTMLComponent;
 	_zIndexFunc?: () => number;
-	_addTabFunc?: (zone: string) => void;
+	_addTabFunc?: (zone: string, settings: PanelSettings) => void;
 	_getPanelFunc?: (zone: string) => Panel | undefined;
 	dockable = false;
 	dockAreas: string[] = [];
 	_services: Service[];
+	_settings: PanelSettings;
 
 	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
 		const { 
@@ -34,6 +35,14 @@ export class Window {
 
 		this._winElement.appendChild(this._winHeader);
 		this._winElement.appendChild(this._component);
+		this._settings = {
+			id: id,
+			title: title,
+			width: width,
+			height: height,
+			dockable: config.dockable ?? false,
+			dockAreas: config.dockAreas ?? [],
+		};
 	}
 
 	setZIndex(index: number) {
@@ -183,7 +192,7 @@ export class Window {
 		});
 	}
 
-	setAddTab(func: (zone: string) => void) {
+	setAddTab(func: (zone: string, settings: PanelSettings) => void) {
 		this._addTabFunc = func;
 	}
 
@@ -193,7 +202,7 @@ export class Window {
 
 	onDock(zone: string) {
 		this.destroy();
-		this._addTabFunc!(zone);
+		this._addTabFunc!(zone, this._settings);
 	}
 
 

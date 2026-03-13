@@ -1,3 +1,4 @@
+import type { PanelSettings } from "./app.js";
 import { HTMLComponent } from "./html-component.js";
 
 interface Tab {
@@ -14,7 +15,8 @@ export class Panel {
 	_tabBar: HTMLElement;
 	_panelContent: HTMLElement;
 
-	_toWindowFunc?: (component: HTMLElement, e: MouseEvent) => void;
+	_toWindowFunc?: (component: HTMLElement, e: MouseEvent, s?: PanelSettings) => void;
+	_settings?: PanelSettings;
 
 	constructor(name: string, zone: HTMLElement) {
 		this.name = name;
@@ -92,7 +94,7 @@ export class Panel {
 
 				btn.remove();
 				pane.remove();
-				this._toWindowFunc!(component, moveEvent);
+				this._toWindowFunc!(component, moveEvent, this._settings);
 				const indexSelf = this._tabs.findIndex(x => x.button === btn);
 				if (indexSelf >= 0) this._tabs.splice(indexSelf, 1);
 				let indexToChange = Math.min(indexSelf, this._tabs.length-1);
@@ -142,7 +144,11 @@ export class Panel {
 		return tab.component;
 	}
 
-	setToWindowFunc(func: (component: HTMLElement, e: MouseEvent) => void) {
+	setToWindowFunc(func: (component: HTMLElement, e: MouseEvent, s?: PanelSettings) => void) {
 		this._toWindowFunc = func;
+	}
+
+	setSettings(settings: PanelSettings) {
+		this._settings = settings;
 	}
 }

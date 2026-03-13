@@ -49,6 +49,15 @@ export interface LayoutDefinition {
 	areas: string[][];
 }
 
+export interface PanelSettings {
+	id: string;
+	title: string;
+	width: number;
+	height: number;
+	dockable: boolean;
+	dockAreas: string[];
+}
+
 export class App { zIndexCounter: number = 100;
 	desktop: HTMLElement;
 	windowCounter: number = 0;
@@ -124,7 +133,7 @@ export class App { zIndexCounter: number = 100;
 
 		win.dockable = dockable || (dockAreas.length > 0);
 		win.dockAreas = dockAreas;
-		win.setAddTab((zone: string) => this.addTab(zone, component));
+		win.setAddTab((zone: string, settings: PanelSettings) => this.addTab(zone, component, settings));
 		win.setGetPanel((zone: string) => this.getPanelFor(zone));
 
 		if (trapInZone) win.enableDragTrapped(parentElement);
@@ -188,7 +197,7 @@ export class App { zIndexCounter: number = 100;
 		return panel;
 	}
 
-	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig) {
+	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig, settings?: PanelSettings) {
 		const panel = this.getPanelFor(area);
 		if (!panel) return;
 
@@ -199,15 +208,17 @@ export class App { zIndexCounter: number = 100;
 			component = this.registerComponent(component);
 			panel.addTab(component);
 		}
-		panel.setToWindowFunc((c, e) => this.addWindow(c, e));
+		panel.setToWindowFunc((c, e, s) => this.addWindow(c, e, s));
+		if (settings) panel.setSettings(settings);
 	}
 
-	addWindow(component: HTMLElement | HTMLComponent, event: MouseEvent) {
+	addWindow(component: HTMLElement | HTMLComponent, event: MouseEvent, settings?: PanelSettings) {
                 const parentElement = this.desktop;
 		const config = { 
-			x: event.x - 150, // TODO
+			x: event.x - (settings ? settings.width/2 : 150),
 			y: event.y - 10,
-		} // TODO: name, serices
+			...(settings ?? {})
+		}
 		const win = new Window(config, this.getNextWindowId(), component);
 		win.setZIndexFunc(() => this.getNextZIndex());
 		win.setZIndex(this.getNextZIndex());
@@ -215,7 +226,7 @@ export class App { zIndexCounter: number = 100;
 
 		win.dockable = true;
 		win.dockAreas = ['sidebar']; // TODO
-		win.setAddTab((zone: string) => this.addTab(zone, component));
+		win.setAddTab((zone: string, settings: PanelSettings) => this.addTab(zone, component, settings));
 		win.setGetPanel((zone: string) => this.getPanelFor(zone));
 
 		const dragEvent = win.enableDrag();
