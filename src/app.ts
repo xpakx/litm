@@ -241,4 +241,8 @@ export class App { zIndexCounter: number = 100;
 		win.enableActions();
 		win.dockServices();
 	}
+
+	getZone(name: string): HTMLElement | undefined {
+		return this._zones.get(name);
+	}
 }
