@@ -175,9 +175,7 @@ function testPanels(app: App) {
 }
 
 function testRouting(app: App) {
-	const router = new RoutingModule([
-		{path: "/", zone: 'sidebar', view: `<a href="test" data-link>Test</a>`},
-		{path: "/test", zone: 'sidebar', view: `<a href="/" data-link>Home</a>`},
-	]);
+	const router = new RoutingModule();
+	router.addRoute('/', diceWindow(0, 0), 'sidebar');
 	router.register(app);
 }

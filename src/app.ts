@@ -205,6 +205,13 @@ export class App { zIndexCounter: number = 100;
 		return panel;
 	}
 
+	clearZone(area: string) {
+                const zone = this._zones.get(area);
+		if (!zone) return;
+		zone.innerHTML = '';
+		this._panels.delete(area);
+	}
+
 	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig, settings?: PanelSettings) {
 		const panel = this.getPanelFor(area);
 		if (!panel) return;
