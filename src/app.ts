@@ -175,6 +175,13 @@ export class App { zIndexCounter: number = 100;
 		});
 	}
 
+	registerZone(htmlId: string) {
+		const zone = document.getElementById(htmlId);
+		if (!zone) return;
+		zone.style.position = 'relative';
+		this._zones.set(htmlId, zone);
+	}
+
 
 
 	createPanel(area: string, config: ComponentConfig, dockable?: boolean) {
