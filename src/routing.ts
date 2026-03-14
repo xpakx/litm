@@ -1,17 +1,18 @@
 import { App } from "./app.js";
+import type { HTMLComponent } from "./html-component.js";
 
 interface Route {
 	path: string;
 	zone?: string;
-	view: string;
+	view: string | HTMLComponent | HTMLElement;
 }
 
 export class RoutingModule {
 	private _app?: App;
 	private _routes: Route[];
 
-	constructor(routes: Route[]) {
-		this._routes = routes;
+	constructor(routes?: Route[]) {
+		this._routes = routes ?? [];
 	}
 
 	register(app: App) {
@@ -49,14 +50,34 @@ export class RoutingModule {
 		if (view.zone) {
 			const zone = this._app.getZone(view.zone);
 			if (!zone) return;
-			zone.innerHTML = view.view;
+			this.routeElement(zone, view);
 		}
 		else {
-			this._app.desktop.innerHTML = view.view;
+			this.routeElement(this._app.desktop, view);
 		}
         };
 
+	routeElement(element: HTMLElement, view: Route) {
+			element.innerHTML = '';
+			if (view.view instanceof HTMLElement) {
+				element.appendChild(view.view);
+			} else {
+				element.innerHTML = view.view;
+			}
+	}
 
-
-
+	addRoute(path: string, component: HTMLElement | HTMLComponent | string, zone?: string) {
+		if (zone) {
+			this._routes.push({
+				path: path,
+				view: component,
+				zone: zone
+			});
+		} else {
+			this._routes.push({
+				path: path,
+				view: component,
+			});
+		}
+	}
 }

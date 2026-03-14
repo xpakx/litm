@@ -7,6 +7,7 @@ import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { TestComponent, testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
+import { RoutingModule } from "./routing.js";
 
 
 class ClockService implements Service {
@@ -85,6 +86,7 @@ const character: Character = {
     // testHttpRequest();
     // testHttpInterceptor();
     // testWS();
+    testRouting(app);
 })();
 
 
@@ -170,4 +172,12 @@ function testPanels(app: App) {
         app.createPanel(
 		'sidebar', sidebarComponent(), true
 	);
+}
+
+function testRouting(app: App) {
+	const router = new RoutingModule([
+		{path: "/", zone: 'sidebar', view: `<a href="test" data-link>Test</a>`},
+		{path: "/test", zone: 'sidebar', view: `<a href="/" data-link>Home</a>`},
+	]);
+	router.register(app);
 }
