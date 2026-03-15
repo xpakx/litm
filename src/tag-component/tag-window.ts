@@ -17,6 +17,8 @@ export class TagService implements Service {
 	colorClass: ReadonlySignal<string>;
 	isSelected = signal(false);
 
+	bus?: EventBus;
+
 	constructor(tagSignal: Signal<Tag>) {
 		this.tagData = tagSignal;
 		this.tagName = deepSignal(this.tagData, 'name');
@@ -44,7 +46,9 @@ export class TagService implements Service {
 		component.bindContent('tag-btn', this.tagName);
 		component.bindDynamicClass('tag-btn', this.className);
 		component.bindDynamicClass('tag-btn', this.colorClass);
+		this.bus = ctx.bus;
 	}
+
 
 	select() {
 		this.isSelected.update((val) => !val);
@@ -57,7 +61,7 @@ export class TagService implements Service {
 		};
 
 		const eventKey = this.isSelected() ? 'tag:add' : 'tag:remove';
-		EventBus.instance.emit(eventKey, busEvent);
+		this.bus?.emit(eventKey, busEvent);
 	}
 }
 

@@ -1,3 +1,4 @@
+import { EventBus } from "./event-bus.js";
 import { HTMLComponent } from "./html-component.js";
 import { Panel } from "./panel.js";
 import { Window } from "./window.js";
@@ -28,8 +29,8 @@ export interface WindowConfig {
 export interface ComponentContext {
 	body: HTMLElement,
 	close: () => void,
-	newComponent: (config: ComponentConfig) => HTMLElement,
-	newWindow: (config: WindowConfig) => void,
+	app: App,
+	bus: EventBus,
 }
 
 export interface ComponentConfig {
@@ -65,9 +66,11 @@ export class App { zIndexCounter: number = 100;
 	private _zones: Map<string, HTMLElement> = new Map();
 	private _panels: Map<string, Panel> = new Map();
 	private _windows: Window[] = [];
+	bus: EventBus;
 
 	constructor(appElement: string) {
 		this.desktop = document.getElementById(appElement)!;
+		this.bus = new EventBus();
 	}
 
 	private createDOMBody(template: string): HTMLElement {
@@ -94,8 +97,8 @@ export class App { zIndexCounter: number = 100;
 		const context: ComponentContext = {
 			body: body,
 			close: () => body.remove(),
-			newComponent: (conf) => this.registerComponent(conf),
-			newWindow: (conf) => this.register(conf),
+			app: this,
+			bus: this.bus,
 		};
 		services.forEach((serviceFn: any) => {
 			if ('init' in serviceFn) serviceFn.init(context);

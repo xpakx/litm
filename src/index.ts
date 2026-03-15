@@ -1,10 +1,10 @@
-import { App, type ComponentContext, type Service, type WindowConfig, type WindowContext } from "./app.js";
+import { App, type ComponentContext, type Service, type WindowConfig } from "./app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
 import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./http/http.js";
 import { HttpClient } from "./http/client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
-import { TestComponent, testWindow } from './test-component/test-component.js';
+import { testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
 import { RoutingModule } from "./routing.js";
@@ -176,6 +176,6 @@ function testPanels(app: App) {
 
 function testRouting(app: App) {
 	const router = new RoutingModule();
-	router.addRoute('/', diceWindow(0, 0), 'sidebar');
+	router.addHiddenRoute('/', diceWindow(0, 0), 'sidebar');
 	router.register(app);
 }

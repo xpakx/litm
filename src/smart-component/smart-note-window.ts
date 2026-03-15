@@ -8,9 +8,12 @@ class SmartNoteService implements Service {
 	editor?: HTMLElement;
 	input = signal("The village is -bewitched-2 and -cold but +reliable soldiers are here.");
 
+	bus?: EventBus;
+
 	init(ctx: ComponentContext): void {
 		const component = ctx.body as HTMLComponent;
 		this.input.subscribe(val => console.log(val));
+		this.bus = ctx.bus;
 
 		component.onClick(
 			'smart-editor', 
@@ -82,7 +85,7 @@ class SmartNoteService implements Service {
 		};
 		const eventKey = test ? 'tag:add' : 'tag:remove';
 		console.log(busEvent);
-		EventBus.instance.emit(eventKey, busEvent);
+		this.bus?.emit(eventKey, busEvent);
 	}
 }
 

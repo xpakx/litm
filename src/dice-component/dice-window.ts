@@ -1,5 +1,4 @@
 import { type WindowContext, type Service, type WindowConfig, type ComponentContext } from "../app.js";
-import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { computed, signal, trigger, type Signal } from "../signal.js";
 import diceTemplate from './dice.html'; 
@@ -104,8 +103,8 @@ class DiceService implements Service {
 
 		component.bindAnimation('dice-result-container-element', 'rolling', this.rollAnimation);
 
-		EventBus.instance.on('tag:add', (tag: any) => this.onTag(tag, true));
-		EventBus.instance.on('tag:remove', (tag: any) => this.onTag(tag, false));
+		ctx.bus.on('tag:add', (tag: any) => this.onTag(tag, true));
+		ctx.bus.on('tag:remove', (tag: any) => this.onTag(tag, false));
 		component.onClick('roll-btn', () => this.onClick());
 		component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
 		component.onClick('add-power-btn', () => this.updateAdHocPower(1));
