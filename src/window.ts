@@ -173,6 +173,9 @@ export class Window {
 	close() {
 		this._winElement.remove();
 		if ('destroy' in this._component) this._component.destroy();
+		this._services.forEach((s) => {
+			if ('destroy' in s) s.destroy(this._component);
+		});
 	}
 
 	destroy() {

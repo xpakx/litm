@@ -41,6 +41,7 @@ export interface ComponentConfig {
 export interface Service {
 	init(ctx: ComponentContext): void;
 	dockWindow?(ctx: WindowContext): void;
+	destroy?(body: HTMLElement | HTMLComponent): void;
 }
 
 export interface LayoutDefinition {
@@ -63,6 +64,7 @@ export class App { zIndexCounter: number = 100;
 	windowCounter: number = 0;
 	private _zones: Map<string, HTMLElement> = new Map();
 	private _panels: Map<string, Panel> = new Map();
+	private _windows: Window[] = [];
 
 	constructor(appElement: string) {
 		this.desktop = document.getElementById(appElement)!;
