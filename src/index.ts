@@ -8,6 +8,7 @@ import { testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
 import { RoutingModule } from "./routing.js";
+import { EventBus } from "./event-bus.js";
 
 
 class ClockService implements Service {
@@ -62,6 +63,18 @@ const character: Character = {
         },
     ]
 };
+
+
+export interface MyEvents {
+	"tag:add": TagEvent;
+	"tag:remove": TagEvent;
+}
+
+export interface TagEvent {
+	name: string,
+	type: 'weakness' | 'power',
+	value: number,
+}
 
 
 (() => {

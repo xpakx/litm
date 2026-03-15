@@ -150,4 +150,5 @@ export class Panel {
 	setToWindowFunc(func: (component: HTMLElement, e: MouseEvent, s?: PanelSettings) => void) {
 		this._toWindowFunc = func;
 	}
+
 }

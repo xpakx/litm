@@ -30,7 +30,7 @@ export interface ComponentContext {
 	body: HTMLElement,
 	close: () => void,
 	app: App,
-	bus: EventBus,
+	bus: EventBus<Record<string, any>>,
 }
 
 export interface ComponentConfig {
@@ -66,7 +66,7 @@ export class App { zIndexCounter: number = 100;
 	private _zones: Map<string, HTMLElement> = new Map();
 	private _panels: Map<string, Panel> = new Map();
 	private _windows: Window[] = [];
-	bus: EventBus;
+	bus: EventBus<Record<string, any>>;
 
 	constructor(appElement: string) {
 		this.desktop = document.getElementById(appElement)!;

@@ -1,6 +1,7 @@
 import { type ComponentConfig, type ComponentContext, type Service } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent, } from "../html-component.js";
+import type { MyEvents, TagEvent } from "../index.js";
 import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "../signal.js";
 import tagTemplate from './tag.html';
 
@@ -17,7 +18,7 @@ export class TagService implements Service {
 	colorClass: ReadonlySignal<string>;
 	isSelected = signal(false);
 
-	bus?: EventBus;
+	bus?: EventBus<MyEvents>;
 
 	constructor(tagSignal: Signal<Tag>) {
 		this.tagData = tagSignal;
@@ -54,7 +55,7 @@ export class TagService implements Service {
 		this.isSelected.update((val) => !val);
 		const tag = this.tagData();
 
-		const busEvent = {
+		const busEvent: TagEvent = {
 			name: tag.name,
 			type: tag.weakness ? 'weakness' : 'power',
 			value: tag.weakness ? -1 : 1

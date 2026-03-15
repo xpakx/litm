@@ -1,4 +1,4 @@
-import { type WindowContext, type Service, type WindowConfig, type ComponentContext } from "../app.js";
+import { type Service, type WindowConfig, type ComponentContext } from "../app.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { computed, signal, trigger, type Signal } from "../signal.js";
 import diceTemplate from './dice.html'; 

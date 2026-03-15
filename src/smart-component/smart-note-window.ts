@@ -1,6 +1,7 @@
 import { type WindowContext, type Service, type WindowConfig, type ComponentContext } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
+import type { MyEvents, TagEvent } from "../index.js";
 import {  signal } from "../signal.js";
 import smartNoteTemplate from './smart-note.html'; 
 
@@ -8,7 +9,7 @@ class SmartNoteService implements Service {
 	editor?: HTMLElement;
 	input = signal("The village is -bewitched-2 and -cold but +reliable soldiers are here.");
 
-	bus?: EventBus;
+	bus?: EventBus<MyEvents>;
 
 	init(ctx: ComponentContext): void {
 		const component = ctx.body as HTMLComponent;
@@ -75,11 +76,11 @@ class SmartNoteService implements Service {
 		let power = 1;
 		const powerAttr = tag.getAttribute('data-power');
 		if (powerAttr !== null) power = parseInt(powerAttr);
-		const type = tag.getAttribute('data-type');
+		const type = tag.getAttribute('data-type') as 'weakness' | 'power';
 		if (type !== 'power') power *= -1;
 
-		const busEvent = {
-			name: tag.getAttribute('data-name'),
+		const busEvent: TagEvent = {
+			name: tag.getAttribute('data-name')!,
 			type: type,
 			value: power,
 		};
