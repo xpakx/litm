@@ -10,9 +10,24 @@ use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
 use swc_core::ecma::ast::{ExportAll, ImportDecl, NamedExport};
 use swc_core::ecma::codegen::{text_writer::JsWriter, Emitter};
 use swc_core::ecma::visit::{VisitMut, VisitMutWith};
+use clap::{Parser as ClapParser, Subcommand};
 
 
 fn main() {
+  let cli = Cli::parse();
+
+    match &cli.command {
+        None => postbuild(),
+        Some(Commands::Build) => postbuild(),
+        Some(Commands::New { name }) => {
+            println!("Creating project: {}", name);
+            // TODO
+        } 
+    }
+}
+
+
+fn postbuild() {
     let src_dir = "src";
     let dist_dir = "dist";
     let verbose = true;
@@ -205,3 +220,19 @@ fn process_html(src_path: &Path, dist_path: &Path, verbose: bool) {
     }
 }
 
+
+#[derive(ClapParser)]
+#[command(name = "postbuilder")]
+#[command(about = "A tool for building LitM app", long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    New {
+        name: String,
+    },
+    Build,
+}
