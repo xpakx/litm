@@ -234,5 +234,14 @@ enum Commands {
     New {
         name: String,
     },
+
     Build,
+
+    #[command(alias = "g")]
+    Generate {
+        artifact_type: String,
+        name: String,
+        #[arg(short, long, default_value = "./src")]
+        path: String,
+    },
 }
