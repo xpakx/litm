@@ -11,6 +11,7 @@ use swc_core::ecma::ast::{ExportAll, ImportDecl, NamedExport};
 use swc_core::ecma::codegen::{text_writer::JsWriter, Emitter};
 use swc_core::ecma::visit::{VisitMut, VisitMutWith};
 
+
 fn main() {
     let src_dir = "src";
     let dist_dir = "dist";
@@ -203,3 +204,4 @@ fn process_html(src_path: &Path, dist_path: &Path, verbose: bool) {
         println!("HTML -> JS: {:?}", dist_path);
     }
 }
+
