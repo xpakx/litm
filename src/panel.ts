@@ -151,4 +151,23 @@ export class Panel {
 		this._toWindowFunc = func;
 	}
 
+	killTab(index: number) {
+		const tab = this._tabs[index];
+		if (!tab) return null;
+
+		const wasActive = tab.button.classList.contains('active');
+
+		if (tab.component instanceof Node) tab.pane.removeChild(tab.component);
+		tab.button.remove();
+		tab.pane.remove();
+		this._tabs.splice(index, 1);
+
+		if (wasActive && this._tabs.length > 0) {
+			const nextActiveIndex = Math.max(0, index - 1);
+			this._tabs[nextActiveIndex]!.button.click();
+		}
+
+		if ('destroy' in tab.component && tab.component.permanent) tab.component.destroy();
+		// TODO: services
+	}
 }
