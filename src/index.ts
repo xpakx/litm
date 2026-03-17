@@ -84,22 +84,24 @@ export interface TagEvent {
     // testPanels(app);
     // app.register(clockWindow(10, 200));
     // app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
-    app.register(characterWindow(50, 50, character));
-    app.register(diceWindow(100, 150));
-    app.register(smartNoteWindow(200, 150));
-    app.addTab('sidebar', diceWindow(0, 0));
-    app.addTab('sidebar', smartNoteWindow(0, 0));
+    app.registerWindow('theme', characterWindow(character));
+    app.registerWindow('dice', diceWindow());
+    app.registerWindow('smart', smartNoteWindow());
+    app.addTab('sidebar', diceWindow());
+    app.addTab('sidebar', smartNoteWindow());
+    app.openWindow('dice', 100, 150);
+    app.openWindow('dice', 200, 150);
 
-    app.register(testWindow(300, 300));
-    function newTestWindow() {
-	    app.register(testWindow(300, 300));
+    app.registerWindow('test', testWindow(300, 300));
+    function newTestWindow(x: number, y: number) {
+	    app.openWindow('test', x, y);
     }
     (window as any).newTestWindow = newTestWindow;
 
     // testHttpRequest();
     // testHttpInterceptor();
     // testWS();
-    testRouting(app);
+    // testRouting(app);
 })();
 
 
@@ -189,6 +191,6 @@ function testPanels(app: App) {
 
 function testRouting(app: App) {
 	const router = new RoutingModule();
-	router.addHiddenRoute('/', diceWindow(0, 0), 'sidebar');
+	router.addHiddenRoute('/', diceWindow(), 'sidebar');
 	router.register(app);
 }

@@ -1,4 +1,4 @@
-import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig } from "../app.js";
+import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig, type WindowDefinition } from "../app.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { deepSignal, signal } from "../signal.js";
 import { tagComponent } from "../tag-component/tag-window.js";
@@ -69,15 +69,13 @@ class ThemeService implements Service {
 	}
 }
 
-export function characterWindow(x: number, y: number, character: Character): WindowConfig {
+export function characterWindow(character: Character): WindowDefinition {
 	return {
 		title: `Character: ${character.name}`,
-		x: x,
-		y: y,
 		width: 320, 
 		height: 450,
 		//template: characterTemplate,
-		services: [new ThemeService(character.themes[0]!)],
-		element: componentOf("win-char", characterTemplate),
+		servicesFactory: () => [new ThemeService(character.themes[0]!)],
+		elementFactory: () => componentOf("win-char", characterTemplate),
     }
 }

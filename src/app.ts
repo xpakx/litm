@@ -10,6 +10,19 @@ export interface WindowContext {
 	close: () => void,
 }
 
+export interface WindowDefinition {
+	title?: string;
+	width?: number;
+	height?: number;
+	servicesFactory?: () => Service[];
+	template?: string;
+	elementFactory?: () => HTMLComponent;
+	zone?: string;
+	trapInZone?: boolean;
+	dockable?: boolean;
+	dockAreas?: string[];
+}
+
 export interface WindowConfig {
 	id?: string;
 	title?: string;
@@ -60,12 +73,13 @@ export interface PanelSettings {
 	dockAreas: string[];
 }
 
-export class App { zIndexCounter: number = 100;
+export class App { 
+	zIndexCounter: number = 100;
 	desktop: HTMLElement;
 	windowCounter: number = 0;
 	private _zones: Map<string, HTMLElement> = new Map();
 	private _panels: Map<string, Panel> = new Map();
-	private _windows: Window[] = [];
+	private _windowsDefinitions: Map<string, WindowDefinition> = new Map();
 	bus: EventBus<Record<string, any>>;
 
 	constructor(appElement: string) {
@@ -116,7 +130,32 @@ export class App { zIndexCounter: number = 100;
 		return this.windowCounter++;
 	}
 
-	register(config: WindowConfig) {
+	registerWindow(name: string, config: WindowDefinition) {
+		this._windowsDefinitions.set(name, config);
+	}
+
+	openWindow(name: string, x: number, y: number, zone?: string) {
+		const defaultConfig = this._windowsDefinitions.get(name);
+		if (!defaultConfig) return;
+		const { elementFactory, servicesFactory, ...rest } = defaultConfig;
+		let config: WindowConfig = {
+			...rest,
+			x,
+			y,
+
+		};
+		if (elementFactory) config.element = elementFactory();
+		if (servicesFactory) config.services = servicesFactory();
+		
+		if (zone) {
+			config.zone = zone;
+			config.trapInZone = true;
+		}
+		
+		this.createWindow(config);
+	}
+
+	createWindow(config: WindowConfig) {
 		const { 
 			element = undefined,
 			zone = undefined,

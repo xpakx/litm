@@ -1,4 +1,4 @@
-import { type Service, type WindowConfig, type ComponentContext } from "../app.js";
+import { type Service, type WindowConfig, type ComponentContext, type WindowDefinition } from "../app.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import { computed, signal, trigger, type Signal } from "../signal.js";
 import diceTemplate from './dice.html'; 
@@ -111,15 +111,13 @@ class DiceService implements Service {
 	}
 }
 
-export function diceWindow(x: number, y: number): WindowConfig {
+export function diceWindow(): WindowDefinition {
 	return {
 		title: 'Action / Dice Roller',
-		x: x,
-		y: y,
 		width: 300, height: 450,
 		// template: diceTemplate,
-		services: [new DiceService()],
-		element: componentOf('win-dice', diceTemplate),
+		servicesFactory: () => [new DiceService()],
+		elementFactory: () => componentOf('win-dice', diceTemplate),
 		dockable: true,
 		dockAreas: ['sidebar'],
 	}

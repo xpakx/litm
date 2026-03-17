@@ -4,20 +4,20 @@ import { componentOf, HTMLComponent, } from "../html-component.js";
 import sidebarTemplate from './sidebar.html';
 
 export class SidebarService implements Service {
-	newWindow?: (a: WindowConfig) => void;
+	newWindow?: (a: string, x?: number, y?: number) => void;
 
 	constructor() {
 	}
 
 
 	init(ctx: ComponentContext): void {
-		this.newWindow = (c) => ctx.app.register(c);
+		this.newWindow = (c, x, y) => ctx.app.openWindow(c, x ?? 0, y ?? 0);
 		const component = ctx.body as HTMLComponent;
 		component.onClick('entry-1', () => this.openDice());
 	}
 
 	openDice() {
-		this.newWindow!(diceWindow(100, 150));
+		this.newWindow!('dice');
 	}
 
 }
