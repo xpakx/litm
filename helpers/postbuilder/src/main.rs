@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::io::{self};
 use walkdir::WalkDir;
 use std::collections::HashSet;
 
@@ -10,7 +11,7 @@ use swc_core::ecma::parser::{lexer::Lexer, Parser, StringInput, Syntax};
 use swc_core::ecma::ast::{ExportAll, ImportDecl, NamedExport};
 use swc_core::ecma::codegen::{text_writer::JsWriter, Emitter};
 use swc_core::ecma::visit::{VisitMut, VisitMutWith};
-use clap::{Parser as ClapParser, Subcommand};
+use clap::{Parser as ClapParser, Subcommand, ValueEnum};
 
 
 fn main() {
@@ -22,7 +23,16 @@ fn main() {
         Some(Commands::New { name }) => {
             println!("Creating project: {}", name);
             // TODO
-        } 
+        },
+        Some(Commands::Generate { artifact_type, name, path }) => {
+            match artifact_type {
+                Artifact::Component => 
+                    generate_component(&name, &path).unwrap(),
+                Artifact::Service =>
+                    generate_service(&name, &path).unwrap()
+            }
+            // TODO
+        },
     }
 }
 
@@ -239,9 +249,60 @@ enum Commands {
 
     #[command(alias = "g")]
     Generate {
-        artifact_type: String,
+        artifact_type: Artifact,
         name: String,
         #[arg(short, long, default_value = "./src")]
         path: String,
     },
+}
+
+#[derive(ValueEnum, Clone, Debug)]
+enum Artifact {
+    #[value(alias = "c")]
+    Component,
+    
+    #[value(alias = "s")]
+    Service,
+}
+
+
+fn generate_component(name: &String, _path: &String)  -> io::Result<()> {
+    println!("Generating component: {}", name);
+
+    let dir_path = format!("src/{}", name);
+    let path = Path::new(&dir_path);
+
+    if path.exists() {
+        return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                format!("Directory {} already exists", dir_path),
+        ));
+    }
+
+    fs::create_dir_all(path)?;
+
+    fs::File::create(path.join(format!("{}.ts", name)))?;
+    fs::File::create(path.join(format!("{}.html", name)))?;
+
+    println!("Successfully generated component: {}", name);
+    Ok(())
+}
+
+fn generate_service(name: &String, _path: &String)  -> io::Result<()> {
+    println!("Generating service: {}", name);
+
+    let dir_path = Path::new("src/");
+    let path = dir_path .join(format!("{}.ts", name));
+
+    if path.exists() {
+        return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                format!("File {}.ts already exists", name),
+        ));
+    }
+
+    fs::File::create(path)?;
+
+    println!("Successfully generated service: {}", name);
+    Ok(())
 }
