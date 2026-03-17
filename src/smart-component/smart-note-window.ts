@@ -1,4 +1,4 @@
-import { type WindowContext, type Service, type WindowConfig, type ComponentContext, type WindowDefinition } from "../app.js";
+import { type WindowContext, type Service, type WindowConfig, type ComponentContext, type ComponentDefinition } from "../app.js";
 import { EventBus } from "../event-bus.js";
 import { componentOf, HTMLComponent } from "../html-component.js";
 import type { MyEvents, TagEvent } from "../index.js";
@@ -90,7 +90,7 @@ class SmartNoteService implements Service {
 	}
 }
 
-export function smartNoteWindow(): WindowDefinition {
+export function smartNoteWindow(): ComponentDefinition {
 	return {
 		title: 'Smart Note',
 		width: 300, 

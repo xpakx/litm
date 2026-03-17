@@ -10,7 +10,7 @@ export interface WindowContext {
 	close: () => void,
 }
 
-export interface WindowDefinition {
+export interface ComponentDefinition {
 	title?: string;
 	width?: number;
 	height?: number;
@@ -79,7 +79,7 @@ export class App {
 	windowCounter: number = 0;
 	private _zones: Map<string, HTMLElement> = new Map();
 	private _panels: Map<string, Panel> = new Map();
-	private _windowsDefinitions: Map<string, WindowDefinition> = new Map();
+	private _components: Map<string, ComponentDefinition> = new Map();
 	bus: EventBus<Record<string, any>>;
 
 	constructor(appElement: string) {
@@ -94,7 +94,78 @@ export class App {
 		return body;
 	}
 
-	registerComponent(config: ComponentConfig): HTMLElement {
+	private getNextZIndex(): number {
+		return ++this.zIndexCounter;
+	}
+
+	private getNextWindowId(): number {
+		return this.windowCounter++;
+	}
+
+	register(name: string, config: ComponentDefinition) {
+		this._components.set(name, config);
+	}
+
+	getWindowConfig(name: string): WindowConfig | undefined {
+		const defaultConfig = this._components.get(name);
+		if (!defaultConfig) return;
+		const { elementFactory, servicesFactory, ...rest } = defaultConfig;
+		let config: WindowConfig = {
+			...rest,
+
+		};
+		if (elementFactory) config.element = elementFactory();
+		if (servicesFactory) config.services = servicesFactory();
+		
+		return config;
+	}
+
+	openWindow(name: string, x: number, y: number, zone?: string) {
+		let config = this.getWindowConfig(name);
+		if (!config) return;
+		config.x = x;
+		config.y = y;
+
+		if (zone) {
+			config.zone = zone;
+			config.trapInZone = true;
+		}
+		
+		this.createWindow(config);
+	}
+
+	createWindow(config: WindowConfig) {
+		const { 
+			element = undefined,
+			zone = undefined,
+			trapInZone = false,
+			dockable = false,
+			dockAreas = [],
+		} = config;
+
+                const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
+                if (!parentElement) return;
+
+		const component = this.createComponent(config);
+		if (element) component.className = 'app-body';
+
+		const win = new Window(config, this.getNextWindowId(), component);
+		win.setZIndexFunc(() => this.getNextZIndex());
+		win.setZIndex(this.getNextZIndex());
+		parentElement.appendChild(win._winElement);
+
+		win.dockable = dockable || (dockAreas.length > 0);
+		win.dockAreas = dockAreas;
+		win.setAddTab((zone: string, settings: PanelSettings) => this.addTab(zone, component, settings));
+		win.setGetPanel((zone: string) => this.getPanelFor(zone));
+
+		if (trapInZone) win.enableDragTrapped(parentElement);
+		else win.enableDrag();
+		win.enableActions();
+		win.dockServices();
+	}
+
+	createComponent(config: ComponentConfig): HTMLElement {
 		const { 
 			services = [],
 			template = '',
@@ -120,70 +191,6 @@ export class App {
 		});
 
 		return body;
-	}
-
-	private getNextZIndex(): number {
-		return ++this.zIndexCounter;
-	}
-
-	private getNextWindowId(): number {
-		return this.windowCounter++;
-	}
-
-	registerWindow(name: string, config: WindowDefinition) {
-		this._windowsDefinitions.set(name, config);
-	}
-
-	openWindow(name: string, x: number, y: number, zone?: string) {
-		const defaultConfig = this._windowsDefinitions.get(name);
-		if (!defaultConfig) return;
-		const { elementFactory, servicesFactory, ...rest } = defaultConfig;
-		let config: WindowConfig = {
-			...rest,
-			x,
-			y,
-
-		};
-		if (elementFactory) config.element = elementFactory();
-		if (servicesFactory) config.services = servicesFactory();
-		
-		if (zone) {
-			config.zone = zone;
-			config.trapInZone = true;
-		}
-		
-		this.createWindow(config);
-	}
-
-	createWindow(config: WindowConfig) {
-		const { 
-			element = undefined,
-			zone = undefined,
-			trapInZone = false,
-			dockable = false,
-			dockAreas = [],
-		} = config;
-
-                const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
-                if (!parentElement) return;
-
-		const component = this.registerComponent(config);
-		if (element) component.className = 'app-body';
-
-		const win = new Window(config, this.getNextWindowId(), component);
-		win.setZIndexFunc(() => this.getNextZIndex());
-		win.setZIndex(this.getNextZIndex());
-		parentElement.appendChild(win._winElement);
-
-		win.dockable = dockable || (dockAreas.length > 0);
-		win.dockAreas = dockAreas;
-		win.setAddTab((zone: string, settings: PanelSettings) => this.addTab(zone, component, settings));
-		win.setGetPanel((zone: string) => this.getPanelFor(zone));
-
-		if (trapInZone) win.enableDragTrapped(parentElement);
-		else win.enableDrag();
-		win.enableActions();
-		win.dockServices();
 	}
 
 	setLayout(layout: LayoutDefinition) {
@@ -231,7 +238,7 @@ export class App {
 	createPanel(area: string, config: ComponentConfig, dockable?: boolean) {
 		const panel = this.getPanelFor(area);
 		if (!panel) return;
-		const component = this.registerComponent(config);
+		const component = this.createComponent(config);
 		panel.addTab(component);
 		panel.hideTabs();
 		if (dockable) panel.dockable = true;
@@ -256,6 +263,12 @@ export class App {
 		this._panels.delete(area);
 	}
 
+	createTab(area: string, name: string) {
+		let config = this.getWindowConfig(name);
+		if (!config) return;
+		this.addTab(area, config);
+	}
+
 	addTab(area: string, component: HTMLElement | HTMLComponent | ComponentConfig, settings?: PanelSettings) {
 		const panel = this.getPanelFor(area);
 		if (!panel) return;
@@ -264,7 +277,7 @@ export class App {
 			panel.addTab(component, settings);
 		} else {
 			if (component.element) component.element.permanent = true;
-			component = this.registerComponent(component);
+			component = this.createComponent(component);
 			panel.addTab(component, settings);
 		}
 		panel.setToWindowFunc((c, e, s) => this.addWindow(c, e, s));
