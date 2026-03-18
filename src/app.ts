@@ -81,13 +81,12 @@ export class ComponentLibrary {
 		return `add-dummy${this.nameCounter++}`;
 	}
 
-
 	register(name: string, config: ComponentDefinition) {
 		if(config.template) {
 			const template = config.template
 			const generatedName = this.getNextName()
 			config.elementFactory = () => componentOf(generatedName, template);
-		}
+		} 
 		this._components.set(name, config);
 	}
 
@@ -183,6 +182,12 @@ export class App {
 		else win.enableDrag();
 		win.enableActions();
 		win.dockServices();
+	}
+
+	getComponent(name: string): HTMLElement | undefined {
+		const config = this.components.getWindowConfig(name);
+		if (!config) return undefined;
+		return this.createComponent(config);
 	}
 
 	createComponent(config: ComponentConfig): HTMLElement {
