@@ -94,9 +94,9 @@ export interface TagEvent {
 
     app.openWindow('dice', 100, 150);
     app.openWindow('dice', 200, 150);
-    app.openWindow('theme', 200, 200);
-    app.openWindow('smart', 200, 250);
-    app.openWindow('test', 200, 300);
+    app.openWindow('theme', 300, 200);
+    app.openWindow('smart', 400, 250);
+    app.openWindow('test', 500, 300);
 
     function newTestWindow(x: number, y: number) {
 	    app.openWindow('test', x, y);

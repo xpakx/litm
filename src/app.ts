@@ -73,34 +73,8 @@ export interface PanelSettings {
 	dockAreas: string[];
 }
 
-export class App { 
-	zIndexCounter: number = 100;
-	desktop: HTMLElement;
-	windowCounter: number = 0;
-	private _zones: Map<string, HTMLElement> = new Map();
-	private _panels: Map<string, Panel> = new Map();
+export class ComponentLibrary {
 	private _components: Map<string, ComponentDefinition> = new Map();
-	bus: EventBus<Record<string, any>>;
-
-	constructor(appElement: string) {
-		this.desktop = document.getElementById(appElement)!;
-		this.bus = new EventBus();
-	}
-
-	private createDOMBody(template: string): HTMLElement {
-		const body = document.createElement('div');
-		body.className = 'app-body';
-		body.innerHTML = template;
-		return body;
-	}
-
-	private getNextZIndex(): number {
-		return ++this.zIndexCounter;
-	}
-
-	private getNextWindowId(): number {
-		return this.windowCounter++;
-	}
 
 	register(name: string, config: ComponentDefinition) {
 		this._components.set(name, config);
@@ -119,9 +93,44 @@ export class App {
 		
 		return config;
 	}
+}
+
+export class App { 
+	zIndexCounter: number = 100;
+	desktop: HTMLElement;
+	windowCounter: number = 0;
+	private _zones: Map<string, HTMLElement> = new Map();
+	private _panels: Map<string, Panel> = new Map();
+	bus: EventBus<Record<string, any>>;
+	components: ComponentLibrary;
+
+	constructor(appElement: string) {
+		this.desktop = document.getElementById(appElement)!;
+		this.bus = new EventBus();
+		this.components = new ComponentLibrary();
+	}
+
+	private createDOMBody(template: string): HTMLElement {
+		const body = document.createElement('div');
+		body.className = 'app-body';
+		body.innerHTML = template;
+		return body;
+	}
+
+	private getNextZIndex(): number {
+		return ++this.zIndexCounter;
+	}
+
+	private getNextWindowId(): number {
+		return this.windowCounter++;
+	}
+
+	register(name: string, config: ComponentDefinition) {
+		this.components.register(name, config);
+	}
 
 	openWindow(name: string, x: number, y: number, zone?: string) {
-		let config = this.getWindowConfig(name);
+		let config = this.components.getWindowConfig(name);
 		if (!config) return;
 		config.x = x;
 		config.y = y;
@@ -234,7 +243,6 @@ export class App {
 	}
 
 
-
 	createPanel(area: string, config: ComponentConfig, dockable?: boolean) {
 		const panel = this.getPanelFor(area);
 		if (!panel) return;
@@ -264,7 +272,7 @@ export class App {
 	}
 
 	createTab(area: string, name: string) {
-		let config = this.getWindowConfig(name);
+		let config = this.components.getWindowConfig(name);
 		if (!config) return;
 		this.addTab(area, config);
 	}
