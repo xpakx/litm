@@ -1,5 +1,5 @@
 import { EventBus } from "./event-bus.js";
-import { HTMLComponent } from "./html-component.js";
+import { componentOf, HTMLComponent } from "./html-component.js";
 import { Panel } from "./panel.js";
 import { Window } from "./window.js";
 
@@ -75,8 +75,19 @@ export interface PanelSettings {
 
 export class ComponentLibrary {
 	private _components: Map<string, ComponentDefinition> = new Map();
+	private nameCounter: number = 0;
+
+	private getNextName(): string {
+		return `add-dummy${this.nameCounter++}`;
+	}
+
 
 	register(name: string, config: ComponentDefinition) {
+		if(config.template) {
+			const template = config.template
+			const generatedName = this.getNextName()
+			config.elementFactory = () => componentOf(generatedName, template);
+		}
 		this._components.set(name, config);
 	}
 

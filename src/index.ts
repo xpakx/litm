@@ -1,4 +1,4 @@
-import { App, type ComponentContext, type Service, type WindowConfig } from "./app.js";
+import { App, type ComponentContext, type ComponentDefinition, type Service, type WindowConfig } from "./app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
 import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./http/http.js";
@@ -8,7 +8,6 @@ import { testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
 import { RoutingModule } from "./routing.js";
-import { EventBus } from "./event-bus.js";
 
 
 class ClockService implements Service {
@@ -20,11 +19,9 @@ class ClockService implements Service {
     }
 }
 
-function musicWindow(x: number, y: number, id: string): WindowConfig {
+function musicWindow(id: string): ComponentDefinition {
 	return {
 		title: 'Music',
-		x: x,
-		y: y,
 		width: 420, 
 		height: 280,
 		template: `
@@ -36,7 +33,7 @@ function musicWindow(x: number, y: number, id: string): WindowConfig {
 		allowfullscreen>
 		</iframe>
 		`,
-		services: []
+		servicesFactory: () => []
 	}
 }
 
@@ -83,11 +80,11 @@ export interface TagEvent {
     testZones(app);
     // testPanels(app);
     // app.register(clockWindow(10, 200));
-    // app.register(musicWindow(720, 50, "krGs2V3Vk3w"));
+    app.register('music', musicWindow("krGs2V3Vk3w"));
     app.register('theme', characterWindow(character));
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());
-    app.register('test', testWindow(300, 300));
+    app.register('test', testWindow());
 
     app.createTab('sidebar', 'dice');
     app.createTab('sidebar', 'smart');
@@ -97,6 +94,9 @@ export interface TagEvent {
     app.openWindow('theme', 300, 200);
     app.openWindow('smart', 400, 250);
     app.openWindow('test', 500, 300);
+
+    app.openWindow('music', 720, 50);
+    app.openWindow('music', 720, 50);
 
     function newTestWindow(x: number, y: number) {
 	    app.openWindow('test', x, y);

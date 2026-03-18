@@ -1,4 +1,4 @@
-import type { WindowContext } from "../app.js";
+import type { ComponentContext, ComponentDefinition, Service, WindowContext } from "../app.js";
 import { HTMLComponent, register } from "../html-component.js";
 import { signal } from "../signal.js";
 
@@ -70,7 +70,7 @@ export class TestComponent extends HTMLComponent {
 	}
 }
 
-class TestService {
+class TestService implements Service {
 	count = signal(10);
 
 	onIncButton() {
@@ -79,7 +79,7 @@ class TestService {
 		});
 	}
 
-	init(ctx: WindowContext): void {
+	init(ctx: ComponentContext): void {
 		console.log(ctx.body);
 		const body = ctx.body as TestComponent;
 		body.bindContent('count', this.count);
@@ -88,15 +88,13 @@ class TestService {
 }
 
 
-export function testWindow(x: number, y: number): any {
+export function testWindow(): ComponentDefinition {
 	return {
 		title: 'Hello world',
-		x: x,
-		y: y,
 		width: 420, 
 		height: 280,
-		services: [new TestService()],
-		element: new TestComponent(),
+		servicesFactory: () => [new TestService()],
+		elementFactory: () => new TestComponent(),
 	}
 }
 
