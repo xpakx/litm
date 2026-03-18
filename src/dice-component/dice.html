@@ -30,13 +30,37 @@
 	color: #cdd6f4;
 }
 
+
 #active-tags {
 	display: none;
-	min-height: 80px;
+	position: absolute;
+	top: 110%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 100%;
 	background: #313244;
-	padding: 5px;
-	border-radius: 4px;
-	margin-bottom: 10px;
+	color: #cdd6f4;
+	padding: 12px;
+	border-radius: 8px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+	z-index: 100;
+	pointer-events: none;
+	border: 1px solid rgba(255,255,255,0.1);
+}
+
+#active-tags::after {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	margin-left: -8px;
+	border-width: 8px;
+	border-style: solid;
+	border-color: transparent transparent #313244 transparent;
+}
+
+#power-wrapper:hover #active-tags:not(:empty) {
+	display: block;
 }
 
 h4.tags-header {
@@ -155,6 +179,7 @@ h4.tags-header {
 	display: flex;
 	align-items: center;
 	gap: 15px;
+	position: relative;
 }
 
 .mod-btn {
@@ -200,14 +225,14 @@ h4.tags-header {
 </style>
 
 <div class="dice-container">
-	<!-- TODO: use as tooltip -->
-	<div id="active-tags"></div>
-
 	<div class="modifier-row">
 		<span class="label-text">POWER / STATUSES</span>
 		<div class="input-wrapper">
 			<button class="mod-btn" id="sub-power-btn"><i class="fa-solid fa-minus"></i></button>
-			<strong id="total-power">0</strong>
+			<span id='power-wrapper'>
+				<strong id="total-power">0</strong>
+				<div id="active-tags"></div>
+			</span>
 
 			<button class="mod-btn" id="add-power-btn"><i class="fa-solid fa-plus"></i></button>
 		</div>

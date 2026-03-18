@@ -38,7 +38,6 @@ class ThemeService implements Service {
 		// improve bindList in the future and proxy with 
 		// list of signals instead
 		const config = tagComponent(signal(tag));
-		// TODO: Not terribly happy with static call
 		const elem = this.newComponent!(config);
 		return elem;
 	}
