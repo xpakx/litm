@@ -76,7 +76,5 @@ export function characterWindow(character: Character): ComponentDefinition {
 		//template: characterTemplate,
 		servicesFactory: () => [new ThemeService(character.themes[0]!)],
 		elementFactory: () => componentOf("win-char", characterTemplate),
-		zone: 'main',
-		trapInZone: true
     }
 }

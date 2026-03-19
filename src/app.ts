@@ -360,6 +360,7 @@ export class App {
 		let startX: number, startY: number, scrollLeft: number, scrollTop: number;
 
 		zone.zone.addEventListener('mousedown', (e: MouseEvent) => {
+			if ((e.target as HTMLElement).closest('.app-window')) return;
 			isDown = true;
 			zone.zone.style.cursor = 'grabbing';
 			startX = e.pageX - zone.zone.offsetLeft;
@@ -376,9 +377,16 @@ export class App {
 			isDown = false;
 			zone.zone.style.cursor = 'auto';
 		});
+		zone.zone.addEventListener('wheel', (e: WheelEvent) => {
+			if ((e.target as HTMLElement).closest('.app-window')) {
+				e.preventDefault(); 
+				e.stopPropagation(); 
+			}
+		}, { passive: false }); 
 
 		zone.zone.addEventListener('mousemove', (e: MouseEvent) => {
 			if (!isDown) return;
+			if ((e.target as HTMLElement).closest('.app-window')) return;
 			e.preventDefault();
 			const x = e.pageX - zone.zone.offsetLeft;
 			const y = e.pageY - zone.zone.offsetTop;

@@ -81,8 +81,8 @@ export interface TagEvent {
     app.enableZonePanning('main');
     // testPanels(app);
     // app.register(clockWindow(10, 200));
-    app.register('music', musicWindow("krGs2V3Vk3w"));
-    app.register('theme', characterWindow(character));
+    app.register('music', {...musicWindow("krGs2V3Vk3w"), zone: 'main', trapInZone: true});
+    app.register('theme', {...characterWindow(character), zone: 'main', trapInZone: true});
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());
     app.register('test', testWindow());
