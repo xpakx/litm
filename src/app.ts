@@ -397,7 +397,7 @@ export class App {
 	}
 
 	setScrollableContent(area: string, width: number, height: number) {
-	    const zone = this._zones.get(area);
+	    const zone = this.getZone(area);
 	    if (!zone) return;
 
 	    let content = zone.pannableArea;
