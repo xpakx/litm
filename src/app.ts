@@ -73,6 +73,11 @@ export interface PanelSettings {
 	dockAreas: string[];
 }
 
+export interface Zone {
+	zone: HTMLElement;
+	panel?: Panel | undefined;
+}
+
 export class ComponentLibrary {
 	private _components: Map<string, ComponentDefinition> = new Map();
 	private nameCounter: number = 0;
@@ -109,8 +114,7 @@ export class App {
 	zIndexCounter: number = 100;
 	desktop: HTMLElement;
 	windowCounter: number = 0;
-	private _zones: Map<string, HTMLElement> = new Map();
-	private _panels: Map<string, Panel> = new Map();
+	private _zones: Map<string, Zone> = new Map();
 	bus: EventBus<Record<string, any>>;
 	components: ComponentLibrary;
 
@@ -162,7 +166,7 @@ export class App {
 			dockAreas = [],
 		} = config;
 
-                const parentElement = zone === undefined ? this.desktop : this._zones.get(zone);
+                const parentElement = zone === undefined ? this.desktop : this.getWindowAreaFor(zone);
                 if (!parentElement) return;
 
 		const component = this.createComponent(config);
@@ -247,7 +251,7 @@ export class App {
 			zone.style.gridArea = areaName;
 			zone.style.position = 'relative';
 			layoutZone.appendChild(zone);
-			this._zones.set(areaName, zone);
+			this.addZone(areaName, zone);
 		});
 	}
 
@@ -255,7 +259,7 @@ export class App {
 		const zone = document.getElementById(htmlId);
 		if (!zone) return;
 		zone.style.position = 'relative';
-		this._zones.set(htmlId, zone);
+		this.addZone(htmlId, zone);
 	}
 
 
@@ -269,22 +273,22 @@ export class App {
 	}
 
 	getPanelFor(area: string): Panel | undefined {
-                const zone = this._zones.get(area);
+                const zone = this.getZone(area);
 		if (!zone) return;
 
-		let panel = this._panels.get(area);
+		let panel = zone.panel;
 		if (panel) return panel;
 
-		panel = new Panel(area, zone);
-		this._panels.set(area, panel);
+		panel = new Panel(area, zone.zone);
+		zone.panel = panel;
 		return panel;
 	}
 
 	clearZone(area: string) {
-                const zone = this._zones.get(area);
+                const zone = this.getZone(area);
 		if (!zone) return;
-		zone.innerHTML = '';
-		this._panels.delete(area);
+		zone.zone.innerHTML = '';
+		zone.panel = undefined;
 	}
 
 	createTab(area: string, name: string) {
@@ -330,7 +334,17 @@ export class App {
 		win.dockServices();
 	}
 
-	getZone(name: string): HTMLElement | undefined {
+	getZone(name: string): Zone | undefined {
 		return this._zones.get(name);
+	}
+
+	addZone(areaName: string, mainElement: HTMLElement) {
+		this._zones.set(areaName, {zone: mainElement});
+	}
+
+	getWindowAreaFor(area: string): HTMLElement | undefined {
+                const zone = this.getZone(area);
+		if (!zone) return;
+		return zone.zone;
 	}
 }
