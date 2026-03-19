@@ -76,6 +76,7 @@ export interface PanelSettings {
 export interface Zone {
 	zone: HTMLElement;
 	panel?: Panel | undefined;
+	pannableArea?: HTMLElement;
 }
 
 export class ComponentLibrary {
@@ -345,6 +346,62 @@ export class App {
 	getWindowAreaFor(area: string): HTMLElement | undefined {
                 const zone = this.getZone(area);
 		if (!zone) return;
+		if (zone.pannableArea) return zone.pannableArea;
 		return zone.zone;
+	}
+
+	enableZonePanning(area: string) {
+		const zone = this.getZone(area);
+		if (!zone) return;
+
+		zone.zone.style.overflow = 'auto';
+
+		let isDown = false;
+		let startX: number, startY: number, scrollLeft: number, scrollTop: number;
+
+		zone.zone.addEventListener('mousedown', (e: MouseEvent) => {
+			isDown = true;
+			zone.zone.style.cursor = 'grabbing';
+			startX = e.pageX - zone.zone.offsetLeft;
+			startY = e.pageY - zone.zone.offsetTop;
+			scrollLeft = zone.zone.scrollLeft;
+			scrollTop = zone.zone.scrollTop;
+		});
+
+		zone.zone.addEventListener('mouseleave', () => { 
+			isDown = false;
+			zone.zone.style.cursor = 'auto';
+		});
+		zone.zone.addEventListener('mouseup', () => { 
+			isDown = false;
+			zone.zone.style.cursor = 'auto';
+		});
+
+		zone.zone.addEventListener('mousemove', (e: MouseEvent) => {
+			if (!isDown) return;
+			e.preventDefault();
+			const x = e.pageX - zone.zone.offsetLeft;
+			const y = e.pageY - zone.zone.offsetTop;
+			zone.zone.scrollLeft = scrollLeft - (x - startX);
+			zone.zone.scrollTop = scrollTop - (y - startY);
+		});
+		this.setScrollableContent(area, 10000, 10000); // TODO
+	}
+
+	setScrollableContent(area: string, width: number, height: number) {
+	    const zone = this._zones.get(area);
+	    if (!zone) return;
+
+	    let content = zone.pannableArea;
+	    if (!content) {
+		content = document.createElement('div');
+		content.className = 'scrollable-content';
+		zone.zone.appendChild(content);
+		zone.pannableArea = content;
+	    }
+	    
+	    content.style.width = `${width}px`;
+	    content.style.height = `${height}px`;
+	    content.style.position = 'relative';
 	}
 }

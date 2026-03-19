@@ -78,6 +78,7 @@ export interface TagEvent {
     const app = new App("app");
 
     testZones(app);
+    app.enableZonePanning('main');
     // testPanels(app);
     // app.register(clockWindow(10, 200));
     app.register('music', musicWindow("krGs2V3Vk3w"));
