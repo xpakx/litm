@@ -8,6 +8,7 @@ import { testWindow } from './test-component/test-component.js';
 import { StompClient } from "./stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
 import { RoutingModule } from "./routing.js";
+import { Youtube } from "./youtube.js";
 
 
 class ClockService implements Service {
@@ -81,7 +82,7 @@ export interface TagEvent {
     app.enableZonePanning('main');
     // testPanels(app);
     // app.register(clockWindow(10, 200));
-    app.register('music', {...musicWindow("krGs2V3Vk3w"), zone: 'main', trapInZone: true});
+    // app.register('music', {...musicWindow("krGs2V3Vk3w"), zone: 'main', trapInZone: true});
     app.register('theme', {...characterWindow(character), zone: 'main', trapInZone: true});
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());
@@ -108,6 +109,14 @@ export interface TagEvent {
     // testHttpInterceptor();
     // testWS();
     // testRouting(app);
+    //
+    const music = new Youtube();
+    music.ensureYoutubeAPI().then(() => {
+	    music.createPlayer('krGs2V3Vk3w');
+    });
+
+    (window as any).play = () => music.play();
+    (window as any).select = (id: string) => music.select(id);
 })();
 
 
