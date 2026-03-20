@@ -1,10 +1,14 @@
 import { type Service, type ComponentContext, type ComponentDefinition } from "../app.js";
 import { componentOf, type HTMLComponent } from "../html-component.js";
-import type { Youtube } from "../youtube.js";
+import { computed, deepSignal, signal } from "../signal.js";
+import type { MusicData, Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
 class MusicService implements Service {
 	yt: Youtube;
+	details = signal<MusicData>({artist: 'Unknown', title: 'Unknown'});
+	artist = deepSignal(this.details, 'artist');
+	title = deepSignal(this.details, 'title');
 
 	constructor(yt: Youtube) {
 		this.yt = yt;
@@ -13,10 +17,21 @@ class MusicService implements Service {
 	init(ctx: ComponentContext): void {
 		const component = ctx.body as HTMLComponent;
 		component.onClick('play', () => this.play());
+		component.onClick('backward', () => this.back());
+		component.onClick('forward', () => this.forward());
+		component.bindContent('mainArtist', this.artist);
+		component.bindContent('mainTitle', this.title);
 	}
 
 	play() {
 		this.yt.play();
+		this.details.set(this.yt.getVideoDetails());
+	}
+
+	back() {
+	}
+
+	forward() {
 	}
 }
 

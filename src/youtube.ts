@@ -53,4 +53,17 @@ export class Youtube {
 	select(videoId: string) {
 		this.player?.loadVideoById(videoId);
 	}
+
+	getVideoDetails(): MusicData {
+		const data = this.player.getVideoData();
+		return {
+			title: data.title,
+			artist: data.author
+		};
+	}
+}
+
+export interface MusicData {
+	title: string;
+	artist: string;
 }
