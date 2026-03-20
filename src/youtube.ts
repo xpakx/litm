@@ -1,12 +1,16 @@
+import { signal } from "./signal.js";
+
 export class Youtube {
 	w: any;
 	private player: any | null = null;
 	private container?: HTMLElement;
+	currentTime = signal(0);
+	totalTime = signal(0);
+	private timeUpdateTimer: any = null;
 
 	constructor() {
 		this.w = window as any;
 	}
-
 
 	createPlayer(videoId: string) {
 
@@ -21,6 +25,17 @@ export class Youtube {
 				onReady: () => console.log('Player Ready')
 			}
 		});
+
+		this.timeUpdateTimer = setInterval(() => {
+			if (this.player && typeof this.player.getCurrentTime === 'function') {
+				const currentTime = this.player.getCurrentTime();
+
+				const state = this.player.getPlayerState();
+				if (state === 1) {
+					this.currentTime.set(currentTime ?? 0);
+				}
+			}
+		}, 100);
 	}
 
 
@@ -38,6 +53,7 @@ export class Youtube {
 
 	play() {
 		this.player?.playVideo(); 
+                this.totalTime.set(this.player.getDuration());
 	}
 
 	pause() {
