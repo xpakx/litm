@@ -1,1 +1,256 @@
-<button id='play'>Test</button>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+.card-body {
+	position: relative;
+	flex-grow: 1;
+	padding: 20px 25px;
+	background-image: repeating-linear-gradient(
+		transparent, 
+		transparent 33px, 
+		var(--line-color) 33px, 
+		var(--line-color) 34px
+	);
+	background-position: 0 10px;
+}
+
+.label-text {
+	font-family: 'Cinzel', serif;
+	color: #8c8072;
+	font-size: 10px;
+	letter-spacing: 1.5px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.handwritten {
+	font-family: 'Caveat', cursive;
+	color: var(--text-dark);
+	line-height: 1;
+}
+
+.art-container {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 15px;
+}
+
+.art-sketch {
+	width: 100px;
+	height: 100px;
+	border: 2px dashed var(--text-muted);
+	border-radius: 4px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--text-muted);
+	font-size: 40px;
+	background-color: rgba(255,255,255,0.2);
+	transform: rotate(-2deg);
+}
+
+.track-info {
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.song-title {
+	font-size: 32px;
+	font-weight: 700;
+	margin-bottom: 5px;
+	display: inline-block;
+}
+
+.artist-name {
+	font-size: 24px;
+	color: var(--text-muted);
+}
+
+.progress-area {
+	margin-bottom: 25px;
+}
+
+.time-labels {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 5px;
+}
+
+.progress-track {
+	height: 6px;
+	background-color: rgba(0,0,0,0.1);
+	border-radius: 10px;
+	position: relative;
+	cursor: pointer;
+	border: 1px solid rgba(0,0,0,0.1);
+}
+
+.progress-fill {
+	height: 100%;
+	background-color: var(--header-bg);
+	width: 0%;
+	border-radius: 10px;
+	position: relative;
+	transition: width 0.1s linear;
+}
+
+.progress-fill::after {
+	content: '';
+	position: absolute;
+	right: -6px;
+	top: -4px;
+	width: 14px;
+	height: 14px;
+	background-color: var(--text-dark);
+	border-radius: 50%;
+	border: 2px solid var(--card-bg);
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.controls {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 25px;
+	margin-bottom: 25px;
+}
+
+.control-btn {
+	background: none;
+	border: none;
+	color: var(--text-dark);
+	cursor: pointer;
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.control-btn:hover {
+	transform: scale(1.1);
+	color: #5a4638;
+}
+
+.control-btn:active {
+	transform: scale(0.95);
+}
+
+.btn-main {
+	width: 50px;
+	height: 50px;
+	border: 2px solid var(--text-dark);
+	border-radius: 50%;
+	font-size: 20px;
+}
+
+.btn-side {
+	font-size: 18px;
+	color: var(--text-muted);
+}
+
+.playlist {
+	margin-top: 5px;
+}
+
+.playlist-header {
+	border-bottom: 1.5px solid rgba(0,0,0,0.08);
+	margin-bottom: 10px;
+	padding-bottom: 5px;
+	text-align: center;
+}
+
+.playlist-item {
+	display: flex;
+	align-items: center;
+	padding: 4px 0;
+	cursor: pointer;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+}
+
+.playlist-item:hover {
+	opacity: 1;
+}
+
+.playlist-item.active {
+	opacity: 1;
+}
+
+.playlist-item.active .song-text {
+	position: relative;
+	z-index: 1;
+	padding: 0 5px;
+}
+
+.playlist-item.active .song-text::before {
+	content: '';
+	position: absolute;
+	top: 10%;
+	bottom: 10%;
+	left: 0;
+	right: 0;
+	z-index: -1;
+	background-color: var(--highlight-yellow);
+	border-radius: 3px 8px 4px 6px / 5px 3px 8px 4px;
+	transform: skewX(-4deg) rotate(-0.5deg);
+	opacity: 0.9;
+}
+
+.playlist-text {
+	font-size: 22px;
+	margin-left: 10px;
+	font-weight: 600;
+}
+
+.playlist-item.active .active-scratch {
+	opacity: 0.8;
+}
+
+</style>
+
+
+
+<div class="card-body">
+    
+    <div class="art-container">
+	<div class="art-sketch" id="albumArt">
+	    <i class="fa-solid fa-music"></i>
+	</div>
+    </div>
+
+    <div class="track-info">
+	<div class="label-text">NOW PLAYING</div>
+	<div class="handwritten song-title marker-peach" id="mainTitle">Title</div>
+	<div class="handwritten artist-name" id="mainArtist">Artist</div>
+    </div>
+
+    <div class="progress-area">
+	<div class="time-labels label-text">
+	    <span id="currentTime">0:00</span>
+	    <span id="duration">0:00</span>
+	</div>
+	<div class="progress-track" id="progressTrack">
+	    <div class="progress-fill" id="progressBar"></div>
+	</div>
+    </div>
+
+    <div class="controls">
+	<button class="control-btn btn-side" id='backward'>
+	    <i class="fa-solid fa-backward-step"></i>
+	</button>
+	
+	<button class="control-btn btn-main" id="play">
+	    <i class="fa-solid fa-play" style="margin-left: 3px;"></i>
+	</button>
+	
+	<button class="control-btn btn-side" id='forward'>
+	    <i class="fa-solid fa-forward-step"></i>
+	</button>
+    </div>
+
+    <div class="playlist">
+	<div class="playlist-header label-text">PLAYLIST</div>
+	<div id="playlistContainer"> <!-- TODO --> </div>
+    </div>
+
+</div>
+

@@ -24,7 +24,7 @@ export function musicComponent(yt: Youtube): ComponentDefinition {
 	return {
 		title: 'Music',
 		width: 420, 
-		height: 280,
+		height: 600,
 		servicesFactory: () => [new MusicService(yt)],
 		elementFactory: () => componentOf('win-music', musicTemplate),
 	}
