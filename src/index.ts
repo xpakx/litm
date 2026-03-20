@@ -9,6 +9,7 @@ import { StompClient } from "./stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
 import { RoutingModule } from "./routing.js";
 import { Youtube } from "./youtube.js";
+import { musicComponent } from './music/music.js';
 
 
 class ClockService implements Service {
@@ -113,6 +114,8 @@ export interface TagEvent {
     const music = new Youtube();
     music.ensureYoutubeAPI().then(() => {
 	    music.createPlayer('krGs2V3Vk3w');
+	    app.register('music2', musicComponent(music));
+	    app.openWindow('music2', 100, 100);
     });
 
     (window as any).play = () => music.play();
