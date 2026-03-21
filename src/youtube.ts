@@ -6,6 +6,7 @@ export class Youtube {
 	private container?: HTMLElement;
 	currentTime = signal(0);
 	totalTime = signal(0);
+	isPlaying = signal(false);
 	private timeUpdateTimer: any = null;
 
 	constructor() {
@@ -22,7 +23,8 @@ export class Youtube {
 		this.player = new this.w.YT.Player(this.container, {
 			videoId: videoId,
 			events: {
-				onReady: () => console.log('Player Ready')
+				onReady: () => console.log('Player Ready'),
+				onStateChange: (event: any) => this.updateState(event),
 			}
 		});
 
@@ -36,6 +38,15 @@ export class Youtube {
 				}
 			}
 		}, 100);
+	}
+
+	private updateState(event: any) {
+		if (event.data === 1) {
+			this.isPlaying.set(true);
+			this.totalTime.set(this.player.getDuration());
+		} else {
+			this.isPlaying.set(false);
+		}
 	}
 
 

@@ -4,6 +4,7 @@ import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "
 import type { MusicData, Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
+
 class MusicService implements Service {
 	yt: Youtube;
 	details = signal<MusicData>({artist: 'Unknown', title: 'Unknown'});
@@ -36,6 +37,11 @@ class MusicService implements Service {
 	}
 
 	play() {
+		const playing = this.yt.isPlaying();
+		if (playing) {
+			this.yt.pause();
+			return;
+		}
 		this.yt.play();
 		this.details.set(this.yt.getVideoDetails());
 	}
