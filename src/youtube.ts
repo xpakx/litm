@@ -61,9 +61,8 @@ export class Youtube {
 	}
 
 	skip(seconds: number) {
-		this.player?.getCurrentTime().then((t: number) => {
-			this.player.seekTo(t + seconds, true);
-		});
+		const t = this.player.getCurrentTime();
+		this.player.seekTo(t + seconds, true);
 	}
 
 	select(videoId: string) {
