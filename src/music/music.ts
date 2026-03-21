@@ -10,11 +10,13 @@ class MusicService implements Service {
 	details = signal<MusicData>({artist: 'Unknown', title: 'Unknown'});
 	artist = deepSignal(this.details, 'artist');
 	title = deepSignal(this.details, 'title');
+	playIcon: ReadonlySignal<string>;
 
 	percentage?: ReadonlySignal<string>;
 
 	constructor(yt: Youtube) {
 		this.yt = yt;
+		this.playIcon = computed(() => this.yt.isPlaying() ? 'fa-pause' : 'fa-play', [this.yt.isPlaying]);
 	}
 
 	init(ctx: ComponentContext): void {
@@ -34,6 +36,7 @@ class MusicService implements Service {
 			[this.yt.currentTime, this.yt.totalTime]
 		);
 		component.bindStyle('progressBar', 'width', this.percentage);
+		component.bindDynamicClass('playIcon', this.playIcon);
 	}
 
 	play() {
