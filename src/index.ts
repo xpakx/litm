@@ -21,24 +21,6 @@ class ClockService implements Service {
     }
 }
 
-function musicWindow(id: string): ComponentDefinition {
-	return {
-		title: 'Music',
-		width: 420, 
-		height: 280,
-		template: `
-		<iframe 
-		style="width: 100%; height: 100%;"
-		src="https://www.youtube.com/embed/${id}" 
-			frameborder="0" 
-		allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-		allowfullscreen>
-		</iframe>
-		`,
-		servicesFactory: () => []
-	}
-}
-
 function clockWindow(x: number, y: number): WindowConfig {
 	return {
 		title: 'Clock',
