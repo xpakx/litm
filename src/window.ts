@@ -11,7 +11,6 @@ export class Window {
 	_getPanelFunc?: (zone: string) => Panel | undefined;
 	dockable = false;
 	dockAreas: string[] = [];
-	_services: Service[];
 	_settings: PanelSettings;
 
 	constructor(config: WindowConfig, windowId: number, component: HTMLElement | HTMLComponent) {
@@ -26,7 +25,6 @@ export class Window {
 		} = config;
 		this._winElement = this.createDOMWindow(id, x, y, width, height);
 		this._winHeader = this.createDOMHeader(title);
-		this._services = services;
 
 		this._component = component;
 		if (this._component instanceof HTMLComponent) {
@@ -42,6 +40,7 @@ export class Window {
 			height: height,
 			dockable: config.dockable ?? false,
 			dockAreas: config.dockAreas ?? [],
+			services: services,
 		};
 	}
 
@@ -173,7 +172,7 @@ export class Window {
 	close() {
 		this._winElement.remove();
 		if ('destroy' in this._component) this._component.destroy();
-		this._services.forEach((s) => {
+		this._settings.services.forEach((s) => {
 			if ('destroy' in s) s.destroy(this._component);
 		});
 	}
@@ -190,7 +189,7 @@ export class Window {
 			close: () => this.close()
 		};
 
-		this._services.forEach((service: Service | ((a: WindowContext) => void)) => {
+		this._settings.services.forEach((service: Service | ((a: WindowContext) => void)) => {
 			if ('dockWindow' in service) service.dockWindow(context);
 		});
 	}

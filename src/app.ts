@@ -71,6 +71,7 @@ export interface PanelSettings {
 	height: number;
 	dockable: boolean;
 	dockAreas: string[];
+	services: Service[];
 }
 
 export interface Zone {
