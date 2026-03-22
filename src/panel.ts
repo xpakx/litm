@@ -59,7 +59,7 @@ export class Panel {
 	addTab(component: HTMLElement | HTMLComponent, settings?: PanelSettings) {
 		const btn = document.createElement('button');
 		btn.className = 'app-tab-button';
-		btn.innerHTML = `Test`; // TODO
+		btn.innerHTML = settings ? settings.title : `Unnamed`;
 
 		const pane = document.createElement('div');
 		pane.className = 'app-tab-pane';
