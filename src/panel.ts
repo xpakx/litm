@@ -168,6 +168,10 @@ export class Panel {
 		}
 
 		if ('destroy' in tab.component && tab.component.permanent) tab.component.destroy();
-		// TODO: services
+
+		const services = tab.settings?.services ?? [];
+		services.forEach((s) => {
+			if ('destroy' in s) s.destroy(tab.component);
+		});
 	}
 }

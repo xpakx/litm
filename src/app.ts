@@ -55,6 +55,7 @@ export interface ComponentConfig {
 export interface Service {
 	init(ctx: ComponentContext): void;
 	dockWindow?(ctx: WindowContext): void;
+	dockPanel?(ctx: ComponentContext): void;
 	destroy?(body: HTMLElement | HTMLComponent): void;
 }
 
