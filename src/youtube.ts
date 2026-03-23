@@ -76,8 +76,21 @@ export class Youtube {
 		this.player.seekTo(t + seconds, true);
 	}
 
-	select(videoId: string) {
+	select(id: string | string[]) {
+		if (typeof id === 'string') this.selectOne(id);
+		else this.selectList(id);
+	}
+
+	selectInPlaylist(index: number) {
+		this.player?.playVideoAt(index);
+	}
+
+	selectOne(videoId: string) {
 		this.player?.loadVideoById(videoId);
+	}
+
+	selectList(videoIds: string[]) {
+		this.player?.loadPlaylist(videoIds);
 	}
 
 	getVideoDetails(): MusicData {
