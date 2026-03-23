@@ -5,8 +5,8 @@ import type { MusicData, Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
 interface PlaylistElem {
-	title?: string;
-	artist?: string;
+	title: string;
+	artist: string;
 	active: boolean,
 	ytId: string;
 }
@@ -14,14 +14,14 @@ interface PlaylistElem {
 
 class MusicService implements Service {
 	yt: Youtube;
-	details = signal<MusicData>({artist: 'Unknown', title: 'Unknown'});
-	artist = deepSignal(this.details, 'artist');
-	title = deepSignal(this.details, 'title');
+	currentSong = signal<PlaylistElem>({artist: 'Unknown', title: 'Unknown', active: true, ytId: ''});
+	currentIndex = signal(0);
+	artist = deepSignal(this.currentSong, 'artist');
+	title = deepSignal(this.currentSong, 'title');
 	playIcon: ReadonlySignal<string>;
 
 	percentage?: ReadonlySignal<string>;
 	playlist = signal<PlaylistElem[]>([]);
-	currentIndex = signal(0);
 
 	constructor(yt: Youtube) {
 		this.yt = yt;
@@ -50,33 +50,65 @@ class MusicService implements Service {
 		component.bindList('playlistContainer', this.playlist, (data) => this.playlistElem(data));
 		this.playlist.set([
 			{
-				ytId: '',
+				ytId: 'krGs2V3Vk3w',
 				active: true,
+				artist: "???",
+				title: "???",
+			},
+			{
+				ytId: 'd3ioWB3RBYY',
+				active: false,
+				artist: "???",
+				title: "???",
 			},
 		]);
+		this.currentSong.set(this.playlist()[0]!);
 	}
 
 	play() {
+		const current = {...this.currentSong()};
+		console.log(current);
+
 		const playing = this.yt.isPlaying();
 		if (playing) {
 			this.yt.pause();
 			return;
 		}
+		this.yt.select(current.ytId);
 		this.yt.play();
-		this.details.set(this.yt.getVideoDetails());
+		const details = this.yt.getVideoDetails();
+		current.artist = details.artist;
+		current.title = details.title;
+		this.currentSong.set(current);
 	}
 
 	back() {
+		let num = this.currentIndex() - 1;
+		const list = this.playlist();
+		if (list.length == 0) return;
+		if (num < 0) return;
+		const current = list[num];
+		if (!current) return;
+		this.currentIndex.set(num);
+		this.currentSong.set(current);
+		this.play();
 	}
 
 	forward() {
+		let num = this.currentIndex() + 1;
+		const list = this.playlist();
+		if (list.length == 0) return;
+		if (num >= list.length) return;
+		const current = list[num];
+		if (!current) return;
+		this.currentIndex.set(num);
+		this.currentSong.set(current);
+		this.play();
 	}
 
 	playlistElem(song: PlaylistElem): HTMLElement {
 		const div = document.createElement('div');
-		const artist = song.artist ?? 'Unknown';
-		const title = song.artist ?? 'Unknown';
-		const text = `${artist} - ${title}`;
+		const text = `${song.artist} - ${song.title}`;
                 div.className = `playlist-item ${song.active ? 'active' : ''}`;
 		div.innerHTML = `<span class="playlist-text handwritten song-text">${text}</span>`
 		return div;
