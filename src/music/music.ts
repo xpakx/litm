@@ -4,6 +4,13 @@ import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "
 import type { MusicData, Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
+interface PlaylistElem {
+	title?: string;
+	artist?: string;
+	active: boolean,
+	ytId: string;
+}
+
 
 class MusicService implements Service {
 	yt: Youtube;
@@ -13,6 +20,8 @@ class MusicService implements Service {
 	playIcon: ReadonlySignal<string>;
 
 	percentage?: ReadonlySignal<string>;
+	playlist = signal<PlaylistElem[]>([]);
+	currentIndex = signal(0);
 
 	constructor(yt: Youtube) {
 		this.yt = yt;
@@ -37,6 +46,14 @@ class MusicService implements Service {
 		);
 		component.bindStyle('progressBar', 'width', this.percentage);
 		component.bindDynamicClass('playIcon', this.playIcon);
+
+		component.bindList('playlistContainer', this.playlist, (data) => this.playlistElem(data));
+		this.playlist.set([
+			{
+				ytId: '',
+				active: true,
+			},
+		]);
 	}
 
 	play() {
@@ -53,6 +70,16 @@ class MusicService implements Service {
 	}
 
 	forward() {
+	}
+
+	playlistElem(song: PlaylistElem): HTMLElement {
+		const div = document.createElement('div');
+		const artist = song.artist ?? 'Unknown';
+		const title = song.artist ?? 'Unknown';
+		const text = `${artist} - ${title}`;
+                div.className = `playlist-item ${song.active ? 'active' : ''}`;
+		div.innerHTML = `<span class="playlist-text handwritten song-text">${text}</span>`
+		return div;
 	}
 }
 
