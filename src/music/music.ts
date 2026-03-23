@@ -22,6 +22,7 @@ class MusicService implements Service {
 
 	percentage?: ReadonlySignal<string>;
 	playlist = signal<PlaylistElem[]>([]);
+	initialized: boolean = false;
 
 	constructor(yt: Youtube) {
 		this.yt = yt;
@@ -65,18 +66,23 @@ class MusicService implements Service {
 		this.currentSong.set(this.playlist()[0]!);
 	}
 
-	play() {
-		const current = {...this.currentSong()};
-		console.log(current);
+	updateList() {
+		const list = this.playlist().map((a) => a.ytId);
+		this.yt.select(list);
+	}
 
+	play() {
+		if (!this.initialized) this.updateList();
 		const playing = this.yt.isPlaying();
 		if (playing) {
 			this.yt.pause();
 			return;
 		}
-		this.yt.select(current.ytId);
 		this.yt.play();
 		const details = this.yt.getVideoDetails();
+
+		const current = {...this.currentSong()};
+		console.log(current);
 		current.artist = details.artist;
 		current.title = details.title;
 		this.currentSong.set(current);
@@ -91,7 +97,7 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.currentSong.set(current);
-		this.play();
+		this.yt.selectInPlaylist(num)
 	}
 
 	forward() {
@@ -103,7 +109,7 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.currentSong.set(current);
-		this.play();
+		this.yt.selectInPlaylist(num)
 	}
 
 	playlistElem(song: PlaylistElem): HTMLElement {
