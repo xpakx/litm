@@ -48,12 +48,38 @@ export class Youtube {
 			this.isPlaying.set(true);
 			this.totalTime.set(this.player.getDuration());
 			const data = this.player.getVideoData();
-			if (data && data.title) this.title.set(data.title);
-			if (data && data.artist) this.title.set(data.artist);
+			if (data) this.setTitle(data.title, data.author);
 		} else {
 			this.isPlaying.set(false);
 		}
 	}
+
+	private setTitle(title?: string, artist?: string) {
+		if (title) {
+			if (title.includes('-')) {
+				this.complexTitle(title);
+				return;
+			}
+			this.title.set(title);
+		}
+		if (artist) this.artist.set(artist);
+	}
+
+	private complexTitle(title: string) {
+		const separator = " - ";
+
+		const index = title.indexOf(separator);
+
+		if (index !== -1) {
+			const artist = title.slice(0, index).trim();
+			const song = title.slice(index + separator.length).trim();
+
+			this.artist.set(artist);
+			this.title.set(song);
+		}
+	}
+
+
 
 
 	ensureYoutubeAPI(): Promise<void> {
