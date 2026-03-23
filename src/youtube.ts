@@ -7,6 +7,9 @@ export class Youtube {
 	currentTime = signal(0);
 	totalTime = signal(0);
 	isPlaying = signal(false);
+
+	title = signal<string | undefined>(undefined);
+	artist = signal<string | undefined>(undefined);
 	private timeUpdateTimer: any = null;
 
 	constructor() {
@@ -44,6 +47,9 @@ export class Youtube {
 		if (event.data === 1) {
 			this.isPlaying.set(true);
 			this.totalTime.set(this.player.getDuration());
+			const data = this.player.getVideoData();
+			if (data && data.title) this.title.set(data.title);
+			if (data && data.artist) this.title.set(data.artist);
 		} else {
 			this.isPlaying.set(false);
 		}
@@ -95,6 +101,8 @@ export class Youtube {
 
 	getVideoDetails(): MusicData {
 		const data = this.player.getVideoData();
+
+		console.log(data);
 		return {
 			title: data.title,
 			artist: data.author

@@ -14,10 +14,9 @@ interface PlaylistElem {
 
 class MusicService implements Service {
 	yt: Youtube;
-	currentSong = signal<PlaylistElem>({artist: 'Unknown', title: 'Unknown', active: true, ytId: ''});
 	currentIndex = signal(0);
-	artist = deepSignal(this.currentSong, 'artist');
-	title = deepSignal(this.currentSong, 'title');
+	artist: ReadonlySignal<string>;
+	title: ReadonlySignal<string>;
 	playIcon: ReadonlySignal<string>;
 
 	percentage?: ReadonlySignal<string>;
@@ -27,6 +26,8 @@ class MusicService implements Service {
 	constructor(yt: Youtube) {
 		this.yt = yt;
 		this.playIcon = computed(() => this.yt.isPlaying() ? 'fa-pause' : 'fa-play', [this.yt.isPlaying]);
+		this.artist = computed(() => this.yt.artist() ?? '???', [this.yt.artist]);
+		this.title = computed(() => this.yt.title() ?? '???', [this.yt.title]);
 	}
 
 	init(ctx: ComponentContext): void {
@@ -63,7 +64,6 @@ class MusicService implements Service {
 				title: "???",
 			},
 		]);
-		this.currentSong.set(this.playlist()[0]!);
 	}
 
 	updateList() {
@@ -79,13 +79,6 @@ class MusicService implements Service {
 			return;
 		}
 		this.yt.play();
-		const details = this.yt.getVideoDetails();
-
-		const current = {...this.currentSong()};
-		console.log(current);
-		current.artist = details.artist;
-		current.title = details.title;
-		this.currentSong.set(current);
 	}
 
 	back() {
@@ -96,7 +89,6 @@ class MusicService implements Service {
 		const current = list[num];
 		if (!current) return;
 		this.currentIndex.set(num);
-		this.currentSong.set(current);
 		this.yt.selectInPlaylist(num)
 	}
 
@@ -108,7 +100,6 @@ class MusicService implements Service {
 		const current = list[num];
 		if (!current) return;
 		this.currentIndex.set(num);
-		this.currentSong.set(current);
 		this.yt.selectInPlaylist(num)
 	}
 
