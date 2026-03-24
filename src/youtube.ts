@@ -1,5 +1,5 @@
 import { HttpClient } from "./http/client.js";
-import { signal } from "./signal.js";
+import { signal, trigger } from "./signal.js";
 
 export class Youtube {
 	w: any;
@@ -13,6 +13,9 @@ export class Youtube {
 	artist = signal<string | undefined>(undefined);
 	private timeUpdateTimer: any = null;
 	private http: HttpClient;
+
+	private onReadyTrigger = trigger();
+	private ready: boolean = false;
 
 	constructor(http: HttpClient) {
 		this.w = window as any;
@@ -29,7 +32,7 @@ export class Youtube {
 		this.player = new this.w.YT.Player(this.container, {
 			videoId: videoId,
 			events: {
-				onReady: () => console.log('Player Ready'),
+				onReady: () => this.onReady(), 
 				onStateChange: (event: any) => this.updateState(event),
 			}
 		});
@@ -160,6 +163,20 @@ export class Youtube {
 			})
 		);
 		return Promise.all(promises);
+	}
+
+	onReady() {
+		console.log('Player Ready');
+		this.ready = true;
+		this.onReadyTrigger();
+	}
+
+	whenReady(func: () => void) {
+		if (this.ready) {
+			func();
+			return;
+		}
+		this.onReadyTrigger.subscribe(() => func());
 	}
 }
 

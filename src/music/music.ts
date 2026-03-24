@@ -64,6 +64,8 @@ class MusicService implements Service {
 				title: "???",
 			},
 		]);
+
+		this.yt.whenReady(() => this.updateList());
 	}
 
 	updateList() {
@@ -84,7 +86,6 @@ class MusicService implements Service {
 	}
 
 	play() {
-		if (!this.initialized) this.updateList();
 		const playing = this.yt.isPlaying();
 		if (playing) {
 			this.yt.pause();
