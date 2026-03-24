@@ -60,6 +60,7 @@ export interface TagEvent {
 
 (() => {
     const app = new App("app");
+    const http = new HttpClient();
 
     testZones(app);
     app.enableZonePanning('main');
@@ -88,12 +89,12 @@ export interface TagEvent {
     }
     (window as any).newTestWindow = newTestWindow;
 
-    // testHttpRequest();
+    // testHttpRequest(http);
     // testHttpInterceptor();
     // testWS();
     // testRouting(app);
     //
-    const music = new Youtube();
+    const music = new Youtube(http);
     music.ensureYoutubeAPI().then(() => {
 	    music.createPlayer('krGs2V3Vk3w');
 	    app.register('music2', musicComponent(music));
@@ -105,7 +106,7 @@ export interface TagEvent {
 })();
 
 
-function testHttpRequest() {
+function testHttpRequest(http: HttpClient) {
 	interface Todo {
 		userId: number;
 		id: number;
@@ -113,7 +114,6 @@ function testHttpRequest() {
 		completed: boolean;
 	}
 
-	const http = new HttpClient();
 
 	http.get<Todo>('https://jsonplaceholder.typicode.com/todos/1')
 		.then((todo: Todo) => console.log(todo))

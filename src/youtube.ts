@@ -1,3 +1,4 @@
+import { HttpClient } from "./http/client.js";
 import { signal } from "./signal.js";
 
 export class Youtube {
@@ -11,9 +12,11 @@ export class Youtube {
 	title = signal<string | undefined>(undefined);
 	artist = signal<string | undefined>(undefined);
 	private timeUpdateTimer: any = null;
+	private http: HttpClient;
 
-	constructor() {
+	constructor(http: HttpClient) {
 		this.w = window as any;
+		this.http = http;
 	}
 
 	createPlayer(videoId: string) {
@@ -57,15 +60,19 @@ export class Youtube {
 	private setTitle(title?: string, artist?: string) {
 		if (title) {
 			if (title.includes('-')) {
-				this.complexTitle(title);
-				return;
+				const data = this.complexTitle(title);
+				if (data) {
+					this.title.set(data.title);
+					this.artist.set(data.artist);
+					return;
+				}
 			}
 			this.title.set(title);
 		}
 		if (artist) this.artist.set(artist);
 	}
 
-	private complexTitle(title: string) {
+	private complexTitle(title: string): MusicData | void {
 		const separator = " - ";
 
 		const index = title.indexOf(separator);
@@ -74,8 +81,10 @@ export class Youtube {
 			const artist = title.slice(0, index).trim();
 			const song = title.slice(index + separator.length).trim();
 
-			this.artist.set(artist);
-			this.title.set(song);
+			return {
+				artist: artist,
+				title: song,
+			}
 		}
 	}
 
@@ -134,9 +143,32 @@ export class Youtube {
 			artist: data.author
 		};
 	}
+
+	getPlaylistData(ids: string[]): Promise<MusicData[]> {
+		const apiAddress = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch"
+
+		const promises = ids.map((id: string) =>
+			this.http.get<VideoMetdata>(
+				`${apiAddress}?v=${id}&format=json`
+			).then(res => {
+				const data = this.complexTitle(res.title);
+				if (data) return data;
+				return {
+					artist: res.author_name,
+					title: res.title
+				}
+			})
+		);
+		return Promise.all(promises);
+	}
 }
 
 export interface MusicData {
 	title: string;
 	artist: string;
+}
+
+interface VideoMetdata {
+	title: string;
+	author_name: string;
 }

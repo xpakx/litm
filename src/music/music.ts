@@ -67,8 +67,20 @@ class MusicService implements Service {
 	}
 
 	updateList() {
-		const list = this.playlist().map((a) => a.ytId);
+		const playlist = [...this.playlist()];
+		const list = playlist.map((a) => a.ytId);
 		this.yt.select(list);
+		this.yt.getPlaylistData(list)
+			.then((list) => {
+				console.log(list)
+				list.forEach((elem, i) => {
+					const song = playlist[i]!;
+					song.title = elem.title;
+					song.artist = elem.artist;
+				});
+				this.playlist.set(playlist);
+			});
+		this.initialized = true;
 	}
 
 	play() {
