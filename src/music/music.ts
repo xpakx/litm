@@ -23,11 +23,17 @@ class MusicService implements Service {
 	playlist = signal<PlaylistElem[]>([]);
 	initialized: boolean = false;
 
+	currentTime: ReadonlySignal<string>;
+	duration: ReadonlySignal<string>;
+
 	constructor(yt: Youtube) {
 		this.yt = yt;
 		this.playIcon = computed(() => this.yt.isPlaying() ? 'fa-pause' : 'fa-play', [this.yt.isPlaying]);
 		this.artist = computed(() => this.yt.artist() ?? '???', [this.yt.artist]);
 		this.title = computed(() => this.yt.title() ?? '???', [this.yt.title]);
+
+		this.currentTime = computed(() => this.formatSecToTime(this.yt.currentTime()), [this.yt.currentTime])
+		this.duration = computed(() => this.formatSecToTime(this.yt.totalTime()), [this.yt.totalTime])
 	}
 
 	init(ctx: ComponentContext): void {
@@ -48,6 +54,8 @@ class MusicService implements Service {
 		);
 		component.bindStyle('progressBar', 'width', this.percentage);
 		component.bindDynamicClass('playIcon', this.playIcon);
+		component.bindContent('currentTime', this.currentTime);
+		component.bindContent('duration', this.duration);
 
 		component.bindList('playlistContainer', this.playlist, (data) => this.playlistElem(data));
 		this.playlist.set([
@@ -122,6 +130,14 @@ class MusicService implements Service {
                 div.className = `playlist-item ${song.active ? 'active' : ''}`;
 		div.innerHTML = `<span class="playlist-text handwritten song-text">${text}</span>`
 		return div;
+	}
+
+	formatSecToTime(time: number): string {
+		const totalSeconds = Math.floor(time);
+		const minutes = Math.floor(totalSeconds / 60);
+		const seconds = totalSeconds % 60;
+		const paddedSeconds = seconds.toString().padStart(2, '0');
+		return `${minutes}:${paddedSeconds}`;
 	}
 }
 
