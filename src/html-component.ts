@@ -171,7 +171,7 @@ export abstract class HTMLComponent extends HTMLElement {
 		const unsub = signal.subscribe(items => {
 			items.forEach((item, index) => {
 				const old = itemList[index]; 
-				if (old && old.data != item) {
+				if (old && old.data !== item) {
 					old.data = item;
 					const newElem = renderFn(item, index);
 					old.elem.replaceWith(newElem);

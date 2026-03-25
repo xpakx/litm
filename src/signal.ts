@@ -124,3 +124,32 @@ export function deepSignal<TParent extends object, K extends keyof TParent>(
 	return ds;
 }
 
+
+export interface ListSignal<T> extends Signal<T[]> {
+	push(item: T): void;
+	removeAt(index: number): void;
+	remove(item: T): void;
+	clear(): void;
+}
+
+export function listSignal<T>(initialValue: T[]): ListSignal<T> {
+	const sig = signal(initialValue) as ListSignal<T>;
+
+	sig.push = (item: T) => {
+		sig.update(arr => [...arr, item]);
+	};
+
+	sig.removeAt = (index: number) => {
+		sig.update(arr => arr.toSpliced(index, 1));
+	};
+
+	sig.remove = (item: T) => {
+		sig.update(arr => arr.filter(i => i !== item));
+	}
+
+	sig.clear = () => {
+		sig.set([]);
+	}
+
+	return sig;
+}
