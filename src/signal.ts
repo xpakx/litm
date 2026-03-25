@@ -130,6 +130,8 @@ export interface ListSignal<T> extends Signal<T[]> {
 	removeAt(index: number): void;
 	remove(item: T): void;
 	clear(): void;
+	updateAt(index: number, updater: (oldItem: T) => T): void;
+	setAt(index: number, item: T): void;
 }
 
 export function listSignal<T>(initialValue: T[]): ListSignal<T> {
@@ -150,6 +152,23 @@ export function listSignal<T>(initialValue: T[]): ListSignal<T> {
 	sig.clear = () => {
 		sig.set([]);
 	}
+	sig.setAt = (index: number, item: T) => {
+		sig.update(arr => {
+			if (index < 0 || index >= arr.length) return arr;
+			const copy = [...arr];
+			copy[index] = item;
+			return copy;
+		});
+	};
+
+	sig.updateAt = (index: number, updater: (oldItem: T) => T) => {
+		sig.update(arr => {
+			if (index < 0 || index >= arr.length) return arr;
+			const copy = [...arr];
+			copy[index] = updater(copy[index]!);
+			return copy;
+		});
+	};
 
 	return sig;
 }
