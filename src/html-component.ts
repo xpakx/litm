@@ -162,6 +162,34 @@ export abstract class HTMLComponent extends HTMLElement {
 
 		this._unsubscribers.push(unsub);
 	}
+	
+	bindListSmart<T>(name: string, signal: Signal<T[]>, renderFn: (item: T, index: number) => HTMLElement) {
+		const container = this.getById(name);
+		if (!container) return;
+		const itemList: ListElem<T>[] = [];
+
+		const unsub = signal.subscribe(items => {
+			items.forEach((item, index) => {
+				const old = itemList[index]; 
+				if (old && old.data != item) {
+					old.data = item;
+					const newElem = renderFn(item, index);
+					old.elem.replaceWith(newElem);
+					old.elem = newElem;
+				} else if (!old) {
+					const newElem = renderFn(item, index);
+					container.appendChild(newElem);
+					itemList.push({ data: item, elem: newElem });
+				}
+			});
+			while (itemList.length > items.length) {
+				const orphanedItem = itemList.pop();
+				if (orphanedItem) orphanedItem.elem.remove();
+			}
+		});
+
+		this._unsubscribers.push(unsub);
+	}
 
 	bindAnimation(name: string, animationClass: string, source: Trigger, animationName?: string) {
 		const elem = this.getById(name);
@@ -316,3 +344,9 @@ export function componentOf(name: string, html: string): HTMLComponent {
 	console.log(`registered component ${name}`);
 	return new DummyComponent();
 }
+
+interface ListElem<T> {
+	elem: HTMLElement;
+	data: T,
+}
+
