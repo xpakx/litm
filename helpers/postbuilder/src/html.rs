@@ -1,4 +1,4 @@
-use lol_html::{element, HtmlRewriter, Settings};
+use lol_html::{element, text, HtmlRewriter, Settings};
 use regex::Regex;
 use lazy_static::lazy_static;
 
@@ -12,6 +12,7 @@ lazy_static! {
 pub fn html_test() {
     let mut id_counter = 0;
     let input = r#"<div id="target" [attr]="val" (event)="run()">{{data}}</div><span>Simple text</span>"#;
+
 
     let mut output = vec![];
     let mut rewriter = HtmlRewriter::new(
@@ -39,6 +40,15 @@ pub fn html_test() {
 
                     for name in attrs_to_remove {
                         el.remove_attribute(&name);
+                    }
+                    Ok(())
+                }),
+                text!("*", |text| {
+                    if RE_TEXT_INTERPOLATION.is_match(text.as_str()) {
+
+                        println!("Text '{}' is inside element", text.as_str());
+                        text.remove();
+
                     }
                     Ok(())
                 }),
