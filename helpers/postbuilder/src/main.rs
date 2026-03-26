@@ -13,6 +13,7 @@ use swc_core::ecma::codegen::{text_writer::JsWriter, Emitter};
 use swc_core::ecma::visit::{VisitMut, VisitMutWith};
 use clap::{Parser as ClapParser, Subcommand, ValueEnum};
 
+mod html;
 
 fn main() {
   let cli = Cli::parse();
@@ -32,6 +33,10 @@ fn main() {
                     generate_service(&name, &path).unwrap()
             }
             // TODO
+        },
+
+        Some(Commands::Html) => {
+            html::html_test();
         },
     }
 }
@@ -254,6 +259,8 @@ enum Commands {
         #[arg(short, long, default_value = "./src")]
         path: String,
     },
+
+    Html,
 }
 
 #[derive(ValueEnum, Clone, Debug)]
