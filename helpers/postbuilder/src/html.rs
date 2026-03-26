@@ -1,6 +1,8 @@
-use lol_html::{element, text, HtmlRewriter, Settings};
+use lol_html::{element, text, HtmlRewriter, Settings, EndTagHandler};
 use regex::Regex;
 use lazy_static::lazy_static;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 
 lazy_static! {
@@ -14,6 +16,7 @@ pub fn html_test() {
     let input = r#"<div id="target" [attr]="val" (event)="run()">{{data}}</div><span>Simple text</span>"#;
 
 
+    let id_stack: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let mut output = vec![];
     let mut rewriter = HtmlRewriter::new(
         Settings {
@@ -26,6 +29,22 @@ pub fn html_test() {
                         el.set_attribute("id", &new_id).unwrap();
                         new_id
                     });
+
+
+                    let stack = id_stack.clone();
+                    stack.borrow_mut().push(id.clone());
+
+
+                    let stack_for_pop = stack.clone();
+                    if let Some(handlers) = el.end_tag_handlers() {
+                        let handler: EndTagHandler = Box::new(move |_| {
+                            stack_for_pop.borrow_mut().pop();
+                            Ok(())
+                        });
+                        handlers.push(handler);
+                    } else {
+                        stack_for_pop.borrow_mut().pop();
+                    }
 
 
                     for attr in el.attributes() {
@@ -46,7 +65,9 @@ pub fn html_test() {
                 text!("*", |text| {
                     if RE_TEXT_INTERPOLATION.is_match(text.as_str()) {
 
-                        println!("Text '{}' is inside element", text.as_str());
+                        let stack = id_stack.clone();
+                        let current_id = stack.borrow().last().cloned().unwrap_or_else(|| "root".to_string());
+                        println!("Text '{}' is inside element with ID: {}", text.as_str(), current_id);
                         text.remove();
 
                     }
