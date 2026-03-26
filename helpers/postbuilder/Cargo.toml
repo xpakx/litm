@@ -5,5 +5,8 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4.6.0", features = ["derive"] }
+lazy_static = "1.5.0"
+lol_html = "2.7.2"
+regex = "1.12.3"
 swc_core = { version = "57.0.1", features = ["common", "ecma_ast", "ecma_parser", "ecma_visit", "ecma_codegen"] }
 walkdir = "2.5.0"
