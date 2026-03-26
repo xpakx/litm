@@ -1,6 +1,7 @@
 import { EventBus } from "./event-bus.js";
 import { componentOf, HTMLComponent } from "./html-component.js";
 import { Panel } from "./panel.js";
+import type { ReadonlySignal, Signal } from "./signal.js";
 import { Window } from "./window.js";
 
 export interface WindowContext {
@@ -54,6 +55,7 @@ export interface ComponentConfig {
 
 export interface Service {
 	init(ctx: ComponentContext): void;
+	bind?(ctx: ComponentContext): void;
 	dockWindow?(ctx: WindowContext): void;
 	dockPanel?(ctx: ComponentContext): void;
 	destroy?(body: HTMLElement | HTMLComponent): void;
@@ -218,7 +220,7 @@ export class App {
 			bus: this.bus,
 		};
 		services.forEach((serviceFn: any) => {
-			if ('init' in serviceFn) serviceFn.init(context);
+			if ('init' in serviceFn) this.initService(serviceFn, context);
 			else serviceFn(context);
 		});
 
@@ -413,5 +415,44 @@ export class App {
 	    content.style.width = `${width}px`;
 	    content.style.height = `${height}px`;
 	    content.style.position = 'relative';
+	}
+
+
+	initService(service: Service, context: ComponentContext) {
+		if('bind' in service) service.bind(context);
+		else {
+			//TODO: autobind
+			console.log(this.getSignalFields(service));
+		}
+		service.init(context);
+
+	}
+
+	isSignal(val: any): val is Signal<any> {
+		return (
+			typeof val === 'function' &&
+			typeof val.set === 'function' &&
+			typeof val.update === 'function' &&
+			typeof val.subscribe === 'function'
+		);
+	}
+
+	isReadOnlySignal(val: any): val is ReadonlySignal<any> {
+		return (
+			typeof val === 'function' &&
+			typeof val.subscribe === 'function'
+		);
+	}
+
+	getSignalFields(obj: Record<string, any>): Record<string, Signal<any>> {
+		const result: Record<string, Signal<any>> = {};
+
+		for (const [key, value] of Object.entries(obj)) {
+			if (this.isSignal(value)) {
+				result[key] = value;
+			}
+		}
+
+		return result;
 	}
 }
