@@ -880,6 +880,8 @@ dependencies = [
  "lazy_static",
  "lol_html",
  "regex",
+ "serde",
+ "serde_json",
  "swc_core",
  "walkdir",
 ]
