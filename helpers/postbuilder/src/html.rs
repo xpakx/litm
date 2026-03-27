@@ -4,6 +4,7 @@ use regex::Regex;
 use lazy_static::lazy_static;
 use std::cell::RefCell;
 use std::rc::Rc;
+use serde::Serialize;
 
 #[derive(Debug)]
 pub struct HtmlComponentData {
@@ -168,13 +169,15 @@ fn content_to_binding(id: &String, text: &str) -> Binding {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(tag = "action", rename_all = "camelCase")]
 pub enum ActionType {
     Click,
     Trigger { trigger: String },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Binding {
     Attribute {
         elem: String,

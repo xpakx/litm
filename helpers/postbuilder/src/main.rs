@@ -38,7 +38,8 @@ fn main() {
 
         Some(Commands::Html) => {
             let tst = html::html_test();
-            println!("{:?}", tst);
+            let json_data = serde_json::to_string(&tst.bindings).unwrap();
+            println!("{}", json_data);
             generator::generate(tst);
         },
     }
