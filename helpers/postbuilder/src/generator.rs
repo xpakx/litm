@@ -6,6 +6,8 @@ use swc_core::{
     ecma::codegen::{text_writer::JsWriter, Emitter, Config},
 };
 
+use crate::html::HtmlComponentData;
+
 pub fn generate_component_class(class_name: &str, html_content: &str) -> Stmt {
     let static_html_method = ClassMember::Method(ClassMethod {
         span: DUMMY_SP,
@@ -65,10 +67,10 @@ pub fn generate_component_class(class_name: &str, html_content: &str) -> Stmt {
     }))
 }
 
-pub fn generate() {
+pub fn generate(html_data: HtmlComponentData) {
     let ast_stmt = generate_component_class(
         "HelloComponent", 
-        "<div>Hello world!</div>"
+        &html_data.html
     );
 
     let script = Script {

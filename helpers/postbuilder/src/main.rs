@@ -37,8 +37,9 @@ fn main() {
         },
 
         Some(Commands::Html) => {
-            html::html_test();
-            generator::generate();
+            let tst = html::html_test();
+            println!("{:?}", tst);
+            generator::generate(tst);
         },
     }
 }
