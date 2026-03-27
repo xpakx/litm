@@ -14,6 +14,7 @@ use swc_core::ecma::visit::{VisitMut, VisitMutWith};
 use clap::{Parser as ClapParser, Subcommand, ValueEnum};
 
 mod html;
+mod generator;
 
 fn main() {
   let cli = Cli::parse();
@@ -37,6 +38,7 @@ fn main() {
 
         Some(Commands::Html) => {
             html::html_test();
+            generator::generate();
         },
     }
 }
