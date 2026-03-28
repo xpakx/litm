@@ -1,14 +1,11 @@
 use swc_core::{
-    common::{DUMMY_SP, SyntaxContext},
-    ecma::ast::*,
-
-    common::{sync::Lrc, SourceMap},
-    ecma::codegen::{text_writer::JsWriter, Emitter, Config},
+    common::{BytePos, DUMMY_SP, SourceMap, SyntaxContext, sync::Lrc},
+    ecma::{ast::*, codegen::{Config, Emitter, text_writer::JsWriter}, parser::{Parser, StringInput, Syntax}},
 };
 
 use crate::html::HtmlComponentData;
 
-pub fn generate_component_class(class_name: &str, html_content: &str) -> Stmt {
+pub fn generate_component_class(class_name: &str, html_component: HtmlComponentData) -> Stmt {
     let static_html_method = ClassMember::Method(ClassMethod {
         span: DUMMY_SP,
         key: PropName::Ident(IdentName::new("html".into(), DUMMY_SP)),
@@ -22,9 +19,48 @@ pub fn generate_component_class(class_name: &str, html_content: &str) -> Stmt {
                     span: DUMMY_SP,
                     arg: Some(Box::new(Expr::Lit(Lit::Str(Str {
                         span: DUMMY_SP,
-                        value: html_content.into(),
+                        value: html_component.html.into(),
                         raw: None,
                     })))),
+                })],
+                ..Default::default()
+            }),
+            is_generator: false,
+            is_async: false,
+            type_params: None,
+            return_type: None,
+            ..Default::default()
+        }),
+        kind: MethodKind::Method,
+        is_static: true,
+        accessibility: None,
+        is_abstract: false,
+        is_optional: false,
+        is_override: false,
+    });
+
+
+    let bindings_json = serde_json::to_string(&html_component.bindings)
+        .unwrap_or_else(|_| "[]".to_string());
+    let mut parser = Parser::new(
+        Syntax::Es(Default::default()),
+        StringInput::new(&bindings_json, BytePos(0), BytePos(bindings_json.len() as u32)),
+        None,
+    );
+
+    let parsed_expr = parser.parse_expr().expect("Failed to parse generated JSON");
+    let static_bindings_method = ClassMember::Method(ClassMethod {
+        span: DUMMY_SP,
+        key: PropName::Ident(IdentName::new("bindings".into(), DUMMY_SP)),
+        function: Box::new(Function {
+            params: vec![],
+            decorators: vec![],
+            span: DUMMY_SP,
+            body: Some(BlockStmt {
+                span: DUMMY_SP,
+                stmts: vec![Stmt::Return(ReturnStmt {
+                    span: DUMMY_SP,
+                    arg: Some(parsed_expr),
                 })],
                 ..Default::default()
             }),
@@ -52,7 +88,7 @@ pub fn generate_component_class(class_name: &str, html_content: &str) -> Stmt {
                class: Box::new(Class {
                    span: DUMMY_SP,
                    decorators: vec![],
-                   body: vec![static_html_method],
+                   body: vec![static_html_method, static_bindings_method],
                    super_class: Some(Box::new(Expr::Ident(Ident::new(
                                    "HTMLComponent".into(),
                                    DUMMY_SP,
@@ -70,7 +106,7 @@ pub fn generate_component_class(class_name: &str, html_content: &str) -> Stmt {
 pub fn generate(html_data: HtmlComponentData) {
     let ast_stmt = generate_component_class(
         "HelloComponent", 
-        &html_data.html
+        html_data,
     );
 
     let script = Script {
