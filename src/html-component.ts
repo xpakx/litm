@@ -1,4 +1,5 @@
 import { type WindowContext } from "./app.js";
+import type { Binding } from "./bindings.js";
 import type { ReadonlySignal, Signal, Trigger } from "./signal.js";
 import { SmartNoteHelper, type SmartInputRule } from "./smart-note-helper.js";
 
@@ -44,6 +45,10 @@ export abstract class HTMLComponent extends HTMLElement {
 
 	static css(): string {
 		return '';
+	}
+
+	static bindings(): Binding[] {
+		return [];
 	}
 
 	createElement() {
