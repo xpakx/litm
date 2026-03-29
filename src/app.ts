@@ -426,10 +426,12 @@ export class App {
 			const component = context.body;
 			const signalFields = this.getSignalFields(service);
 			console.log(signalFields);
+			const methods = this.getMethods(service);
+			console.log(methods);
 
 			const ComponentClass = component.constructor as typeof HTMLComponent;
 			const bindings = ComponentClass.bindings();
-			bindings.forEach((b) => this.bindSignal(b, component, signalFields));
+			bindings.forEach((b) => this.bindSignal(service, b, component, signalFields, methods));
 		}
 		service.init(context);
 
@@ -463,7 +465,13 @@ export class App {
 		return result;
 	}
 
-	bindSignal(binding: Binding, component: HTMLComponent, signals: Record<string, Signal<any>>) {
+	bindSignal(
+		service: Service,
+		binding: Binding,
+		component: HTMLComponent,
+		signals: Record<string, Signal<any>>,
+		actions: Record<string, Function>,
+	) {
 		switch (binding.kind) {
 			case 'attribute':  {
 				console.log(`Binding ${binding.attr} on ${binding.elem}`);
@@ -510,5 +518,25 @@ export class App {
 				}
 			break;
 		}
+	}
+
+	getMethods(obj: any): Record<string, Function> {
+		const actions: Record<string, Function> = {};
+
+		const proto = Object.getPrototypeOf(obj);
+
+		const props = Object.getOwnPropertyNames(proto).filter(prop => {
+			if (prop === 'constructor' || prop.startsWith('_')) return false;
+
+			const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+			return descriptor && typeof descriptor.value === 'function';
+		});
+
+		for (const key of props) {
+			const value = obj[key];
+			if (!actions[key]) actions[key] = value;
+		}
+
+		return actions;
 	}
 }
