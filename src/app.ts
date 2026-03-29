@@ -509,8 +509,16 @@ export class App {
 
 			case 'action':
 				switch (binding.action.action) {
-					case 'click':
+					case 'click': {
 						console.log("Binding click action");
+						const func = actions[binding.function];
+						if(!func) return;
+						component.onClick(
+							binding.elem,
+							func.bind(service)
+						);
+					}
+
 						break;
 					case 'trigger':
 						console.log(`Biding trigger: ${binding.action.trigger}`);

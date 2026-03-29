@@ -20,11 +20,10 @@ class HelloComponent extends HTMLComponent {
             {
                 "kind": "action",
                 "action": {
-                    "action": "trigger",
-                    "trigger": "event"
+                    "action": "click",
                 },
                 "elem": "target",
-                "function": "run()"
+                "function": "run"
             },
             {
                 "kind": "content",
@@ -39,6 +38,10 @@ export class TestService implements Service {
 	val = signal('test');
 	data = signal('content');
 	init(ctx: ComponentContext): void {
+	}
+
+	run() {
+		console.log("click");
 	}
 }
 
