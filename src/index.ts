@@ -10,6 +10,7 @@ import { sidebarComponent } from "./sidebar-component/sidebar.js";
 import { RoutingModule } from "./routing.js";
 import { Youtube } from "./youtube.js";
 import { musicComponent } from './music/music.js';
+import { bindingTestWindow } from "./test.js";
 
 
 class ClockService implements Service {
@@ -71,18 +72,20 @@ export interface TagEvent {
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());
     app.register('test', testWindow());
+    app.register('binding', bindingTestWindow());
 
     app.createTab('sidebar', 'dice');
     app.createTab('sidebar', 'smart');
 
-    app.openWindow('dice', 100, 150);
-    app.openWindow('dice', 200, 150);
-    app.openWindow('theme', 300, 200);
-    app.openWindow('smart', 400, 250);
-    app.openWindow('test', 500, 300);
+    // app.openWindow('dice', 100, 150);
+    // app.openWindow('dice', 200, 150);
+    // app.openWindow('theme', 300, 200);
+    // app.openWindow('smart', 400, 250);
+    // app.openWindow('test', 500, 300);
+    app.openWindow('binding', 500, 300);
 
-    app.openWindow('music', 720, 50);
-    app.openWindow('music', 720, 50);
+    // app.openWindow('music', 720, 50);
+    // app.openWindow('music', 720, 50);
 
     function newTestWindow(x: number, y: number) {
 	    app.openWindow('test', x, y);

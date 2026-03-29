@@ -1,3 +1,4 @@
+import type { Binding } from "./bindings.js";
 import { EventBus } from "./event-bus.js";
 import { componentOf, HTMLComponent } from "./html-component.js";
 import { Panel } from "./panel.js";
@@ -420,9 +421,15 @@ export class App {
 
 	initService(service: Service, context: ComponentContext) {
 		if('bind' in service) service.bind(context);
-		else {
+		else if (context.body instanceof HTMLComponent) {
 			//TODO: autobind
-			console.log(this.getSignalFields(service));
+			const component = context.body;
+			const signalFields = this.getSignalFields(service);
+			console.log(signalFields);
+
+			const ComponentClass = component.constructor as typeof HTMLComponent;
+			const bindings = ComponentClass.bindings();
+			bindings.forEach((b) => this.bindSignal(b, component, signalFields));
 		}
 		service.init(context);
 
@@ -454,5 +461,54 @@ export class App {
 		}
 
 		return result;
+	}
+
+	bindSignal(binding: Binding, component: HTMLComponent, signals: Record<string, Signal<any>>) {
+		switch (binding.kind) {
+			case 'attribute':  {
+				console.log(`Binding ${binding.attr} on ${binding.elem}`);
+				const signal = signals[binding.signal];
+			        if(!signal) return;
+				component.bindAttribute(
+					binding.elem,
+					binding.attr,
+					signal
+				);
+			}
+			break;
+
+			case 'class': {
+				console.log(`Binding class on ${binding.elem}`);
+				const signal = signals[binding.signal];
+			        if(!signal) return;
+				component.bindDynamicClass(
+					binding.elem,
+					signal
+				);
+			}
+			break;
+
+			case 'content': {
+				console.log(`Binding content for ${binding.elem}`);
+				const signal = signals[binding.signal];
+			        if(!signal) return;
+				component.bindContent(
+					binding.elem,
+					signal
+				);
+			}
+			break;
+
+			case 'action':
+				switch (binding.action.action) {
+					case 'click':
+						console.log("Binding click action");
+						break;
+					case 'trigger':
+						console.log(`Biding trigger: ${binding.action.trigger}`);
+						break;
+				}
+			break;
+		}
 	}
 }
