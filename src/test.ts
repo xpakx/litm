@@ -6,7 +6,8 @@ import { signal } from "./signal.js";
 @register('test-hello')
 class HelloComponent extends HTMLComponent {
     static html(): string {
-        return '<div id="target"></div><span id="gen-id-1">Simple text</span>';
+        return `<div id="target"></div>
+	<button id="button">Click</button>`;
     }
 
     static bindings(): Binding[] {
@@ -22,7 +23,7 @@ class HelloComponent extends HTMLComponent {
                 "action": {
                     "action": "click",
                 },
-                "elem": "target",
+                "elem": "button",
                 "function": "run"
             },
             {
@@ -36,12 +37,13 @@ class HelloComponent extends HTMLComponent {
 
 export class TestService implements Service {
 	val = signal('test');
-	data = signal('content');
+	data = signal(0);
 	init(ctx: ComponentContext): void {
 	}
 
 	run() {
 		console.log("click");
+		this.data.update((i) => i+1);
 	}
 }
 
