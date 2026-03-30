@@ -123,11 +123,13 @@ export class App {
 	private _zones: Map<string, Zone> = new Map();
 	bus: EventBus<Record<string, any>>;
 	components: ComponentLibrary;
+	bindings: BindingManager;
 
 	constructor(appElement: string) {
 		this.desktop = document.getElementById(appElement)!;
 		this.bus = new EventBus();
 		this.components = new ComponentLibrary();
+		this.bindings = new BindingManager();
 	}
 
 	private createDOMBody(template: string): HTMLElement {
@@ -422,34 +424,39 @@ export class App {
 	initService(service: Service, context: ComponentContext) {
 		if('bind' in service) service.bind(context);
 		else if (context.body instanceof HTMLComponent) {
-			//TODO: autobind
-			const component = context.body;
-			const signalFields = this.getSignalFields(service);
-			console.log(signalFields);
-			const methods = this.getMethods(service);
-			console.log(methods);
-
-			const ComponentClass = component.constructor as typeof HTMLComponent;
-			const bindings = ComponentClass.bindings();
-			bindings.forEach((b) => this.bindSignal(service, b, component, signalFields, methods));
+			this.bindings.bind(service, context.body);
 		}
 		service.init(context);
 
+	}
+}
+
+
+class BindingManager {
+	bind(service: Service, component: HTMLComponent) {
+		const signalFields = this.getSignalFields(service);
+		console.log(signalFields);
+		const methods = this.getMethods(service);
+		console.log(methods);
+
+		const ComponentClass = component.constructor as typeof HTMLComponent;
+		const bindings = ComponentClass.bindings();
+		bindings.forEach((b) => this.bindSignal(service, b, component, signalFields, methods));
 	}
 
 	isSignal(val: any): val is Signal<any> {
 		return (
 			typeof val === 'function' &&
-			typeof val.set === 'function' &&
-			typeof val.update === 'function' &&
-			typeof val.subscribe === 'function'
+				typeof val.set === 'function' &&
+				typeof val.update === 'function' &&
+				typeof val.subscribe === 'function'
 		);
 	}
 
 	isReadOnlySignal(val: any): val is ReadonlySignal<any> {
 		return (
 			typeof val === 'function' &&
-			typeof val.subscribe === 'function'
+				typeof val.subscribe === 'function'
 		);
 	}
 
@@ -477,7 +484,7 @@ export class App {
 			case 'attribute':  {
 				console.log(`Binding ${binding.attr} on ${binding.elem}`);
 				const signal = signals[binding.signal];
-			        if(!signal) return;
+				if(!signal) return;
 				component.bindAttribute(
 					binding.elem,
 					binding.attr,
@@ -489,7 +496,7 @@ export class App {
 			case 'class': {
 				console.log(`Binding class on ${binding.elem}`);
 				const signal = signals[binding.signal];
-			        if(!signal) return;
+				if(!signal) return;
 				component.bindDynamicClass(
 					binding.elem,
 					signal
@@ -500,7 +507,7 @@ export class App {
 			case 'content': {
 				console.log(`Binding content for ${binding.elem}`);
 				const signal = signals[binding.signal];
-			        if(!signal) return;
+				if(!signal) return;
 				component.bindContent(
 					binding.elem,
 					signal
@@ -510,20 +517,20 @@ export class App {
 
 			case 'action':
 				switch (binding.action.action) {
-					case 'click': {
-						console.log("Binding click action");
-						const func = actions[binding.function];
-						if(!func) return;
-						component.onClick(
-							binding.elem,
-							func.bind(service)
-						);
-					}
+				case 'click': {
+					console.log("Binding click action");
+					const func = actions[binding.function];
+					if(!func) return;
+					component.onClick(
+						binding.elem,
+						func.bind(service)
+					);
+				}
 
-						break;
-					case 'trigger':
-						console.log(`Biding trigger: ${binding.action.trigger}`);
-						break;
+				break;
+				case 'trigger':
+					console.log(`Biding trigger: ${binding.action.trigger}`);
+				break;
 				}
 			break;
 		}
