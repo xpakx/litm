@@ -81,14 +81,13 @@ class MusicService implements Service {
 			.then((list) => {
 				console.log(list)
 				list.forEach((elem, i) => {
-					this.playlist.updateAt(i, (e) => {
-						return {
-							title: elem.title,
-							artist: elem.artist,
-							ytId: e.ytId,
-							active: e.active
-						};
-					})
+					this.playlist.updateAt(i, (e) => 
+						this.with(
+							this.with(e, "title", elem.title),
+							'artist',
+							elem.artist
+						)
+				      );
 				});
 			});
 		this.initialized = true;
@@ -113,22 +112,20 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.yt.selectInPlaylist(num)
-		this.playlist.updateAt(oldNum, (e) => {
-			return {
-				ytId: e.ytId,
-				title: e.title,
-				artist: e.artist,
-				active: false,
-			};
-		});
-		this.playlist.updateAt(num, (e) => {
-			return {
-				ytId: e.ytId,
-				title: e.title,
-				artist: e.artist,
-				active: true,
-			};
-		});
+		this.playlist.updateAt(oldNum, (e) => this.with(e, "active", false));
+		this.playlist.updateAt(num, (e) => this.with(e, "active", true));
+	}
+
+
+	with<K extends keyof PlaylistElem>(
+		e: PlaylistElem, 
+		key: K, 
+		value: PlaylistElem[K]
+	): PlaylistElem {
+		return {
+			...e,
+			[key]: value
+		};
 	}
 
 	forward() {
@@ -142,22 +139,8 @@ class MusicService implements Service {
 		this.currentIndex.set(num);
 		this.yt.selectInPlaylist(num)
 
-		this.playlist.updateAt(oldNum, (e) => {
-			return {
-				ytId: e.ytId,
-				title: e.title,
-				artist: e.artist,
-				active: false,
-			};
-		});
-		this.playlist.updateAt(num, (e) => {
-			return {
-				ytId: e.ytId,
-				title: e.title,
-				artist: e.artist,
-				active: true,
-			};
-		});
+		this.playlist.updateAt(oldNum, (e) => this.with(e, "active", false));
+		this.playlist.updateAt(num, (e) => this.with(e, "active", true));
 	}
 
 	playlistElem(song: PlaylistElem): HTMLElement {
