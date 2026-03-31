@@ -1,6 +1,6 @@
-import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig } from "../app.js";
+import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig } from "../core/app.js";
 import { diceWindow } from "../dice-component/dice-window.js";
-import { componentOf, HTMLComponent, } from "../html-component.js";
+import { componentOf, HTMLComponent, } from "../core/html-component.js";
 import sidebarTemplate from './sidebar.html';
 
 export class SidebarService implements Service {

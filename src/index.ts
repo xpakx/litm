@@ -1,13 +1,13 @@
-import { App, type ComponentContext, type ComponentDefinition, type Service, type WindowConfig } from "./app.js";
+import { App, type ComponentContext, type ComponentDefinition, type Service, type WindowConfig } from "./core/app.js";
 import { characterWindow, type Character } from "./character-component/character-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
-import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./http/http.js";
-import { HttpClient } from "./http/client.js";
+import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./core/http/http.js";
+import { HttpClient } from "./core/http/client.js";
 import { smartNoteWindow } from "./smart-component/smart-note-window.js";
 import { testWindow } from './test-component/test-component.js';
-import { StompClient } from "./stomp/client.js";
+import { StompClient } from "./core/stomp/client.js";
 import { sidebarComponent } from "./sidebar-component/sidebar.js";
-import { RoutingModule } from "./routing.js";
+import { RoutingModule } from "./core/routing.js";
 import { Youtube } from "./youtube.js";
 import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";

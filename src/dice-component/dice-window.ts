@@ -1,6 +1,6 @@
-import { type Service, type WindowConfig, type ComponentContext, type ComponentDefinition } from "../app.js";
-import { componentOf, HTMLComponent } from "../html-component.js";
-import { computed, signal, trigger, type Signal } from "../signal.js";
+import { type Service, type WindowConfig, type ComponentContext, type ComponentDefinition } from "../core/app.js";
+import { componentOf, HTMLComponent } from "../core/html-component.js";
+import { computed, signal, trigger, type Signal } from "../core/signal.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {

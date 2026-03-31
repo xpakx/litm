@@ -1,8 +1,8 @@
-import { type ComponentConfig, type ComponentContext, type Service } from "../app.js";
-import { EventBus } from "../event-bus.js";
-import { componentOf, HTMLComponent, } from "../html-component.js";
+import { type ComponentConfig, type ComponentContext, type Service } from "../core/app.js";
+import { EventBus } from "../core/event-bus.js";
+import { componentOf, HTMLComponent, } from "../core/html-component.js";
 import type { MyEvents, TagEvent } from "../index.js";
-import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "../signal.js";
+import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "../core/signal.js";
 import tagTemplate from './tag.html';
 
 interface Tag {

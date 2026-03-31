@@ -1,5 +1,5 @@
-import { HttpClient } from "./http/client.js";
-import { signal, trigger } from "./signal.js";
+import { HttpClient } from "./core/http/client.js";
+import { signal, trigger } from "./core/signal.js";
 
 export class Youtube {
 	w: any;

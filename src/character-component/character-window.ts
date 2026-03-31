@@ -1,6 +1,6 @@
-import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig, type ComponentDefinition } from "../app.js";
-import { componentOf, HTMLComponent } from "../html-component.js";
-import { deepSignal, signal } from "../signal.js";
+import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig, type ComponentDefinition } from "../core/app.js";
+import { componentOf, HTMLComponent } from "../core/html-component.js";
+import { deepSignal, signal } from "../core/signal.js";
 import { tagComponent } from "../tag-component/tag-window.js";
 import characterTemplate from './character.html'; 
 

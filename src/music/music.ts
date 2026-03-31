@@ -1,6 +1,6 @@
-import { type Service, type ComponentContext, type ComponentDefinition } from "../app.js";
-import { componentOf, type HTMLComponent } from "../html-component.js";
-import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "../signal.js";
+import { type Service, type ComponentContext, type ComponentDefinition } from "../core/app.js";
+import { componentOf, type HTMLComponent } from "../core/html-component.js";
+import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "../core/signal.js";
 import type { MusicData, Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
