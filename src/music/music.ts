@@ -1,14 +1,14 @@
 import { type Service, type ComponentContext, type ComponentDefinition } from "../core/app.js";
 import { componentOf, type HTMLComponent } from "../core/html-component.js";
-import { computed, deepSignal, signal, type ReadonlySignal, type Signal } from "../core/signal.js";
+import { computed, deepSignal, listSignal, signal, type ReadonlySignal, type Signal } from "../core/signal.js";
 import type { MusicData, Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
 interface PlaylistElem {
+	ytId: string;
 	title: string;
 	artist: string;
 	active: boolean,
-	ytId: string;
 }
 
 
@@ -20,7 +20,7 @@ class MusicService implements Service {
 	playIcon: ReadonlySignal<string>;
 
 	percentage?: ReadonlySignal<string>;
-	playlist = signal<PlaylistElem[]>([]);
+	playlist = listSignal<PlaylistElem>([]);
 	initialized: boolean = false;
 
 	currentTime: ReadonlySignal<string>;
@@ -57,21 +57,19 @@ class MusicService implements Service {
 		component.bindContent('currentTime', this.currentTime);
 		component.bindContent('duration', this.duration);
 
-		component.bindList('playlistContainer', this.playlist, (data) => this.playlistElem(data));
-		this.playlist.set([
-			{
-				ytId: 'krGs2V3Vk3w',
-				active: true,
-				artist: "???",
-				title: "???",
-			},
-			{
-				ytId: 'd3ioWB3RBYY',
-				active: false,
-				artist: "???",
-				title: "???",
-			},
-		]);
+		component.bindListSmart('playlistContainer', this.playlist, (data, _) => this.playlistElem(data));
+		this.playlist.push({
+			ytId: 'krGs2V3Vk3w',
+			active: true,
+			artist: "???",
+			title: "???",
+		});
+		this.playlist.push({
+			ytId: 'd3ioWB3RBYY',
+			active: false,
+			artist: "???",
+			title: "???",
+		});
 
 		this.yt.whenReady(() => this.updateList());
 	}
@@ -84,11 +82,15 @@ class MusicService implements Service {
 			.then((list) => {
 				console.log(list)
 				list.forEach((elem, i) => {
-					const song = playlist[i]!;
-					song.title = elem.title;
-					song.artist = elem.artist;
+					this.playlist.updateAt(i, (e) => {
+						return {
+							title: elem.title,
+							artist: elem.artist,
+							ytId: e.ytId,
+							active: e.active
+						};
+					})
 				});
-				this.playlist.set(playlist);
 			});
 		this.initialized = true;
 	}
