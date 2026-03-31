@@ -1,4 +1,4 @@
-import { type WindowContext, type Service, type WindowConfig, type ComponentContext, type ComponentDefinition } from "../core/app.js";
+import { type Service, type ComponentContext, type ComponentDefinition } from "../core/app.js";
 import { EventBus } from "../core/event-bus.js";
 import { componentOf, HTMLComponent } from "../core/html-component.js";
 import type { MyEvents, TagEvent } from "../index.js";

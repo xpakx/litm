@@ -1,4 +1,4 @@
-import type { ComponentContext, ComponentDefinition, Service, WindowContext } from "./core/app.js";
+import type { ComponentContext, ComponentDefinition, Service } from "./core/app.js";
 import type { Binding } from "./core/bindings.js";
 import { HTMLComponent, register } from "./core/html-component.js";
 import { signal } from "./core/signal.js";
