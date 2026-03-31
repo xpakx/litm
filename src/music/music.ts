@@ -75,8 +75,7 @@ class MusicService implements Service {
 	}
 
 	updateList() {
-		const playlist = [...this.playlist()];
-		const list = playlist.map((a) => a.ytId);
+		const list = this.playlist().map((a) => a.ytId);
 		this.yt.select(list);
 		this.yt.getPlaylistData(list)
 			.then((list) => {
@@ -105,7 +104,8 @@ class MusicService implements Service {
 	}
 
 	back() {
-		let num = this.currentIndex() - 1;
+		let oldNum = this.currentIndex();
+		let num = oldNum - 1;
 		const list = this.playlist();
 		if (list.length == 0) return;
 		if (num < 0) return;
@@ -113,10 +113,27 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.yt.selectInPlaylist(num)
+		this.playlist.updateAt(oldNum, (e) => {
+			return {
+				ytId: e.ytId,
+				title: e.title,
+				artist: e.artist,
+				active: false,
+			};
+		});
+		this.playlist.updateAt(num, (e) => {
+			return {
+				ytId: e.ytId,
+				title: e.title,
+				artist: e.artist,
+				active: true,
+			};
+		});
 	}
 
 	forward() {
-		let num = this.currentIndex() + 1;
+		let oldNum = this.currentIndex();
+		let num = oldNum + 1;
 		const list = this.playlist();
 		if (list.length == 0) return;
 		if (num >= list.length) return;
@@ -124,6 +141,23 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.yt.selectInPlaylist(num)
+
+		this.playlist.updateAt(oldNum, (e) => {
+			return {
+				ytId: e.ytId,
+				title: e.title,
+				artist: e.artist,
+				active: false,
+			};
+		});
+		this.playlist.updateAt(num, (e) => {
+			return {
+				ytId: e.ytId,
+				title: e.title,
+				artist: e.artist,
+				active: true,
+			};
+		});
 	}
 
 	playlistElem(song: PlaylistElem): HTMLElement {
