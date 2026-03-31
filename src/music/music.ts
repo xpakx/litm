@@ -11,6 +11,31 @@ interface PlaylistElem {
 	active: boolean,
 }
 
+class ElemBuilder {
+	private e: PlaylistElem; 
+
+	constructor(e: PlaylistElem) {
+		this.e = structuredClone(e);
+	}
+
+	static of(e: PlaylistElem): ElemBuilder {
+		return new ElemBuilder(e);
+	}
+
+
+	with<K extends keyof PlaylistElem>(
+		key: K,
+		value: PlaylistElem[K]
+	): ElemBuilder {
+		this.e[key] = value;
+		return this;
+	}
+
+	get(): PlaylistElem {
+		return this.e;
+	}
+}
+
 
 class MusicService implements Service {
 	yt: Youtube;
@@ -82,11 +107,10 @@ class MusicService implements Service {
 				console.log(list)
 				list.forEach((elem, i) => {
 					this.playlist.updateAt(i, (e) => 
-						this.with(
-							this.with(e, "title", elem.title),
-							'artist',
-							elem.artist
-						)
+							       ElemBuilder.of(e)
+							       .with("title", elem.title)
+							       .with('artist', elem.artist)
+							       .get()
 				      );
 				});
 			});
@@ -112,20 +136,8 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.yt.selectInPlaylist(num)
-		this.playlist.updateAt(oldNum, (e) => this.with(e, "active", false));
-		this.playlist.updateAt(num, (e) => this.with(e, "active", true));
-	}
-
-
-	with<K extends keyof PlaylistElem>(
-		e: PlaylistElem, 
-		key: K, 
-		value: PlaylistElem[K]
-	): PlaylistElem {
-		return {
-			...e,
-			[key]: value
-		};
+		this.playlist.updateAt(oldNum, (e) => ElemBuilder.of(e).with("active", false).get());
+		this.playlist.updateAt(num, (e) => ElemBuilder.of(e).with("active", true).get());
 	}
 
 	forward() {
@@ -138,9 +150,8 @@ class MusicService implements Service {
 		if (!current) return;
 		this.currentIndex.set(num);
 		this.yt.selectInPlaylist(num)
-
-		this.playlist.updateAt(oldNum, (e) => this.with(e, "active", false));
-		this.playlist.updateAt(num, (e) => this.with(e, "active", true));
+		this.playlist.updateAt(oldNum, (e) => ElemBuilder.of(e).with("active", false).get());
+		this.playlist.updateAt(num, (e) => ElemBuilder.of(e).with("active", true).get());
 	}
 
 	playlistElem(song: PlaylistElem): HTMLElement {
