@@ -5,6 +5,8 @@ import type { ReadonlySignal, Signal } from "./signal.js";
 export type Binding = 
   | { kind: 'attribute', elem: string, attr: string, signal: string }
   | { kind: 'class', elem: string, signal: string }
+  | { kind: 'classSpecific', elem: string, class_name: string, signal: string }
+  | { kind: 'style', elem: string, attr: keyof CSSStyleDeclaration, signal: string }
   | { kind: 'content', elem: string, signal: string } 
   | { kind: 'action', elem: string, function: string, action: {action: "click"} | {action: string, trigger: string} };
 
@@ -76,6 +78,30 @@ export class BindingManager {
 				if(!signal) return;
 				component.bindDynamicClass(
 					binding.elem,
+					signal
+				);
+			}
+			break;
+
+			case 'classSpecific': {
+				console.log(`Binding class on ${binding.elem}`);
+				const signal = signals[binding.signal];
+				if(!signal) return;
+				component.bindClass(
+					binding.elem,
+					binding.class_name,
+					signal
+				);
+			}
+			break;
+
+			case 'style': {
+				console.log(`Binding style on ${binding.elem}`);
+				const signal = signals[binding.signal];
+				if(!signal) return;
+				component.bindStyle(
+					binding.elem,
+					binding.attr,
 					signal
 				);
 			}

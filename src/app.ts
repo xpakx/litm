@@ -1,4 +1,4 @@
-import { BindingManager, type Binding } from "./bindings.js";
+import { BindingManager } from "./bindings.js";
 import { ComponentLibrary } from "./components.js";
 import { EventBus } from "./event-bus.js";
 import { HTMLComponent } from "./html-component.js";
