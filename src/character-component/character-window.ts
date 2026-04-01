@@ -1,6 +1,6 @@
 import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig, type ComponentDefinition } from "../core/app.js";
 import { componentOf, HTMLComponent } from "../core/html-component.js";
-import { deepSignal, signal } from "../core/signal.js";
+import { deepSignal, listSignal, signal } from "../core/signal.js";
 import { tagComponent } from "../tag-component/tag-window.js";
 import characterTemplate from './character.html'; 
 
@@ -25,7 +25,7 @@ interface Tag {
 class ThemeService implements Service {
 	theme = signal<Theme>({name: '', powerTags: [], weaknessTags: [], quest: ''});
 	quest = deepSignal(this.theme, 'quest');
-	tags = signal<Tag[]>([]);
+	tags = listSignal<Tag>([]);
 	newComponent?: (a: ComponentConfig) => HTMLElement;
 
 	constructor(theme: Theme) {
@@ -48,22 +48,20 @@ class ThemeService implements Service {
 		component.bindInput('quest-content', this.quest);
 		this.quest.subscribe((t: string) => console.log(t));
 
-		const tags: Tag[] = []
 		this.theme().powerTags.forEach((name, index) => {
-			tags.push({
+			this.tags.push({
 				main: index == 0,
 				weakness: false,
 				name: name,
 			});
 		});
 		this.theme().weaknessTags.forEach((name) => {
-			tags.push({
+			this.tags.push({
 				main: false,
 				weakness: true,
 				name: name,
 			});
 		});
-		this.tags.set(tags);
 		component.bindList('items', this.tags, (tag) => this.tagComponent(tag));
 	}
 }
