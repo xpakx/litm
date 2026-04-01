@@ -133,7 +133,9 @@ export interface ListSignal<T> extends Signal<T[]> {
 	updateAt(index: number, updater: (oldItem: T) => T): void;
 	updateAll(updater: (oldItem: T, index: number) => T): void;
 	setAt(index: number, item: T): void;
+	removeBy<K extends keyof T>(field: K, value: T[K]): void;
 }
+
 
 export function listSignal<T>(initialValue: T[]): ListSignal<T> {
 	const sig = signal(initialValue) as ListSignal<T>;
@@ -172,6 +174,10 @@ export function listSignal<T>(initialValue: T[]): ListSignal<T> {
 	};
 
 	sig.updateAll = (updater: (oldItem: T, index: number) => T) => sig.update(arr => arr.map(updater));
+
+	sig.removeBy = <K extends keyof T>(item: K, value: T[K]) => {
+		sig.update(arr => arr.filter(i => i[item] !== value));
+	}
 
 	return sig;
 }
