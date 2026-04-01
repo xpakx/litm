@@ -78,8 +78,8 @@ export interface TagEvent {
     app.createTab('sidebar', 'smart');
 
     // app.openWindow('dice', 100, 150);
-    // app.openWindow('dice', 200, 150);
-    // app.openWindow('theme', 300, 200);
+    app.openWindow('dice', 200, 150);
+    app.openWindow('theme', 300, 200);
     // app.openWindow('smart', 400, 250);
     // app.openWindow('test', 500, 300);
     app.openWindow('binding', 500, 300);

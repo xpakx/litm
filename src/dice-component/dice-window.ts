@@ -1,6 +1,7 @@
 import { type Service, type ComponentContext, type ComponentDefinition } from "../core/app.js";
 import { componentOf, HTMLComponent } from "../core/html-component.js";
-import { computed, signal, trigger, type Signal } from "../core/signal.js";
+import { computed, listSignal, signal, trigger, type Signal } from "../core/signal.js";
+import type { TagEvent } from "../index.js";
 import diceTemplate from './dice.html'; 
 
 class DiceService implements Service {
@@ -17,7 +18,7 @@ class DiceService implements Service {
 
 	rollAnimation = trigger(); 
 
-	activeTags = signal<any[]>([]);
+	activeTags = listSignal<TagEvent>([]);
 
 	adHocPower = signal(0);
 	tagPower = computed(() => this.activeTags().reduce((sum, tag) => sum + tag.value, 0), [this.activeTags]);
@@ -37,7 +38,7 @@ class DiceService implements Service {
 		return div;
 	}
 
-	private onTag(tag: any, added: boolean) {
+	private onTag(tag: TagEvent, added: boolean) {
 		let tags = this.activeTags();
 		if (added) tags = [...tags, tag];
 		if (!added) tags = tags.filter((t) => t.name !== tag.name);
@@ -99,11 +100,11 @@ class DiceService implements Service {
 		component.bindDynamicClass('die1', this.die1Class);
 		component.bindDynamicClass('die2', this.die2Class);
 		component.bindStyle('total-power', 'color', this.powerColor);
-		component.bindList('active-tags', this.activeTags, (tag) => this.tagComponent(tag));
+		component.bindListSmart('active-tags', this.activeTags, (tag) => this.tagComponent(tag));
 
 		component.bindAnimation('dice-result-container-element', 'rolling', this.rollAnimation);
 
-		ctx.bus.on('tag:add', (tag: any) => this.onTag(tag, true));
+		ctx.bus.on('tag:add', (tag: TagEvent) => this.onTag(tag, true));
 		ctx.bus.on('tag:remove', (tag: any) => this.onTag(tag, false));
 		component.onClick('roll-btn', () => this.onClick());
 		component.onClick('sub-power-btn', () => this.updateAdHocPower(-1));
