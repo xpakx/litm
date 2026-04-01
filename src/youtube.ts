@@ -8,6 +8,7 @@ export class Youtube {
 	currentTime = signal(0);
 	totalTime = signal(0);
 	isPlaying = signal(false);
+	playlistPos = signal(0);
 
 	title = signal<string | undefined>(undefined);
 	artist = signal<string | undefined>(undefined);
@@ -53,6 +54,8 @@ export class Youtube {
 		if (event.data === 1) {
 			this.isPlaying.set(true);
 			this.totalTime.set(this.player.getDuration());
+			const index = this.player.getPlaylistIndex();
+			this.playlistPos.set(index !== -1 ? index : 0);
 			const data = this.player.getVideoData();
 			if (data) this.setTitle(data.title, data.author);
 		} else {
