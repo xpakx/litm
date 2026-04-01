@@ -39,10 +39,8 @@ class DiceService implements Service {
 	}
 
 	private onTag(tag: TagEvent, added: boolean) {
-		let tags = this.activeTags();
-		if (added) tags = [...tags, tag];
-		if (!added) tags = tags.filter((t) => t.name !== tag.name);
-		this.activeTags.set(tags);
+		if (added) this.activeTags.push(tag);
+		else this.activeTags.removeBy('name', tag.name);
 	}
 
 	private getPowerColor(): string {
