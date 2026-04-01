@@ -105,14 +105,12 @@ class MusicService implements Service {
 		this.yt.getPlaylistData(list)
 			.then((list) => {
 				console.log(list)
-				list.forEach((elem, i) => {
-					this.playlist.updateAt(i, (e) => 
-							       ElemBuilder.of(e)
-							       .with("title", elem.title)
-							       .with('artist', elem.artist)
-							       .get()
-				      );
-				});
+				this.playlist.updateAll((e, i) => 
+							ElemBuilder.of(e)
+							.with("title", list[i]!.title)
+							.with('artist', list[i]!.artist)
+							.get()
+			       );
 			});
 		this.initialized = true;
 	}
