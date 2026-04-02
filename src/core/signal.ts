@@ -291,3 +291,80 @@ export function smartListSignal<T>(initialValue: T[]): SmartListSignal<T> {
 
 	return sig;
 }
+
+
+
+export interface SmartObjectSignal<T extends object> extends Signal<T> {
+	setField<K extends keyof T>(key: K, value: T[K]): void;
+	updateField<K extends keyof T>(key: K, updater: (oldValue: T[K]) => T[K]): void;
+	subscribeField<K extends keyof T>(key: K, fn: (value: T[K]) => void): () => void;
+	getFieldSignal<K extends keyof T>(key: K): Signal<T[K]>;
+}
+
+export function objectSignal<T extends object>(initialValue: T): SmartObjectSignal<T> {
+	let _value = initialValue;
+	const _subscribers = new Set<(v: T) => void>();
+
+	const _fieldSubscribers = new Map<keyof T, Set<Function>>();
+
+	const sig = (() => _value) as SmartObjectSignal<T>;
+
+	sig.set = (newValue: T) => {
+		if (_value === newValue) return;
+		const oldValue = _value;
+		_value = newValue;
+
+		_subscribers.forEach(fn => fn(_value));
+
+		_fieldSubscribers.forEach((subs, key) => {
+			if (oldValue[key] !== newValue[key]) {
+				subs.forEach(fn => fn(newValue[key]));
+			}
+		});
+	};
+
+	sig.update = (updater: (v: T) => T) => {
+		sig.set(updater(_value));
+	};
+
+	sig.subscribe = (fn: (v: T) => void) => {
+		_subscribers.add(fn);
+		fn(_value);
+		return () => _subscribers.delete(fn);
+	};
+
+	sig.setField = <K extends keyof T>(key: K, value: T[K]) => {
+		if (_value[key] === value) return;
+		_value = { ..._value, [key]: value };
+		_subscribers.forEach(fn => fn(_value));
+		const subs = _fieldSubscribers.get(key);
+		if (subs) {
+			subs.forEach(fn => fn(value));
+		}
+	};
+
+	sig.updateField = <K extends keyof T>(key: K, updater: (oldValue: T[K]) => T[K]) => {
+		sig.setField(key, updater(_value[key]));
+	};
+
+	sig.subscribeField = <K extends keyof T>(key: K, fn: (value: T[K]) => void) => {
+		let subs = _fieldSubscribers.get(key);
+		if (!subs) {
+			subs = new Set();
+			_fieldSubscribers.set(key, subs);
+		}
+		subs.add(fn);
+		fn(_value[key]);
+		return () => subs!.delete(fn);
+	};
+
+	sig.getFieldSignal = <K extends keyof T>(key: K): Signal<T[K]> => {
+		const fieldSig = (() => _value[key]) as Signal<T[K]>;
+		fieldSig.set = (val: T[K]) => sig.setField(key, val);
+		fieldSig.update = (fn: (v: T[K]) => T[K]) => sig.updateField(key, fn);
+		fieldSig.subscribe = (fn: (v: T[K]) => void) => sig.subscribeField(key, fn);
+		return fieldSig;
+	};
+
+	return sig;
+}

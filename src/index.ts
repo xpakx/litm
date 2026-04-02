@@ -11,7 +11,7 @@ import { RoutingModule } from "./core/routing.js";
 import { Youtube } from "./youtube.js";
 import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";
-import { smartListSignal } from "./core/signal.js";
+import { smartListSignal, objectSignal } from "./core/signal.js";
 
 
 class ClockService implements Service {
@@ -226,4 +226,30 @@ function testSmartSignal() {
 	users.push({ id: 2, name: 'Bob' }); 
 	users.updateAt(0, u => ({ ...u, name: 'Alice Smith' })); 
 	users.removeBy('id', 1);
+
+
+
+
+	const user = objectSignal({ 
+		id: 1, 
+		name: 'Alice', 
+		age: 25 
+	});
+
+	user.subscribe((u) => console.log("Whole user changed:", u));
+
+	user.subscribeField('name', (newName) => {
+		console.log("Name changed to:", newName);
+	});
+
+	user.subscribeField('age', (newAge) => {
+		console.log("Age changed to:", newAge);
+	});
+
+	user.setField('name', 'Alice Smith'); 
+
+	user.set({ id: 1, name: 'Alice Smith', age: 26 }); 
+
+	const ageSignal = user.getFieldSignal('age');
+	ageSignal.update(a => a + 1);
 }
