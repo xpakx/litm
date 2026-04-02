@@ -1,7 +1,7 @@
 import { type Service, type ComponentContext, type ComponentDefinition } from "../core/app.js";
 import { componentOf, type HTMLComponent } from "../core/html-component.js";
-import { computed, deepSignal, listSignal, signal, type ReadonlySignal, type Signal } from "../core/signal.js";
-import type { MusicData, Youtube } from "../youtube.js";
+import { computed, listSignal, signal, type ReadonlySignal, type Signal } from "../core/signal.js";
+import type { Youtube } from "../youtube.js";
 import musicTemplate from './music.html'; 
 
 interface PlaylistElem {
@@ -50,6 +50,7 @@ class MusicService implements Service {
 
 	currentTime: ReadonlySignal<string>;
 	duration: ReadonlySignal<string>;
+	posDestructor: () => void;
 
 	constructor(yt: Youtube) {
 		this.yt = yt;
@@ -59,6 +60,11 @@ class MusicService implements Service {
 
 		this.currentTime = computed(() => this.formatSecToTime(this.yt.currentTime()), [this.yt.currentTime])
 		this.duration = computed(() => this.formatSecToTime(this.yt.totalTime()), [this.yt.totalTime])
+
+		this.posDestructor = this.yt.playlistPos.subscribe((pos) => {
+			const curr = this.currentIndex();
+			if (curr  !== pos) this.updateIndex(pos);
+		});
 	}
 
 	init(ctx: ComponentContext): void {
@@ -132,10 +138,8 @@ class MusicService implements Service {
 		if (num < 0) return;
 		const current = list[num];
 		if (!current) return;
-		this.currentIndex.set(num);
-		this.yt.selectInPlaylist(num)
-		this.playlist.updateAt(oldNum, (e) => ElemBuilder.of(e).with("active", false).get());
-		this.playlist.updateAt(num, (e) => ElemBuilder.of(e).with("active", true).get());
+		this.yt.selectInPlaylist(num);
+		this.updateIndex(num);
 	}
 
 	forward() {
@@ -146,8 +150,14 @@ class MusicService implements Service {
 		if (num >= list.length) return;
 		const current = list[num];
 		if (!current) return;
+		this.yt.selectInPlaylist(num);
+		this.updateIndex(num);
+	}
+
+
+	updateIndex(num: number) {
+		const oldNum = this.currentIndex();
 		this.currentIndex.set(num);
-		this.yt.selectInPlaylist(num)
 		this.playlist.updateAt(oldNum, (e) => ElemBuilder.of(e).with("active", false).get());
 		this.playlist.updateAt(num, (e) => ElemBuilder.of(e).with("active", true).get());
 	}
@@ -166,6 +176,10 @@ class MusicService implements Service {
 		const seconds = totalSeconds % 60;
 		const paddedSeconds = seconds.toString().padStart(2, '0');
 		return `${minutes}:${paddedSeconds}`;
+	}
+
+	destroy(_body: HTMLElement | HTMLComponent): void {
+		this.posDestructor();
 	}
 }
 
