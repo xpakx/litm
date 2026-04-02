@@ -11,6 +11,7 @@ import { RoutingModule } from "./core/routing.js";
 import { Youtube } from "./youtube.js";
 import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";
+import { smartListSignal } from "./core/signal.js";
 
 
 class ClockService implements Service {
@@ -106,6 +107,7 @@ export interface TagEvent {
 
     (window as any).play = () => music.play();
     (window as any).select = (id: string) => music.select(id);
+    testSmartSignal();
 })();
 
 
@@ -196,4 +198,32 @@ function testRouting(app: App) {
 	const router = new RoutingModule();
 	router.addHiddenRoute('/', diceWindow(), 'sidebar');
 	router.register(app);
+}
+
+
+function testSmartSignal() {
+	const users = smartListSignal([{ id: 1, name: 'Alice' }]);
+
+	users.subscribe((_, patches) => {
+		patches.forEach(patch => {
+			switch (patch.type) {
+				case 'insert':
+					console.log(`Inserted items at index ${patch.index}`, patch.items);
+				break;
+				case 'remove':
+					console.log(`Removed ${patch.count} item(s) at index ${patch.index}`);
+				break;
+				case 'update':
+					console.log(`Updated item at ${patch.index}`, patch.item);
+				break;
+				case 'set':
+					console.log(`Full array replacement! Render from scratch.`);
+				break;
+			}
+		});
+	});
+
+	users.push({ id: 2, name: 'Bob' }); 
+	users.updateAt(0, u => ({ ...u, name: 'Alice Smith' })); 
+	users.removeBy('id', 1);
 }

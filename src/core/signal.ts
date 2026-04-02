@@ -181,3 +181,113 @@ export function listSignal<T>(initialValue: T[]): ListSignal<T> {
 
 	return sig;
 }
+
+
+
+// Experimental
+
+export type ListPatch<T> =
+	| { type: 'set'; items: T[] }
+	| { type: 'insert'; index: number; items: T[] }
+	| { type: 'remove'; index: number; count: number }
+	| { type: 'update'; index: number; item: T };
+
+export interface SmartListSignal<T> extends ListSignal<T> {
+	subscribe(fn: (v: T[], patches: ListPatch<T>[]) => void): () => void;
+}
+
+export function smartListSignal<T>(initialValue: T[]): SmartListSignal<T> {
+	let _value = initialValue;
+	const _subscribers = new Set<(v: T[], patches: ListPatch<T>[]) => void>();
+
+	const sig = (() => _value) as SmartListSignal<T>;
+
+	const notify = (newValue: T[], patches: ListPatch<T>[]) => {
+		_value = newValue;
+		_subscribers.forEach(fn => fn(_value, patches));
+	};
+
+	sig.set = (newValue: T[]) => {
+		if (_value === newValue) return;
+		notify(newValue, [{ type: 'set', items: newValue }]);
+	};
+
+	sig.update = (updater: (v: T[]) => T[]) => {
+		sig.set(updater(_value));
+	};
+
+	sig.subscribe = (fn: (v: T[], patches: ListPatch<T>[]) => void) => {
+		_subscribers.add(fn);
+		fn(_value, [{ type: 'set', items: _value }]);
+		return () => _subscribers.delete(fn);
+	};
+
+	sig.push = (item: T) => {
+		const newValue = [..._value, item];
+		notify(newValue, [{ type: 'insert', index: _value.length, items: [item] }]);
+	};
+
+	sig.removeAt = (index: number) => {
+		if (index < 0 || index >= _value.length) return;
+		const newValue = _value.toSpliced(index, 1);
+		notify(newValue, [{ type: 'remove', index, count: 1 }]);
+	};
+
+	sig.remove = (item: T) => {
+		const patches: ListPatch<T>[] = [];
+		const newValue = [..._value];
+
+		for (let i = newValue.length - 1; i >= 0; i--) {
+			if (newValue[i] === item) {
+				newValue.splice(i, 1);
+				patches.push({ type: 'remove', index: i, count: 1 });
+			}
+		}
+		if (patches.length > 0) notify(newValue, patches);
+	};
+
+	sig.clear = () => {
+		if (_value.length === 0) return;
+		notify([], [{ type: 'remove', index: 0, count: _value.length }]);
+	};
+
+	sig.setAt = (index: number, item: T) => {
+		if (index < 0 || index >= _value.length) return;
+		if (_value[index] === item) return;
+
+		const newValue = [..._value];
+		newValue[index] = item;
+		notify(newValue, [{ type: 'update', index, item }]);
+	};
+
+	sig.updateAt = (index: number, updater: (oldItem: T) => T) => {
+		if (index < 0 || index >= _value.length) return;
+
+		const newItem = updater(_value[index]!);
+		if (_value[index] === newItem) return;
+
+		const newValue = [..._value];
+		newValue[index] = newItem;
+		notify(newValue, [{ type: 'update', index, item: newItem }]);
+	};
+
+	sig.updateAll = (updater: (oldItem: T, index: number) => T) => {
+		const newValue = _value.map(updater);
+		notify(newValue, [{ type: 'set', items: newValue }]);
+	};
+
+	sig.removeBy = <K extends keyof T>(field: K, value: T[K]) => {
+		const patches: ListPatch<T>[] = [];
+		const newValue = [..._value];
+
+		for (let i = newValue.length - 1; i >= 0; i--) {
+			if (newValue[i]![field] === value) {
+				newValue.splice(i, 1);
+				patches.push({ type: 'remove', index: i, count: 1 });
+			}
+		}
+		if (patches.length > 0) notify(newValue, patches);
+	};
+
+	return sig;
+}
