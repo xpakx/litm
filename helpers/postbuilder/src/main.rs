@@ -62,9 +62,6 @@ fn postbuild() {
     for (src_path, dest_path) in html_files_to_process {
         process_html(&src_path, &dest_path, verbose);
     }
-
-    // TODO: current idea is to transform this to web component with event hooks
-    // and easily updatable variables
     
     println!("Done!");
 }

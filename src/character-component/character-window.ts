@@ -1,4 +1,4 @@
-import { type ComponentConfig, type ComponentContext, type Service, type WindowConfig, type ComponentDefinition } from "../core/app.js";
+import { type ComponentConfig, type ComponentContext, type Service, type ComponentDefinition } from "../core/app.js";
 import { componentOf, HTMLComponent } from "../core/html-component.js";
 import { deepSignal, listSignal, signal } from "../core/signal.js";
 import { tagComponent } from "../tag-component/tag-window.js";
@@ -33,10 +33,6 @@ class ThemeService implements Service {
 	}
 	
 	tagComponent(tag: Tag): HTMLElement {
-		// TODO: This would recreate all subcomponents on
-		// change in tag list, we will probably want to 
-		// improve bindList in the future and proxy with 
-		// list of signals instead
 		const config = tagComponent(signal(tag));
 		const elem = this.newComponent!(config);
 		return elem;
