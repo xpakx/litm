@@ -11,7 +11,7 @@ export class Container {
 	_container: HTMLElement;
 	_cards: Card[] = [];
 
-	constructor(zone: HTMLElement) {
+	constructor(areaName: string, zone: HTMLElement) {
 		this._zone = zone;
 
 		let container = this._zone.querySelector('.app-panel-container') as HTMLElement;

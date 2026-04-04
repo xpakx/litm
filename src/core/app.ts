@@ -1,5 +1,6 @@
 import { BindingManager } from "./bindings.js";
 import { ComponentLibrary } from "./components.js";
+import type { Container } from "./container.js";
 import { EventBus } from "./event-bus.js";
 import { HTMLComponent } from "./html-component.js";
 import { Panel } from "./panel.js";
@@ -81,6 +82,7 @@ export interface PanelSettings {
 export interface Zone {
 	zone: HTMLElement;
 	panel?: Panel | undefined;
+	container?: Container | undefined;
 	pannableArea?: HTMLElement;
 }
 
@@ -406,6 +408,26 @@ export class App {
 		}
 		service.init(context);
 
+	}
+
+
+	// TODO: join Panels and Containers
+	getContainerFor(area: string): Container | undefined {
+                const zone = this.getZone(area);
+		if (!zone) return;
+
+		let container = zone.container;
+		return container;
+	}
+
+	putContainer(areaName: string, container: typeof Container) {
+		const zone = this.getZone(areaName);
+		if (!zone) return;
+		if (zone.container) return;
+
+		let cont = new container(areaName, zone.zone);
+		zone.container = cont;
+		return cont;
 	}
 }
 
