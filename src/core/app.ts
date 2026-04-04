@@ -388,6 +388,16 @@ export class App {
 	    content.style.position = 'relative';
 	}
 
+	resizeScrollableContent(area: string, width: number, height: number) {
+	    const zone = this.getZone(area);
+	    if (!zone) return;
+	    let content = zone.pannableArea;
+	    if (!content) return;
+	    
+	    content.style.width = `${width}px`;
+	    content.style.height = `${height}px`;
+	    content.style.position = 'relative';
+	}
 
 	initService(service: Service, context: ComponentContext) {
 		if('bind' in service) service.bind(context);
