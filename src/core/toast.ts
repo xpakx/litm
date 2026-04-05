@@ -16,6 +16,10 @@ interface Bus<Events extends EventMap> {
 	on<K extends keyof Events>(event: K, callback: (payload: Events[K]) => void): () => void;
 }
 
+type MessageKeys<T> = {
+	[K in keyof T]: T[K] extends Message ? K : never;
+}[keyof T];
+
 export class ToastManager {
 	container: HTMLElement;
 	toasts: Toast[] = [];
@@ -117,7 +121,7 @@ export class ToastManager {
 	}
 
 	setToastEvent<T extends EventMap>(
-		event: keyof T,
+		event: MessageKeys<T>,
 		bus: Bus<T>,
 	) {
 		this.busListener = bus.on(event, (msg) => this.show(msg));
