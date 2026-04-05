@@ -7,12 +7,14 @@ interface Card {
 }
 
 export class Container {
+	_zoneName: string;
 	_zone: HTMLElement;
 	_container: HTMLElement;
 	_cards: Card[] = [];
 
 	constructor(areaName: string, zone: HTMLElement) {
 		this._zone = zone;
+		this._zoneName = areaName;
 
 		let container = this._zone.querySelector('.app-panel-container') as HTMLElement;
 		if (container) {

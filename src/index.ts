@@ -12,6 +12,7 @@ import { Youtube } from "./youtube.js";
 import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";
 import { smartListSignal, objectSignal } from "./core/signal.js";
+import { ToastManager } from "./core/toast.js";
 
 
 class ClockService implements Service {
@@ -107,7 +108,8 @@ export interface TagEvent {
 
     (window as any).play = () => music.play();
     (window as any).select = (id: string) => music.select(id);
-    testSmartSignal();
+    // testSmartSignal();
+    testToasts(app);
 })();
 
 
@@ -252,4 +254,11 @@ function testSmartSignal() {
 
 	const ageSignal = user.getFieldSignal('age');
 	ageSignal.update(a => a + 1);
+}
+
+
+function testToasts(app: App) {
+	const container = document.getElementById('toast-container')!;
+	const toastManager = new ToastManager(container);
+	for (let i = 1; i <= 10; i++) toastManager.show({text: `test ${i}`});
 }
