@@ -19,8 +19,16 @@ export class ToastManager {
 	MAX_VISIBLE = 5;
 	busListener?: () => void;
 
-	constructor(container: HTMLElement) {
+	constructor(container?: HTMLElement) {
+		if (!container) container = this.createContainer();
 		this.container =  container;
+	}
+
+	createContainer(): HTMLElement {
+		const container = document.createElement('div');
+		container.id = 'toast-container';
+		document.body.appendChild(container);
+		return container;
 	}
 
 	private createToastEntry(message: Message, urgent: boolean) {
