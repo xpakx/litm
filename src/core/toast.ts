@@ -1,5 +1,3 @@
-import { EventBus, type EventMap } from "./event-bus.js";
-
 export interface Message {
 	author?: string;
 	text: string;
@@ -10,6 +8,12 @@ interface Toast {
 	wrapper: HTMLElement;
 	inner: HTMLElement;
 	timer?: number;
+}
+
+type EventMap = Record<string, any>;
+
+interface Bus<Events extends EventMap> {
+	on<K extends keyof Events>(event: K, callback: (payload: Events[K]) => void): () => void;
 }
 
 export class ToastManager {
@@ -112,7 +116,10 @@ export class ToastManager {
 		});
 	}
 
-	setToastEvent<T extends EventMap>(event: keyof T, bus:EventBus<T>) {
+	setToastEvent<T extends EventMap>(
+		event: keyof T,
+		bus: Bus<T>,
+	) {
 		this.busListener = bus.on(event, (msg) => this.show(msg));
 	}
 
