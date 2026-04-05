@@ -1,3 +1,5 @@
+import { EventBus, type EventMap } from "./event-bus.js";
+
 export interface Message {
 	author?: string;
 	text: string;
@@ -15,6 +17,7 @@ export class ToastManager {
 	toasts: Toast[] = [];
 	toastCount = 0;
 	MAX_VISIBLE = 5;
+	busListener?: () => void;
 
 	constructor(container: HTMLElement) {
 		this.container =  container;
@@ -92,6 +95,14 @@ export class ToastManager {
 				t.wrapper.style.pointerEvents = 'auto';
 			}
 		});
+	}
+
+	setToastEvent<T extends EventMap>(event: keyof T, bus:EventBus<T>) {
+		this.busListener = bus.on(event, (msg) => this.show(msg));
+	}
+
+	destroy() {
+		if (this.busListener) this.busListener();
 	}
 }
 

@@ -1,4 +1,4 @@
-type EventMap = Record<string, any>;
+export type EventMap = Record<string, any>;
 
 export class EventBus<Events extends EventMap> {
 	private listeners: { [K in keyof Events]?: Array<(payload: Events[K]) => void> } = {};

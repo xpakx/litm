@@ -12,7 +12,7 @@ import { Youtube } from "./youtube.js";
 import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";
 import { smartListSignal, objectSignal } from "./core/signal.js";
-import { ToastManager } from "./core/toast.js";
+import { ToastManager, type Message } from "./core/toast.js";
 
 
 class ClockService implements Service {
@@ -52,6 +52,7 @@ const character: Character = {
 export interface MyEvents {
 	"tag:add": TagEvent;
 	"tag:remove": TagEvent;
+	"toast:new": Message;
 }
 
 export interface TagEvent {
@@ -260,5 +261,6 @@ function testSmartSignal() {
 function testToasts(app: App) {
 	const container = document.getElementById('toast-container')!;
 	const toastManager = new ToastManager(container);
-	for (let i = 1; i <= 10; i++) toastManager.show({text: `test ${i}`});
+	toastManager.setToastEvent<MyEvents>("toast:new", app.bus);
+	for (let i = 1; i <= 10; i++) app.bus.emit("toast:new", {text: `test ${i}`});
 }
