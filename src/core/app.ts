@@ -370,7 +370,14 @@ export class App {
 			zone.zone.scrollLeft = scrollLeft - (x - startX);
 			zone.zone.scrollTop = scrollTop - (y - startY);
 		});
-		this.setScrollableContent(area, 10000, 10000); // TODO
+
+		// TODO
+		const zoneWidth = 10000;
+		const zoneHeight = 10000;
+
+		this.setScrollableContent(area, zoneWidth, zoneHeight);
+		zone.zone.scrollLeft = zoneWidth / 2;
+		zone.zone.scrollTop = zoneHeight / 2;
 	}
 
 	setScrollableContent(area: string, width: number, height: number) {
