@@ -110,7 +110,7 @@ export interface TagEvent {
     (window as any).play = () => music.play();
     (window as any).select = (id: string) => music.select(id);
     // testSmartSignal();
-    // testToasts(app);
+    testToasts(app);
 })();
 
 
