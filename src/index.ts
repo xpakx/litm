@@ -13,6 +13,7 @@ import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";
 import { smartListSignal, objectSignal } from "./core/signal.js";
 import { ToastManager, type Message } from "./core/toast.js";
+import { characterWindowNew } from "./character/character.js";
 
 
 class ClockService implements Service {
@@ -45,6 +46,12 @@ const character: Character = {
             weaknessTags: ["Weakness"],
 	    quest: "Quest 1",
         },
+        {
+            name: "Theme 2",
+            powerTags: ["Tag 4", "Tag 5", "Tag 6"],
+            weaknessTags: ["Weakness 2"],
+	    quest: "Quest 2",
+        },
     ]
 };
 
@@ -71,7 +78,8 @@ export interface TagEvent {
     // testPanels(app);
     // app.register(clockWindow(10, 200));
     // app.register('music', {...musicWindow("krGs2V3Vk3w"), zone: 'main', trapInZone: true});
-    app.register('theme', {...characterWindow(character), zone: 'main', trapInZone: true});
+    app.register('theme', characterWindow(character));
+    app.register('character', characterWindowNew(character));
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());
     app.register('test', testWindow());
@@ -83,6 +91,7 @@ export interface TagEvent {
     // app.openWindow('dice', 100, 150);
     app.openWindow('dice', 200, 150);
     app.openWindow('theme', 300, 200);
+    app.openWindow('character', 300, 200);
     // app.openWindow('smart', 400, 250);
     // app.openWindow('test', 500, 300);
     app.openWindow('binding', 500, 300);
