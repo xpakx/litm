@@ -40,6 +40,7 @@ export interface WindowConfig {
 	trapInZone?: boolean;
 	dockable?: boolean;
 	dockAreas?: string[];
+	args?: Record<string, any>;
 }
 
 export interface ComponentContext {
@@ -47,12 +48,14 @@ export interface ComponentContext {
 	close: () => void,
 	app: App,
 	bus: EventBus<Record<string, any>>,
+	args?: Record<string, any>;
 }
 
 export interface ComponentConfig {
 	services?: Service[];
 	template?: string;
 	element?: HTMLComponent;
+	args?: Record<string, any>;
 }
 
 export interface Service {
@@ -121,11 +124,12 @@ export class App {
 		this.components.register(name, config);
 	}
 
-	openWindow(name: string, x: number, y: number, zone?: string) {
+	openWindow(name: string, x: number, y: number, zone?: string, args?: Record<string, any>) {
 		let config = this.components.getWindowConfig(name);
 		if (!config) return;
 		config.x = x;
 		config.y = y;
+		if (args) config.args = args;
 
 		if (zone) {
 			config.zone = zone;
@@ -177,6 +181,7 @@ export class App {
 			services = [],
 			template = '',
 			element = undefined,
+			args = {},
 		} = config;
 
 		let body: HTMLElement;
@@ -191,6 +196,7 @@ export class App {
 			close: () => body.remove(),
 			app: this,
 			bus: this.bus,
+			args: args,
 		};
 		services.forEach((serviceFn: any) => {
 			if ('init' in serviceFn) this.initService(serviceFn, context);
