@@ -18,7 +18,7 @@ export class ComponentLibrary {
 		this._components.set(name, config);
 	}
 
-	getWindowConfig(name: string): WindowConfig | undefined {
+	getWindowConfig(name: string, args?: Record<string, any>): WindowConfig | undefined {
 		const defaultConfig = this._components.get(name);
 		if (!defaultConfig) return;
 		const { elementFactory, servicesFactory, ...rest } = defaultConfig;
@@ -27,7 +27,7 @@ export class ComponentLibrary {
 
 		};
 		if (elementFactory) config.element = elementFactory();
-		if (servicesFactory) config.services = servicesFactory();
+		if (servicesFactory) config.services = servicesFactory(args ?? {});
 		
 		return config;
 	}

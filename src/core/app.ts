@@ -17,7 +17,7 @@ export interface ComponentDefinition {
 	title?: string;
 	width?: number;
 	height?: number;
-	servicesFactory?: () => Service[];
+	servicesFactory?: ((args?: Record<string, any>) => Service[]);
 	template?: string;
 	elementFactory?: () => HTMLComponent;
 	zone?: string;
@@ -125,7 +125,7 @@ export class App {
 	}
 
 	openWindow(name: string, x: number, y: number, zone?: string, args?: Record<string, any>) {
-		let config = this.components.getWindowConfig(name);
+		let config = this.components.getWindowConfig(name, args);
 		if (!config) return;
 		config.x = x;
 		config.y = y;
@@ -420,7 +420,6 @@ export class App {
 			this.bindings.bind(service, context.body);
 		}
 		service.init(context);
-
 	}
 
 
