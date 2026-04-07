@@ -78,7 +78,7 @@ export interface TagEvent {
     // testPanels(app);
     // app.register(clockWindow(10, 200));
     // app.register('music', {...musicWindow("krGs2V3Vk3w"), zone: 'main', trapInZone: true});
-    app.register('theme', themeWindow(character.themes[0]!));
+    app.register('theme', themeWindow());
     app.register('character', characterWindow(character));
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());

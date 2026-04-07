@@ -1,6 +1,6 @@
 import { type ComponentConfig, type ComponentContext, type Service, type ComponentDefinition } from "../core/app.js";
 import { componentOf, HTMLComponent } from "../core/html-component.js";
-import { listSignal, objectSignal } from "../core/signal.js";
+import { listSignal, objectSignal, signal, type Signal } from "../core/signal.js";
 import characterTemplate from './character.html'; 
 
 interface Theme {
@@ -25,7 +25,7 @@ class CharacterService implements Service {
 	character = objectSignal<Character>({name: '', themes: []});
 	name = this.character.getFieldSignal("name");
 	themes = listSignal<Theme>([]);
-	openWindow?: (name: string) => void;
+	openWindow?: (name: string, theme: Signal<Theme>) => void;
 
 	constructor(character: Character) {
 		this.character.set(character);
@@ -35,12 +35,12 @@ class CharacterService implements Service {
 	themeComponent(theme: Theme): HTMLElement {
 		const elem = document.createElement('button');
 		elem.innerText = theme.name;
-		elem.onclick = () => this.openWindow!('theme');
+		elem.onclick = () => this.openWindow!('theme', signal(theme));
 		return elem;
 	}
 
 	init(ctx: ComponentContext): void {
-		this.openWindow = (name) => ctx.app.openWindow(name, 0, 0);
+		this.openWindow = (name, theme) => ctx.app.openWindow(name, 0, 0, undefined, {'theme': theme});
 		const component = ctx.body as HTMLComponent;
 		component.bindContent('character-name', this.name);
 		component.bindListSmart('themes', this.themes, (theme) => this.themeComponent(theme));

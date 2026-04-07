@@ -28,8 +28,7 @@ class ThemeService implements Service {
 	tags = listSignal<Tag>([]);
 	newComponent?: (a: ComponentConfig) => HTMLElement;
 
-	constructor(theme: Theme) {
-		this.theme.set(theme);
+	constructor() {
 	}
 	
 	tagComponent(tag: Tag): HTMLElement {
@@ -41,6 +40,12 @@ class ThemeService implements Service {
 	init(ctx: ComponentContext): void {
 		this.newComponent = (c) => ctx.app.createComponent(c);
 		const component = ctx.body as HTMLComponent;
+		if (ctx.args && 'theme' in ctx.args) {
+			// TODO: maybe these should be actually 
+			// passed with constructor
+			this.theme.set(ctx.args['theme']());
+		}
+
 		component.bindInput('quest-content', this.quest);
 		this.quest.subscribe((t: string) => console.log(t));
 
@@ -62,13 +67,13 @@ class ThemeService implements Service {
 	}
 }
 
-export function themeWindow(theme: Theme): ComponentDefinition {
+export function themeWindow(): ComponentDefinition {
 	return {
-		title: theme.name,
+		title: "Theme",
 		width: 320, 
 		height: 450,
 		//template: characterTemplate,
-		servicesFactory: () => [new ThemeService(theme)],
+		servicesFactory: () => [new ThemeService()],
 		elementFactory: () => componentOf("win-theme", themeTemplate),
     }
 }
