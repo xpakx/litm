@@ -2,7 +2,7 @@ import { type ComponentConfig, type ComponentContext, type Service, type Compone
 import { componentOf, HTMLComponent } from "../core/html-component.js";
 import { deepSignal, listSignal, signal } from "../core/signal.js";
 import { tagComponent } from "../tag-component/tag-window.js";
-import characterTemplate from './character.html'; 
+import themeTemplate from './theme.html'; 
 
 interface Theme {
 	name: string;
@@ -62,13 +62,13 @@ class ThemeService implements Service {
 	}
 }
 
-export function characterWindow(character: Character): ComponentDefinition {
+export function themeWindow(theme: Theme): ComponentDefinition {
 	return {
-		title: `Character: ${character.name}`,
+		title: theme.name,
 		width: 320, 
 		height: 450,
 		//template: characterTemplate,
-		servicesFactory: () => [new ThemeService(character.themes[0]!)],
-		elementFactory: () => componentOf("win-char", characterTemplate),
+		servicesFactory: () => [new ThemeService(theme)],
+		elementFactory: () => componentOf("win-theme", themeTemplate),
     }
 }

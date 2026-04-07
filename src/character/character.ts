@@ -47,7 +47,7 @@ class CharacterService implements Service {
 	}
 }
 
-export function characterWindowNew(character: Character): ComponentDefinition {
+export function characterWindow(character: Character): ComponentDefinition {
 	return {
 		title: `Character: ${character.name}`,
 		width: 320, 

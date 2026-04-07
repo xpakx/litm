@@ -1,5 +1,5 @@
 import { App, type ComponentContext, type ComponentDefinition, type Service, type WindowConfig } from "./core/app.js";
-import { characterWindow, type Character } from "./character-component/character-window.js";
+import { themeWindow, type Character } from "./theme/theme-window.js";
 import { diceWindow } from "./dice-component/dice-window.js";
 import { HttpErrorResponse, HttpRequest, HttpResponse, type HttpHandler, type HttpInterceptor } from "./core/http/http.js";
 import { HttpClient } from "./core/http/client.js";
@@ -13,7 +13,7 @@ import { musicComponent } from './music/music.js';
 import { bindingTestWindow } from "./test.js";
 import { smartListSignal, objectSignal } from "./core/signal.js";
 import { ToastManager, type Message } from "./core/toast.js";
-import { characterWindowNew } from "./character/character.js";
+import { characterWindow } from "./character/character.js";
 
 
 class ClockService implements Service {
@@ -78,8 +78,8 @@ export interface TagEvent {
     // testPanels(app);
     // app.register(clockWindow(10, 200));
     // app.register('music', {...musicWindow("krGs2V3Vk3w"), zone: 'main', trapInZone: true});
-    app.register('theme', characterWindow(character));
-    app.register('character', characterWindowNew(character));
+    app.register('theme', themeWindow(character.themes[0]!));
+    app.register('character', characterWindow(character));
     app.register('dice', diceWindow());
     app.register('smart', smartNoteWindow());
     app.register('test', testWindow());
